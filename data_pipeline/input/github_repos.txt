@@ -1,0 +1,23 @@
+# GitHub repos with frontend code for edit data extraction
+# Should have: frequent CSS/JS/HTML commits, well-structured, public
+
+# Popular open-source landing pages / templates
+https://github.com/tailwindlabs/tailwindcss.com
+https://github.com/vercel/next-site
+https://github.com/vuejs/vuejs.org
+https://github.com/sveltejs/svelte
+https://github.com/withastro/astro
+
+# Frontend component libraries (lots of CSS/JS diffs)
+https://github.com/twbs/bootstrap
+https://github.com/jgthms/bulma
+https://github.com/primer/css
+
+# Small frontend projects with clean commit history
+https://github.com/h5bp/html5-boilerplate
+https://github.com/necolas/normalize.css
+https://github.com/animate-css/animate.css
+
+# Real website repos with frequent updates
+https://github.com/mdn/content
+https://github.com/github/docs

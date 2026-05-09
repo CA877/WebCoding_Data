@@ -1,0 +1,36 @@
+# Environment and credentials
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# Generated data and large artifacts
+data_pipeline/output/
+outputs/
+remote_results/
+results/
+logs/
+*.log
+*.jsonl.tmp
+*.webm
+*.mp4
+*.mov
+*.png
+*.jpg
+*.jpeg
+
+# Local OS/editor files
+.DS_Store
+._*
+.idea/
+.vscode/
+*.swp
