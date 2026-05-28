@@ -1,0 +1,532 @@
+
+<html>
+<head>
+<title>PostgreSQL: About</title>
+</head>
+<body data-cleaned-by="webcode2m-format-utils">
+<div class="container-fluid">
+<div class="row justify-content-md-center">
+<div class="col">
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+<a class="navbar-brand p-0">
+<img class="logo" src="assets/image_486f58e3b5e7.png"/>
+</a>
+<input id="navbar-toggler"/>
+<label class="navbar-toggler" id="navbar-toggler-label"><span class="navbar-toggler-icon"></span></label>
+<div class="navbar-collapse" id="pgNavbar">
+<ul class="navbar-nav mr-auto">
+<li class="nav-item p-2"><a>Home</a></li>
+<li class="nav-item p-2"><a>About</a></li>
+<li class="nav-item p-2"><a>Download</a></li>
+<li class="nav-item p-2"><a>Documentation</a></li>
+<li class="nav-item p-2"><a>Community</a></li>
+<li class="nav-item p-2"><a>Developers</a></li>
+<li class="nav-item p-2"><a>Support</a></li>
+<li class="nav-item p-2"><a>Donate</a></li>
+<li class="nav-item p-2"><a>Your account</a></li>
+</ul>
+<form>
+<div class="input-group">
+<input class="form-control" id="q"/>
+<span class="input-group-btn">
+<button class="btn btn-default"><i class="fas fa-search"></i></button>
+</span>
+</div>
+</form>
+<form class="form-inline d-none" id="form-theme">
+<button class="btn btn-default ml-1" id="btn-theme"></button>
+</form>
+</div>
+</nav>
+</div>
+</div>
+<div class="row justify-content-center pg-shout-box">
+<div class="col text-white text-center">May 14, 2026: <a>
+  PostgreSQL 18.4, 17.10, 16.14, 15.18, and 14.23 Released!
+</a>
+</div>
+</div>
+</div>
+<div class="container-fluid margin">
+<div class="row">
+<div class="col-lg-2">
+<div id="pgSideWrap">
+<div id="pgSideNav">
+<h2>Quick Links</h2>
+<ul>
+<li><a>About</a>
+</li>
+<li><a>Governance</a>
+</li>
+<li><a>Policies</a>
+</li>
+<li><a>Feature Matrix</a>
+</li>
+<li><a>Donate</a>
+</li>
+<li><a>History</a>
+</li>
+<li><a>Sponsors</a>
+<ul>
+<li><a>Contributing</a></li>
+<li><a>Financial</a></li>
+<li class="last-child"><a>Servers</a></li>
+</ul>
+</li>
+<li><a>Latest News</a>
+</li>
+<li><a>Upcoming Events</a>
+<ul>
+<li class="last-child"><a>Past events</a></li>
+</ul>
+</li>
+<li><a>Press</a>
+</li>
+<li class="last-child"><a>Licence</a>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="col-lg-10">
+<div id="pgContentWrap">
+<h1>About <img class="logo" src="assets/image_486f58e3b5e7.png"/></h1>
+<h2>What is PostgreSQL?</h2>
+<p>PostgreSQL is a powerful, open source object-relational database system that uses and extends the SQL language combined with many features that safely store and scale the most complicated data workloads.  The origins of PostgreSQL date back to 1986 as part of the <a>POSTGRES</a> project at the University of California at Berkeley and has nearly 40 years of active development on the core platform.</p>
+<p>PostgreSQL has earned a strong reputation for its proven architecture, reliability, data integrity, robust feature set, extensibility, and the dedication of the open source community behind the software to consistently deliver performant and innovative solutions.  PostgreSQL runs on <a>all major operating systems</a>, has been <a>ACID</a>-compliant since 2001, and has powerful add-ons such as the popular <a>PostGIS</a> geospatial database extender. It is no surprise that PostgreSQL has become the open source relational database of choice for many people and organisations.</p>
+<p><a>Getting started</a> with using PostgreSQL has never been easier - pick a project you want to build, and let PostgreSQL safely and robustly store your data.</p>
+<h2>Why use PostgreSQL?</h2>
+<p>
+  PostgreSQL comes with <a>many features</a> aimed to help developers build applications, administrators to protect data integrity and build fault-tolerant environments, and help you manage your data no matter how big or small the dataset.  In addition to being <a>free and open source</a>, PostgreSQL is highly extensible. For example, you can define your own data types, build out custom functions, even write code from <a>different programming languages</a> without recompiling your database!
+</p>
+<p>PostgreSQL tries to conform with the <a>SQL standard</a> where such conformance does not contradict traditional features or could lead to poor architectural decisions. Many of the features required by the SQL standard are supported, though sometimes with slightly differing syntax or function. Further moves towards conformance can be expected over time. As of the version 18 release in September 2025, PostgreSQL conforms to at least 170 of the 177 mandatory features for SQL:2023
+</p>
+
+<h2>Feature Priority Board</h2>
+<p>Drag and drop cards between columns to prioritize PostgreSQL features. Your layout is automatically saved.</p>
+<div id="feature-board" class="feature-board">
+  <div class="board-column" data-status="planned">
+    <h3 class="column-header"><span class="drag-handle">&#9776;</span> Planned</h3>
+    <div class="drop-zone" data-status="planned">
+      <div class="feature-card" draggable="true" data-id="1">
+        <span class="card-handle">&#9776;</span>
+        <div class="card-title">Parallel Query Execution</div>
+        <div class="card-desc">Enhance parallel worker coordination for complex queries</div>
+      </div>
+      <div class="feature-card" draggable="true" data-id="2">
+        <span class="card-handle">&#9776;</span>
+        <div class="card-title">Logical Replication Improvements</div>
+        <div class="card-desc">Conflict resolution and automatic failover support</div>
+      </div>
+      <div class="feature-card" draggable="true" data-id="3">
+        <span class="card-handle">&#9776;</span>
+        <div class="card-title">JIT Compilation Enhancements</div>
+        <div class="card-desc">Expand LLVM JIT to more query plan nodes</div>
+      </div>
+    </div>
+  </div>
+  <div class="board-column" data-status="inprogress">
+    <h3 class="column-header"><span class="drag-handle">&#9776;</span> In Progress</h3>
+    <div class="drop-zone" data-status="inprogress">
+      <div class="feature-card" draggable="true" data-id="4">
+        <span class="card-handle">&#9776;</span>
+        <div class="card-title">Incremental Materialized Views</div>
+        <div class="card-desc">Refresh materialized views without full recomputation</div>
+      </div>
+      <div class="feature-card" draggable="true" data-id="5">
+        <span class="card-handle">&#9776;</span>
+        <div class="card-title">Table Access Method API</div>
+        <div class="card-desc">Pluggable storage engines for specialized workloads</div>
+      </div>
+    </div>
+  </div>
+  <div class="board-column" data-status="completed">
+    <h3 class="column-header"><span class="drag-handle">&#9776;</span> Completed</h3>
+    <div class="drop-zone" data-status="completed">
+      <div class="feature-card" draggable="true" data-id="6">
+        <span class="card-handle">&#9776;</span>
+        <div class="card-title">JSONB Performance Optimizations</div>
+        <div class="card-desc">Faster GIN index builds and query execution</div>
+      </div>
+      <div class="feature-card" draggable="true" data-id="7">
+        <span class="card-handle">&#9776;</span>
+        <div class="card-title">SCRAM-SHA-256 Authentication</div>
+        <div class="card-desc">Modern password authentication replacing MD5</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.feature-board {
+  display: flex;
+  gap: 20px;
+  margin: 20px 0 40px;
+  min-height: 400px;
+}
+.board-column {
+  flex: 1;
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+}
+.column-header {
+  font-size: 16px;
+  margin: 0 0 12px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #dee2e6;
+  color: #495057;
+}
+.drag-handle, .card-handle {
+  cursor: grab;
+  color: #adb5bd;
+  margin-right: 8px;
+  font-size: 14px;
+  user-select: none;
+}
+.card-handle {
+  float: right;
+  margin-right: 0;
+  margin-left: 8px;
+}
+.drop-zone {
+  flex: 1;
+  min-height: 100px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+.drop-zone.drag-over {
+  background-color: #e7f3ff;
+  box-shadow: inset 0 0 0 2px #007bff;
+}
+.feature-card {
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 10px;
+  cursor: grab;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  position: relative;
+}
+.feature-card:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.feature-card.dragging {
+  opacity: 0.5;
+  transform: rotate(2deg);
+}
+.feature-card .card-title {
+  font-weight: 600;
+  color: #212529;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+.feature-card .card-desc {
+  font-size: 12px;
+  color: #6c757d;
+  line-height: 1.4;
+}
+.ghost-card {
+  background: #e9ecef;
+  border: 2px dashed #adb5bd;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 10px;
+  opacity: 0.6;
+  pointer-events: none;
+}
+</style>
+
+<script>
+(function() {
+  const STORAGE_KEY = 'pg_feature_board_state';
+  let draggedEl = null;
+  let ghostEl = null;
+
+  function saveState() {
+    const state = {};
+    document.querySelectorAll('.drop-zone').forEach(zone => {
+      const status = zone.dataset.status;
+      const ids = Array.from(zone.querySelectorAll('.feature-card')).map(c => c.dataset.id);
+      state[status] = ids;
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  function loadState() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) return;
+      const state = JSON.parse(saved);
+      const allCards = new Map();
+      document.querySelectorAll('.feature-card').forEach(card => {
+        allCards.set(card.dataset.id, card);
+      });
+      Object.entries(state).forEach(([status, ids]) => {
+        const zone = document.querySelector(`.drop-zone[data-status="${status}"]`);
+        if (!zone) return;
+        ids.forEach(id => {
+          const card = allCards.get(id);
+          if (card) zone.appendChild(card);
+        });
+      });
+    } catch (e) {
+      console.warn('Failed to load board state', e);
+    }
+  }
+
+  function createGhost() {
+    const ghost = document.createElement('div');
+    ghost.className = 'ghost-card';
+    ghost.style.height = draggedEl.offsetHeight + 'px';
+    return ghost;
+  }
+
+  function initDragAndDrop() {
+    document.querySelectorAll('.feature-card').forEach(card => {
+      card.addEventListener('dragstart', function(e) {
+        draggedEl = this;
+        this.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', this.dataset.id);
+        ghostEl = createGhost();
+        setTimeout(() => {
+          if (ghostEl && draggedEl) {
+            draggedEl.parentNode.insertBefore(ghostEl, draggedEl.nextSibling);
+          }
+        }, 0);
+      });
+
+      card.addEventListener('dragend', function() {
+        this.classList.remove('dragging');
+        if (ghostEl && ghostEl.parentNode) {
+          ghostEl.parentNode.removeChild(ghostEl);
+        }
+        ghostEl = null;
+        draggedEl = null;
+        document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('drag-over'));
+        saveState();
+      });
+    });
+
+    document.querySelectorAll('.drop-zone').forEach(zone => {
+      zone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        this.classList.add('drag-over');
+      });
+
+      zone.addEventListener('dragleave', function(e) {
+        this.classList.remove('drag-over');
+      });
+
+      zone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('drag-over');
+        if (!draggedEl) return;
+        const afterElement = getDragAfterElement(this, e.clientY);
+        if (afterElement) {
+          this.insertBefore(draggedEl, afterElement);
+        } else {
+          this.appendChild(draggedEl);
+        }
+        if (ghostEl && ghostEl.parentNode) {
+          ghostEl.parentNode.removeChild(ghostEl);
+        }
+        ghostEl = null;
+      });
+    });
+  }
+
+  function getDragAfterElement(container, y) {
+    const draggableElements = [...container.querySelectorAll('.feature-card:not(.dragging)')];
+    return draggableElements.reduce((closest, child) => {
+      const box = child.getBoundingClientRect();
+      const offset = y - box.top - box.height / 2;
+      if (offset < 0 && offset > closest.offset) {
+        return { offset: offset, element: child };
+      } else {
+        return closest;
+      }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+  }
+
+  loadState();
+  initDragAndDrop();
+})();
+</script> Core conformance. As of this writing, no relational database meets full conformance with this standard.
+</p>
+<p>Below is an inexhaustive list of various features found in PostgreSQL, with more being added in every <a>major release</a>:
+</p>
+<ul>
+<li>
+<strong>Data Types</strong>
+<ul>
+<li>Primitives: Integer, Numeric, String, Boolean</li>
+<li>Structured: Date/Time, Array, Range / Multirange, UUID</li>
+<li>Document: JSON/JSONB, XML, Key-value (Hstore)</li>
+<li>Geometry: Point, Line, Circle, Polygon</li>
+<li>Customizations: Composite, Custom Types</li>
+</ul>
+</li>
+<li>
+<strong>Data Integrity</strong>
+<ul>
+<li>UNIQUE, NOT NULL</li>
+<li>Primary Keys</li>
+<li>Foreign Keys</li>
+<li>Exclusion Constraints</li>
+<li>Explicit Locks, Advisory Locks</li>
+</ul>
+</li>
+<li>
+<strong>Concurrency, Performance</strong>
+<ul>
+<li>Indexing: B-tree, Multicolumn, Expressions, Partial</li>
+<li>Advanced Indexing: GiST, SP-Gist, KNN Gist, GIN, BRIN, Covering indexes, Bloom filters</li>
+<li>Sophisticated query planner / optimizer, index-only scans, multicolumn statistics</li>
+<li>Transactions, Nested Transactions (via savepoints)</li>
+<li>Multi-Version concurrency Control (MVCC)</li>
+<li>Parallelization of read queries and building B-tree indexes</li>
+<li>Table partitioning</li>
+<li>All transaction isolation levels defined in the SQL standard, including Serializable</li>
+<li>Just-in-time (JIT) compilation of expressions</li>
+<li>Asynchronous I/O (AIO)</li>
+</ul>
+</li>
+<li>
+<strong>Reliability, Disaster Recovery</strong>
+<ul>
+<li>Write-ahead Logging (WAL)</li>
+<li>Replication: Asynchronous, Synchronous, Logical</li>
+<li>Point-in-time-recovery (PITR), active standbys</li>
+<li>Tablespaces</li>
+</ul>
+</li>
+<li>
+<strong>Security</strong>
+<ul>
+<li>Authentication: GSSAPI, SSPI, LDAP, SCRAM-SHA-256, Certificate, OAuth 2.0, and more</li>
+<li>Robust access-control system</li>
+<li>Column and row-level security</li>
+<li>Multi-factor authentication with certificates and an additional method</li>
+</ul>
+</li>
+<li>
+<strong>Extensibility</strong>
+<ul>
+<li>Stored functions and procedures</li>
+<li>Procedural Languages: PL/pgSQL, Perl, Python, and Tcl. There are other languages available through extensions, e.g. Java, JavaScript (V8), R, Lua, and Rust</li>
+<li>SQL/JSON constructors, query functions, path expressions, and JSON_TABLE</li>
+<li>Foreign data wrappers: connect to other databases or streams with a standard SQL interface</li>
+<li>Customizable storage interface for tables</li>
+<li>Many extensions that provide additional functionality, including PostGIS</li>
+</ul>
+</li>
+<li>
+<strong>Internationalisation, Text Search</strong>
+<ul>
+<li>Support for international character sets, e.g. through ICU collations</li>
+<li>Case-insensitive and accent-insensitive collations</li>
+<li>Full-text search</li>
+</ul>
+</li>
+</ul>
+<p>There are many more features that you can discover in the PostgreSQL <a>documentation</a>.  Additionally, PostgreSQL is highly extensible: many features, such as indexes, have defined APIs so that you can build out with PostgreSQL to solve your challenges.</p>
+<p>PostgreSQL has been proven to be highly scalable both in the sheer quantity of data it can manage and in the number of concurrent users it can accommodate. There are active PostgreSQL clusters in production environments that manage many terabytes of data, and specialized systems that manage petabytes.</p>
+<h2>Any questions?</h2>
+<p>
+  The first place to go to for any questions on PostgreSQL is its <a>world-renowned documentation</a>, which discusses how to use PostgreSQL in-depth.
+</p>
+<p>
+  We also have many <strong><a>mailing lists</a></strong> where you can connect and participate in the <a>community</a>. There are also many <a>events</a> and <a>local user groups</a> where you can connect with other PostgreSQL users.
+</p>
+<h2>Our users <i class="fa fa-heart"></i> us</h2>
+<div class="row">
+<div class="col-md-8 col-center m-auto">
+<div class="carousel slide" id="myCarousel">
+<ol class="carousel-indicators">
+<li class="active"></li>
+<li></li>
+<li></li>
+</ol>
+<div class="carousel-inner">
+<div class="item carousel-item active">
+<p class="testimonial">There was quite a bit of debate when we were deciding what tools would best serve as the foundation of FlightAware's ambitious goals. For the underlying database, however, the choice to use PostgreSQL was quite clear from the very beginning.</p>
+<p class="overview">David McNett, Chief Information Officer, <a>FlightAware.com</a></p>
+</div>
+<div class="item carousel-item">
+<p class="testimonial">Native JSON support in PostgresSQL provides an efficient mechanism for creating and storing documents for web APIs.</p>
+<p class="overview">Taras Mitran, <a>IVC, Inc.</a></p>
+</div>
+<div class="item carousel-item">
+<p class="testimonial">We keep up with the latest development of PostgreSQL since 2010 ... and every new release brings us more performance and usability improvements that we take advantage of practically from day one.</p>
+<p class="overview">Valentine Gogichashvili, <a>Zalando Technologies</a></p>
+</div>
+<div class="item carousel-item">
+<p class="testimonial">"We have used PostgreSQL successfully for over two years in a mission-critical capacity to support our registry systems."</p>
+<p class="overview">Ram Mohan, <a>Chief Technology Officer, Afilias Limited</a></p>
+</div>
+<div class="item carousel-item">
+<p class="testimonial">Noodle requires a Database that is not only scalable but provides exceptional performance. PostgreSQL is everything we need and more.</p>
+<p class="overview">Tim Dorey, Founder, <a>Vialect.com</a></p>
+</div>
+</div>
+<a class="carousel-control left carousel-control-prev">
+<i class="fa fa-angle-left"></i>
+</a>
+<a class="carousel-control right carousel-control-next">
+<i class="fa fa-angle-right"></i>
+</a>
+</div>
+</div>
+</div>
+<h2>What's a database project without statistics?</h2>
+<div class="container-fluid">
+<div class="row">
+<div class="col-sm-3 feature-grid">
+<h3>35+ Years Development</h3>
+</div>
+<div class="col-sm-3 feature-grid">
+<h3>725+ Contributors</h3>
+</div>
+<div class="col-sm-3 feature-grid">
+<h3>61,000+ Commits</h3>
+</div>
+<div class="col-sm-3 feature-grid">
+<h3>70+ Local User Groups</h3>
+</div>
+</div>
+<div class="row">
+<div class="col-sm-3 feature-grid">
+<h3>1,780,000+ Lines of C</h3>
+</div>
+<div class="col-sm-3 feature-grid">
+<h3>720+ Events</h3>
+</div>
+<div class="col-sm-3 feature-grid">
+<h3>Millions of Happy Users</h3>
+</div>
+<div class="col-sm-3 feature-grid">
+<h3>∞ Data Stored</h3>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<footer id="footer">
+<div class="container">
+<a>Policies</a> |
+        <a>Code of Conduct</a> |
+        <a>About PostgreSQL</a> |
+        <a>Contact</a><br/>
+<p>Copyright © 1996-2026 The PostgreSQL Global Development Group</p>
+</div>
+</footer>
+<style></style></body>
+</html>

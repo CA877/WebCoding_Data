@@ -6,6 +6,9 @@ import random
 import re
 import shutil
 import sys
+import ast
+import time
+from collections import Counter
 from pathlib import Path
 from typing import Any
 
@@ -18,6 +21,17 @@ if str(WEB_CODING_DEMO_ROOT) not in sys.path:
     sys.path.insert(0, str(WEB_CODING_DEMO_ROOT))
 
 CODE_EXTS = {".html", ".htm", ".css", ".js", ".jsx", ".ts", ".tsx", ".json", ".svg"}
+PROVENANCE_FILES = {"metadata.json", "original_webcode2m_screenshot.png"}
+REMOTE_URL_RE = re.compile(r"https?://[^\s\"'<>)]*", re.I)
+SVG_NAMESPACE_URLS = {
+    "http://www.w3.org/2000/svg",
+    "http://www.w3.org/1999/xlink",
+    "http://purl.org/dc/elements/1.1/",
+    "http://creativecommons.org/ns#",
+    "http://www.inkscape.org/namespaces/inkscape",
+    "http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd",
+    "http://www.serif.com/",
+}
 VIEWPORTS = [
     ("desktop", 1920, 1080),
     ("tablet", 768, 1024),
@@ -133,7 +147,7 @@ def find_html_pages(project_dir: Path) -> list[Path]:
 
 
 def infer_page_bucket(project_dir: Path) -> str:
-    return "mp" if len(find_html_pages(project_dir)) >= 4 else "sp"
+    return "mp" if len(find_html_pages(project_dir)) >= 2 else "sp"
 
 
 def read_code_bundle(project_dir: Path) -> list[dict[str, str]]:
@@ -144,7 +158,9 @@ def read_code_bundle(project_dir: Path) -> list[dict[str, str]]:
         if path.suffix.lower() not in CODE_EXTS:
             continue
         rel = path.relative_to(project_dir).as_posix()
-        code.append({"path": rel, "code": path.read_text("utf-8", errors="ignore")})
+        if rel in PROVENANCE_FILES:
+            continue
+        code.append({"path": rel, "code": sanitize_render_text(path.read_text("utf-8", errors="ignore"))})
     return code
 
 
@@ -154,6 +170,8 @@ def collect_resources(project_dir: Path) -> list[dict[str, Any]]:
         if not path.is_file():
             continue
         rel = path.relative_to(project_dir).as_posix()
+        if rel in PROVENANCE_FILES:
+            continue
         if path.suffix.lower() in CODE_EXTS:
             continue
         kind = "image"
@@ -168,7 +186,30 @@ def collect_resources(project_dir: Path) -> list[dict[str, Any]]:
 def copy_project(src: Path, dst: Path) -> None:
     if dst.exists():
         shutil.rmtree(dst)
-    shutil.copytree(src, dst)
+    shutil.copytree(src, dst, ignore=shutil.ignore_patterns(*PROVENANCE_FILES))
+    sanitize_project_files(dst)
+
+
+def sanitize_render_text(text: str) -> str:
+    def replace_url(match: re.Match[str]) -> str:
+        url = match.group(0)
+        if url in SVG_NAMESPACE_URLS:
+            return url
+        return "#"
+
+    text = re.sub(r"url\(\s*(['\"]?)https?://[^'\"\)]*\1\s*\)", "url(\"\")", text, flags=re.I)
+    text = re.sub(r"@import\s+(['\"])https?://[^'\"]*\1\s*;?", "", text, flags=re.I)
+    return REMOTE_URL_RE.sub(replace_url, text)
+
+
+def sanitize_project_files(project_dir: Path) -> None:
+    for path in project_dir.rglob("*"):
+        if not path.is_file() or path.suffix.lower() not in (CODE_EXTS - {".json"}):
+            continue
+        text = path.read_text("utf-8", errors="ignore")
+        sanitized = sanitize_render_text(text)
+        if sanitized != text:
+            path.write_text(sanitized, encoding="utf-8")
 
 
 def write_code_bundle(code_bundle: list[dict[str, str]], out_dir: Path) -> None:
@@ -341,6 +382,36 @@ def call_vlm(model: str, prompt: str, image_paths: list[Path] | None = None, max
     return response.choices[0].message.content or ""
 
 
+def _truncate_text(value: str, limit: int) -> str:
+    if len(value) <= limit:
+        return value
+    return value[:limit] + "\n<!-- truncated for PRD synthesis -->"
+
+
+def code_context_for_prd(project_dir: Path, page_names: set[str] | None = None, max_chars: int = 18000) -> str:
+    """Build a compact source context so PRDs are grounded in code and screenshots."""
+    code_items = read_code_bundle(project_dir)
+    selected: list[dict[str, str]] = []
+    page_names = page_names or set()
+    for item in code_items:
+        path = item["path"]
+        suffix = Path(path).suffix.lower()
+        if path in page_names or suffix in {".css", ".js", ".jsx", ".ts", ".tsx"}:
+            selected.append(item)
+    if not selected:
+        selected = code_items[:8]
+
+    chunks: list[str] = []
+    remaining = max_chars
+    for item in selected:
+        if remaining <= 0:
+            break
+        code = _truncate_text(item["code"], min(remaining, 5000))
+        chunks.append(f'<file path="{item["path"]}">\n{code}\n</file>')
+        remaining -= len(code)
+    return "<source_context>\n" + "\n".join(chunks) + "\n</source_context>"
+
+
 def generate_prd(project_dir: Path, screenshots_dir: Path) -> tuple[str, list[dict[str, str]]]:
     maybe_load_env()
     _, _, model = ensure_api_env(prefer_vision=True)
@@ -354,9 +425,29 @@ def generate_prd(project_dir: Path, screenshots_dir: Path) -> tuple[str, list[di
             f"- {screenshots[idx]['page']} ({screenshots[idx]['viewport']})"
             for idx in range(start, min(start + chunk_size, len(paths)))
         )
-        prompt = CHUNK_PROMPT + "\n\nPages in this batch:\n" + labels
+        page_names = {screenshots[idx]["page"] for idx in range(start, min(start + chunk_size, len(paths)))}
+        source_context = code_context_for_prd(project_dir, page_names)
+        prompt = (
+            CHUNK_PROMPT
+            + "\n\nPages in this batch:\n"
+            + labels
+            + "\n\nUse these source files together with the screenshots. The final notes must be grounded in both visual evidence and implementation structure:\n"
+            + source_context
+        )
         notes.append(call_vlm(model, prompt, chunk, max_tokens=1600))
-    instruction = notes[0] if len(notes) == 1 else call_vlm(model, MERGE_PROMPT.format(notes="\n\n".join(notes)), None, max_tokens=3200)
+    merge_source_context = code_context_for_prd(project_dir, None, max_chars=22000)
+    instruction = (
+        notes[0]
+        if len(notes) == 1
+        else call_vlm(
+            model,
+            MERGE_PROMPT.format(notes="\n\n".join(notes))
+            + "\n\nUse this compact source context to resolve ambiguities and keep the PRD implementation-grounded:\n"
+            + merge_source_context,
+            None,
+            max_tokens=3200,
+        )
+    )
     return instruction, screenshots
 
 
@@ -455,24 +546,278 @@ def build_generation_data(project_dir: Path) -> dict[str, Any]:
     }
 
 
-def load_edit_catalog() -> tuple[list[str], dict[str, str]]:
-    from web_coding_demo.synthetic.edit import FORWARD_TASKS, TASK_DESCRIPTIONS
+def _load_literal_assignments(source_path: Path, names: set[str]) -> dict[str, Any]:
+    tree = ast.parse(source_path.read_text(encoding="utf-8"))
+    values: dict[str, Any] = {}
+    for node in tree.body:
+        if not isinstance(node, ast.Assign):
+            continue
+        for target in node.targets:
+            if isinstance(target, ast.Name) and target.id in names:
+                values[target.id] = ast.literal_eval(node.value)
+    missing = names - values.keys()
+    if missing:
+        raise ValueError(f"Missing literal assignments in {source_path}: {sorted(missing)}")
+    return values
 
-    return list(FORWARD_TASKS), dict(TASK_DESCRIPTIONS)
+
+def strip_markdown_fence(response_text: str) -> str:
+    if "```xml" in response_text:
+        return response_text.split("```xml", 1)[1].split("```", 1)[0].strip()
+    if "```json" in response_text:
+        return response_text.split("```json", 1)[1].split("```", 1)[0].strip()
+    if "```" not in response_text:
+        return response_text
+    parts = response_text.split("```")
+    if len(parts) < 3:
+        return response_text
+    fenced = parts[1].strip()
+    for lang in ("xml", "XML", "json", "JSON"):
+        if fenced.startswith(lang):
+            return fenced[len(lang) :].strip()
+    return fenced
+
+
+def load_edit_catalog() -> tuple[list[str], dict[str, str]]:
+    values = _load_literal_assignments(
+        WEB_CODING_DEMO_ROOT / "synthetic" / "edit.py",
+        {"COMPLEX_COMPONENTS", "FRONTEND_BACKEND", "ADVANCED_ANIMATIONS", "BUSINESS_SCENARIOS", "TASK_DESCRIPTIONS"},
+    )
+    tasks = (
+        values["COMPLEX_COMPONENTS"]
+        + values["FRONTEND_BACKEND"]
+        + values["ADVANCED_ANIMATIONS"]
+        + values["BUSINESS_SCENARIOS"]
+    )
+    return list(tasks), dict(values["TASK_DESCRIPTIONS"])
 
 
 def load_repair_catalog() -> tuple[list[str], dict[str, str]]:
-    from web_coding_demo.synthetic.repair import DEFECT_TYPES, DEFECT_DESCRIPTIONS
+    values = _load_literal_assignments(
+        WEB_CODING_DEMO_ROOT / "synthetic" / "repair.py",
+        {"DEFECT_TYPES", "DEFECT_DESCRIPTIONS"},
+    )
+    return list(values["DEFECT_TYPES"]), dict(values["DEFECT_DESCRIPTIONS"])
 
-    return list(DEFECT_TYPES), dict(DEFECT_DESCRIPTIONS)
+
+def apply_search_replace_local(
+    code_list: list[dict[str, str]], modified_files: list[dict[str, str]], strict_mode: bool = True
+) -> tuple[list[dict[str, str]], list[dict[str, Any]]]:
+    """Local copy of web_coding_demo.utils.apply_search_replace without heavyweight image deps."""
+    result_code = []
+    code_map = {item["path"]: item["code"] for item in code_list}
+    errors: list[dict[str, Any]] = []
+    blocks_by_path: dict[str, list[dict[str, str]]] = {}
+    for block in modified_files:
+        blocks_by_path.setdefault(block["path"], []).append(block)
+
+    for path, blocks in blocks_by_path.items():
+        if path not in code_map:
+            if blocks and blocks[0]["search"] == "":
+                code_map[path] = ""
+            else:
+                error_msg = f"File path not found in code_list: {path}"
+                if strict_mode:
+                    raise ValueError(error_msg)
+                errors.extend(
+                    {"path": path, "block_index": idx, "error_type": "path_not_found", "error": error_msg}
+                    for idx, _ in enumerate(blocks)
+                )
+                continue
+
+        code = code_map[path]
+        for block_idx, block in enumerate(blocks):
+            search_text = block["search"]
+            replace_text = block["replace"]
+            if search_text.strip() == replace_text.strip():
+                error_msg = f"Search and replace are identical in {path} (block {block_idx})."
+                if strict_mode:
+                    raise ValueError(error_msg)
+                errors.append(
+                    {
+                        "path": path,
+                        "block_index": block_idx,
+                        "error_type": "identical_search_replace",
+                        "error": error_msg,
+                    }
+                )
+                continue
+            if search_text == "" and code == "":
+                code = replace_text
+            elif search_text in code:
+                code = code.replace(search_text, replace_text, 1)
+            else:
+                error_msg = (
+                    f"Failed to apply search/replace in {path} (block {block_idx}).\n"
+                    f"Search text (first 200 chars): {search_text[:200]}...\n"
+                    "This may indicate LLM generated invalid modifications."
+                )
+                if strict_mode:
+                    raise ValueError(error_msg)
+                errors.append(
+                    {"path": path, "block_index": block_idx, "error_type": "search_not_found", "error": error_msg}
+                )
+                continue
+        code_map[path] = code
+
+    existing_paths = {item["path"] for item in code_list}
+    for item in code_list:
+        new_item = item.copy()
+        if item["path"] in code_map:
+            new_item["code"] = code_map[item["path"]]
+        result_code.append(new_item)
+    for path, content in code_map.items():
+        if path not in existing_paths:
+            result_code.append({"path": path, "code": content})
+    return result_code, errors
+
+
+class LocalSearchReplaceSynthesizer:
+    """Dependency-light adapter for web_coding_demo.synthetic.synthesizer.BaseSynthesizer."""
+
+    def __init__(
+        self,
+        api_key: str,
+        base_url: str | None = None,
+        model: str = "gpt-4o",
+        max_tokens: int = 8192,
+        max_retries: int = 3,
+    ):
+        from openai import OpenAI
+
+        self.client = OpenAI(api_key=api_key, base_url=base_url, timeout=120.0)
+        self.model = model
+        self.max_tokens = max_tokens
+        self.max_retries = max_retries
+
+    def format_code_context(self, code_list: list[dict[str, str]], max_chars: int = 14000) -> str:
+        context = "<code_context>\n"
+        remaining = max_chars
+        priority = {".html": 0, ".htm": 0, ".css": 1, ".js": 2, ".jsx": 2, ".ts": 2, ".tsx": 2}
+        ordered = sorted(code_list, key=lambda item: (priority.get(Path(item["path"]).suffix.lower(), 9), item["path"]))
+        for item in ordered:
+            if remaining <= 0:
+                break
+            suffix = Path(item["path"]).suffix.lower()
+            per_file_limit = 4500 if suffix in {".html", ".htm"} else 3000
+            code = _truncate_text(item["code"], min(remaining, per_file_limit))
+            context += f'<file path="{item["path"]}">\n{code}\n</file>\n'
+            remaining -= len(code)
+        context += "</code_context>"
+        return context
+
+    def parse_llm_response(self, response_text: str) -> dict[str, Any]:
+        response_text = strip_markdown_fence(response_text)
+        desc_match = re.search(r"<description>(.*?)</description>", response_text, re.DOTALL)
+        if not desc_match:
+            raise ValueError("No <description> tag found in LLM response")
+        description = json.loads(desc_match.group(1).strip())
+
+        sr_matches = re.findall(
+            r'<search_replace\s+path="([^"]+)">\s*<search>(.*?)</search>\s*<replace>(.*?)</replace>\s*</search_replace>',
+            response_text,
+            re.DOTALL,
+        )
+        modified_files = []
+        for path, search, replace in sr_matches:
+            search_stripped = search.strip()
+            replace_stripped = replace.strip()
+            if search_stripped == replace_stripped:
+                continue
+            modified_files.append(
+                {"path": path.strip(), "search": search_stripped, "replace": replace_stripped}
+            )
+        return {"description": description, "modified_files": modified_files}
+
+    def _validate_task_types(self, description: list[dict[str, Any]], expected_task_types: list[str] | None = None) -> None:
+        if not expected_task_types:
+            return
+        actual_task_types = []
+        for idx, item in enumerate(description):
+            task_type = item.get("task_type")
+            if not task_type:
+                raise ValueError(f"Missing task_type at index {idx}: {item}")
+            actual_task_types.append(task_type)
+        if len(actual_task_types) != len(expected_task_types):
+            raise ValueError(
+                f"Task type count mismatch: got {len(actual_task_types)}, expected {len(expected_task_types)}"
+            )
+        if Counter(actual_task_types) != Counter(expected_task_types):
+            raise ValueError(f"Task types do not match expected list. got={actual_task_types}, expected={expected_task_types}")
+
+    def _generate_and_apply_with_retry(
+        self,
+        messages: list[dict[str, Any]],
+        code_list: list[dict[str, str]],
+        max_retries: int = 3,
+        backoff_base: int = 2,
+        expected_task_types: list[str] | None = None,
+    ) -> dict[str, Any]:
+        last_error: Exception | None = None
+        all_attempts = []
+        for attempt in range(1, max_retries + 1):
+            attempt_record = {"attempt": attempt, "raw_response": None, "success": False, "error": None, "stage": None}
+            try:
+                attempt_record["stage"] = "llm_call"
+                response = self.client.chat.completions.create(
+                    model=self.model,
+                    messages=messages,
+                    max_tokens=self.max_tokens,
+                )
+                response_text = response.choices[0].message.content if response and response.choices else None
+                if not response_text:
+                    raise ValueError("Empty response content from LLM.")
+                print(f"LLM Response (Attempt {attempt})")
+                attempt_record["raw_response"] = response_text
+
+                attempt_record["stage"] = "parse"
+                parsed = self.parse_llm_response(response_text)
+                if not parsed.get("modified_files"):
+                    raise ValueError("Parsed LLM response has no modified_files.")
+
+                attempt_record["stage"] = "validate_task_types"
+                self._validate_task_types(parsed.get("description", []), expected_task_types)
+
+                attempt_record["stage"] = "apply"
+                modified_code, _ = apply_search_replace_local(code_list, parsed["modified_files"])
+
+                attempt_record["success"] = True
+                all_attempts.append(attempt_record)
+                return {
+                    "description": parsed["description"],
+                    "modified_files": parsed["modified_files"],
+                    "modified_code": modified_code,
+                    "raw_response": response_text,
+                    "llm_metadata": {
+                        "model": self.model,
+                        "total_attempts": attempt,
+                        "all_attempts": all_attempts,
+                    },
+                }
+            except Exception as exc:
+                last_error = exc
+                attempt_record["error"] = str(exc)
+                all_attempts.append(attempt_record)
+                if attempt == max_retries:
+                    snippet = attempt_record["raw_response"]
+                    if snippet and len(snippet) > 200:
+                        snippet = snippet[:200] + "..."
+                    print(
+                        f"Generation and application failed after {attempt} attempts. "
+                        f"Last error at stage '{attempt_record['stage']}': {exc}\n"
+                        f"Last raw response snippet: {snippet}"
+                    )
+                    raise Exception(f"Failed after {max_retries} attempts. Last error: {exc}") from last_error
+                wait_time = backoff_base**attempt
+                print(f"Attempt {attempt}/{max_retries} failed at stage '{attempt_record['stage']}': {exc}. Retrying in {wait_time}s...")
+                time.sleep(wait_time)
+        raise last_error or RuntimeError("Unknown synthesis failure")
 
 
 def build_forward_edit_synthesizer(api_key: str, base_url: str | None, model: str, max_retries: int = 3):
-    from web_coding_demo.synthetic.synthesizer import BaseSynthesizer
-
     _, task_descriptions = load_edit_catalog()
 
-    class ForwardEditPairSynthesizer(BaseSynthesizer):
+    class ForwardEditPairSynthesizer(LocalSearchReplaceSynthesizer):
         def generate_forward_pair(self, generation_data: dict[str, Any], task_types: list[str]) -> dict[str, Any]:
             src_code = generation_data["dst_code"]
             src_code_context = self.format_code_context(src_code)
@@ -493,6 +838,7 @@ IMPORTANT GUIDELINES:
 3. The edits must be substantial but realistic for the current repository.
 4. Do not invent missing pages or external services that the current project cannot support.
 5. The search text must come exactly from the current code and match uniquely.
+6. Keep the implementation compact: prefer one or two focused edits in files shown below rather than broad rewrites.
 
 Return XML with:
 <description>
@@ -511,6 +857,9 @@ edited target text
 
 **CRITICAL - task_type MUST be EXACTLY one of these values (copy verbatim):**
 {task_types_json}
+
+Your response is invalid unless it contains BOTH the <description> block and at least one <search_replace path="..."> block.
+Do not stop after writing requirements. Do not say the code should be changed later. Implement the change in the same response.
 
 Here is the existing source code to edit:
 {src_code_context}"""
@@ -543,10 +892,103 @@ Here is the existing source code to edit:
         def process_single_generation_entry(self, *args, **kwargs) -> list[dict[str, Any]]:
             raise NotImplementedError
 
-    return ForwardEditPairSynthesizer(api_key, base_url, model, max_tokens=64 * 1024, max_retries=max_retries)
+    return ForwardEditPairSynthesizer(api_key, base_url, model, max_tokens=4_096, max_retries=max_retries)
 
 
 def build_repair_synthesizer(api_key: str, base_url: str | None, model: str, max_retries: int = 3):
-    from web_coding_demo.synthetic.repair import RepairTaskSynthesizer
+    _, defect_descriptions = load_repair_catalog()
 
-    return RepairTaskSynthesizer(api_key, base_url, model, max_tokens=64 * 1024, max_retries=max_retries)
+    class RepairPairSynthesizer(LocalSearchReplaceSynthesizer):
+        def generate_defect_task(self, generation_data: dict[str, Any], defect_types: list[str]) -> dict[str, Any]:
+            dst_code = generation_data["dst_code"]
+            dst_code_context = self.format_code_context(dst_code)
+            defect_descriptions_str = ""
+            for idx, defect_type in enumerate(defect_types, 1):
+                defect_descriptions_str += f"Defect {idx}: {defect_type}\n  Guideline: {defect_descriptions[defect_type]}\n\n"
+            defect_types_json = json.dumps(defect_types, ensure_ascii=False)
+            prompt = f"""You are an expert web developer. I have a clean, high-quality codebase for a webpage.
+I want to generate a dataset for web repair/debugging tasks.
+
+You need to inject {len(defect_types)} defect(s) in total:
+
+{defect_descriptions_str}
+
+Please analyze the provided code and inject specific defects for EACH defect type listed above.
+The defects should be realistic and something that could occur during development.
+Then, implement ALL the defect injections using search/replace blocks.
+
+Return XML format with the following structure:
+<description>
+[
+  {{"task_type": "ExactDefectTypeName1", "description": "Description for Defect 1"}},
+  {{"task_type": "ExactDefectTypeName2", "description": "Description for Defect 2"}}
+]
+</description>
+<search_replace path="path/to/file">
+<search>
+exact text to find in the original file
+</search>
+<replace>
+replacement text with the defect injected
+</replace>
+</search_replace>
+
+**CRITICAL - task_type values MUST be EXACTLY from this list (copy verbatim, preserve exact spelling and case):**
+{defect_types_json}
+
+Your response is invalid unless it contains BOTH the <description> block and at least one <search_replace path="..."> block.
+Do not stop after describing the defects. Inject the defects in the same response.
+
+Do NOT use:
+- Placeholder names like "Defect Type 1", "Task Type 2", "Type 1"
+- Synonyms or variations (e.g., "Z-Index Issue" instead of "Occlusion")
+- Different capitalization (e.g., "occlusion" instead of "Occlusion")
+
+Each task_type in your response MUST exactly match one of the defect types listed above.
+
+Important for <description>:
+- Provide a JSON array with ONE object for EACH defect (total {len(defect_types)} objects).
+- Each object must have exactly two fields: "task_type" and "description".
+- The "description" must be a repair instruction that clearly identifies the issue or target element.
+- Do not reveal exact code implementation details such as class names, IDs, or exact CSS property values unless they are visible content.
+
+Important for <search_replace>:
+- You MUST implement defect injections for ALL {len(defect_types)} defect types.
+- The <search> block must contain the EXACT text from the original file.
+- The <search> text MUST be unique and match exactly once in the file.
+- One <search_replace> block can only contain one pair of <search> and <replace>.
+- Keep the injection compact: prefer one focused defect edit in files shown below.
+
+Here is the clean code (which will be the Goal/Dst state after repair):
+{dst_code_context}"""
+            result = self._generate_and_apply_with_retry(
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a helpful assistant that generates web development debugging datasets in XML format using search/replace blocks.",
+                    },
+                    {"role": "user", "content": prompt},
+                ],
+                code_list=dst_code,
+                max_retries=self.max_retries,
+                expected_task_types=defect_types,
+            )
+            src_code = result["modified_code"]
+            label_modified_files = [
+                {"path": mod["path"], "search": mod["replace"], "replace": mod["search"]}
+                for mod in result.get("modified_files", [])
+            ]
+            return {
+                "task": "repair",
+                "task_type": defect_types,
+                "description": result["description"],
+                "src_code": src_code,
+                "dst_code": dst_code,
+                "resources": generation_data.get("resources", []),
+                "label_modified_files": label_modified_files,
+                "synthetic_modified_files": result.get("modified_files", []),
+                "llm_raw_response": result.get("raw_response"),
+                "llm_metadata": result.get("llm_metadata"),
+            }
+
+    return RepairPairSynthesizer(api_key, base_url, model, max_tokens=4_096, max_retries=max_retries)

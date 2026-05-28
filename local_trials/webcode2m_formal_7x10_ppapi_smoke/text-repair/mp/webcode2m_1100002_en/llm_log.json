@@ -1,0 +1,23 @@
+{
+  "llm_raw_response": "<description>\n[\n  {\"task_type\": \"Loss of Interactivity\", \"description\": \"The 'Read the complete History' button is disabled and cannot be clicked. Remove the disabled attribute to restore interactivity.\"}\n]\n</description>\n<search_replace path=\"people.html\">\n<search>\n<p style=\"text-align:center\"><button><span class=\"fas fa-book-open fa-2x\"></span> <a>Read the complete History</a></button></p>\n</search>\n<replace>\n<p style=\"text-align:center\"><button disabled=\"\"><span class=\"fas fa-book-open fa-2x\"></span> <a>Read the complete History</a></button></p>\n</replace>\n</search_replace>",
+  "llm_metadata": {
+    "model": "kimi-k2.6",
+    "total_attempts": 1,
+    "all_attempts": [
+      {
+        "attempt": 1,
+        "raw_response": "<description>\n[\n  {\"task_type\": \"Loss of Interactivity\", \"description\": \"The 'Read the complete History' button is disabled and cannot be clicked. Remove the disabled attribute to restore interactivity.\"}\n]\n</description>\n<search_replace path=\"people.html\">\n<search>\n<p style=\"text-align:center\"><button><span class=\"fas fa-book-open fa-2x\"></span> <a>Read the complete History</a></button></p>\n</search>\n<replace>\n<p style=\"text-align:center\"><button disabled=\"\"><span class=\"fas fa-book-open fa-2x\"></span> <a>Read the complete History</a></button></p>\n</replace>\n</search_replace>",
+        "success": true,
+        "error": null,
+        "stage": "apply"
+      }
+    ]
+  },
+  "synthetic_modified_files": [
+    {
+      "path": "people.html",
+      "search": "<p style=\"text-align:center\"><button><span class=\"fas fa-book-open fa-2x\"></span> <a>Read the complete History</a></button></p>",
+      "replace": "<p style=\"text-align:center\"><button disabled=\"\"><span class=\"fas fa-book-open fa-2x\"></span> <a>Read the complete History</a></button></p>"
+    }
+  ]
+}

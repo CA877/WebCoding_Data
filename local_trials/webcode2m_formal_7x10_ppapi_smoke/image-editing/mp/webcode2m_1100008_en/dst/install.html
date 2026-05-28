@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<title>
+            Install Rust - Rust Programming Language
+        </title>
+</head>
+<body data-cleaned-by="webcode2m-format-utils">
+<nav class="flex flex-row justify-center justify-end-l items-center flex-wrap ph2 pl3-ns pr3-ns pb3">
+<div class="brand flex-auto w-100 w-auto-l self-start tc tl-l">
+<a class="brand">
+<img class="v-mid ml0-l" src="assets/icon_ec9b36bd780f.svg"/>
+<span class="dib ml1 ml0-l">Rust</span>
+</a>
+</div>
+<ul class="nav list w-100 w-auto-l flex flex-none flex-row flex-wrap justify-center justify-end-l items-center pv2 ph0 ph4-ns">
+<li class="tc pv2 ph2 ph4-ns flex-20-s"><a>Install</a></li>
+<li class="tc pv2 ph2 ph4-ns flex-20-s"><a>Learn</a></li>
+<li class="tc pv2 ph2 ph4-ns flex-20-s"><a>Playground</a></li>
+<li class="tc pv2 ph2 ph4-ns flex-20-s"><a>Tools</a></li>
+<li class="tc pv2 ph2 ph4-ns flex-20-s"><a>Governance</a></li>
+<li class="tc pv2 ph2 ph4-ns flex-20-s"><a>Funding</a></li>
+<li class="tc pv2 ph2 ph4-ns flex-20-s"><a>Community</a></li>
+<li class="tc pv2 ph2 ph4-ns flex-20-s"><a>Blog</a></li>
+</ul>
+<div class="w-100 w-auto-l flex-none flex justify-center pv4 pv-0-l languages">
+<div class="select">
+<label class="hidden">Language</label>
+<select id="language-nav">
+<option>English (en-US)</option>
+<option>Español (es)</option>
+<option>Français (fr)</option>
+<option>Italiano (it)</option>
+<option>日本語 (ja)</option>
+<option>Português (pt-BR)</option>
+<option>Русский (ru)</option>
+<option>Türkçe (tr)</option>
+<option>简体中文 (zh-CN)</option>
+<option>正體中文 (zh-TW)</option>
+</select>
+</div>
+</div>
+</nav>
+<main>
+<header class="mt3 mt2-ns mb4 mb5-ns tc tl-ns">
+<div class="w-100 mw-none ph3 mw8-m mw9-l center f3">
+<h1>Install Rust</h1>
+</div>
+</header>
+<section class="green" id="rustup">
+<div class="w-100 mw-none ph3 mw8-m mw9-l center f3">
+<header>
+<h2>Using rustup (Recommended)</h2>
+<div class="highlight"></div>
+</header>
+<div class="row">
+<div class="instructions db" id="platform-instructions-unix">
+<p>It looks like you’re running macOS, Linux, or another Unix-like OS. To download Rustup and install Rust, run the following in your terminal, then follow the on-screen instructions. See <a>"Other Installation Methods"</a> if you are on Windows.</p>
+<div class="pre-copy-wrap">
+<pre><code class="db w-100">curl --proto '=https' --tlsv1.2 -sSf # | sh</code></pre>
+<button class="copy-code-btn">
+<img class="copy-icon" height="14" src="assets/icon_0d55ebe1ee73.svg" width="14"/>
+<img class="check-icon" height="14" src="assets/icon_3cf49fc0653e.svg" width="14"/>
+<span class="copy-code-btn__text">Copy</span>
+</button>
+</div>
+</div>
+<div class="instructions dn" id="platform-instructions-win">
+<p>It looks like you’re running Windows. To start using Rust, download the installer, then run the program and follow the onscreen instructions. You may need to install the <a>Visual Studio C++ Build tools</a> when prompted to do so. If you are not on Windows see <a>"Other Installation Methods"</a>.</p>
+<div class="mw9 center ph3-ns">
+<div class="cf ph2-ns flex flex-column flex-row-l justify-between">
+<div class="fl w-33-l w-100 pa2">
+<a class="button button-secondary">Download <span class="nowrap">rustup-init.exe</span> <span class="nowrap">(32-bit)</span></a>
+</div>
+<div class="fl w-33-l w-100 pa2">
+<a class="button button-secondary">Download <span class="nowrap">rustup-init.exe</span> <span class="nowrap">(x64)</span></a>
+</div>
+<div class="fl w-33-l w-100 pa2">
+<a class="button button-secondary">Download <span class="nowrap">rustup-init.exe</span> <span class="nowrap">(ARM64)</span></a>
+</div>
+</div>
+</div>
+<h3 class="mt4">Windows Subsystem for Linux</h3>
+<p>If you’re a Windows Subsystem for Linux user run the following in your terminal, then follow the on-screen instructions to install Rust.</p>
+<div class="pre-copy-wrap">
+<pre><code class="db w-100">curl --proto '=https' --tlsv1.2 -sSf # | sh</code></pre>
+<button class="copy-code-btn">
+<img class="copy-icon" height="14" src="assets/icon_0d55ebe1ee73.svg" width="14"/>
+<img class="check-icon" height="14" src="assets/icon_3cf49fc0653e.svg" width="14"/>
+<span class="copy-code-btn__text">Copy</span>
+</button>
+</div>
+</div>
+<div class="instructions dn" id="platform-instructions-default">
+<div>
+<p>
+            To install Rust, if you are running a Unix such as WSL, Linux or macOS,<br/> run the following in your terminal, then follow the on-screen instructions.
+          </p>
+<div class="pre-copy-wrap">
+<pre><code class="db w-100">curl --proto '=https' --tlsv1.2 -sSf # | sh</code></pre>
+<button class="copy-code-btn">
+<img class="copy-icon" height="14" src="assets/icon_0d55ebe1ee73.svg" width="14"/>
+<img class="check-icon" height="14" src="assets/icon_3cf49fc0653e.svg" width="14"/>
+<span class="copy-code-btn__text">Copy</span>
+</button>
+</div>
+</div>
+<hr class="white-hr"/>
+<div>
+<p>
+            If you are running Windows,<br/>download and run <a>rustup‑init.exe</a> then follow the on-screen instructions.
+          </p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="white" id="installation-notes">
+<div class="w-100 mw-none ph3 mw8-m mw9-l center f3">
+<header>
+<h2>Notes about Rust installation</h2>
+<div class="highlight"></div>
+</header>
+<div>
+<h3>Getting started</h3>
+<p>
+If you're just getting started with
+Rust and would like a more detailed walk-through, see our
+<a>getting started</a> page.      </p>
+<div class="platform-specific win dn">
+<h3>Windows considerations</h3>
+<p>
+  On Windows, Rust additionally requires the MSVC build tools
+  for Visual Studio 2013 or later. See
+  <a>
+  MSVC prerequistes</a>
+</p>
+<p>
+  For further information about configuring Rust on Windows see the
+  <a>
+  Windows-specific <code>rustup</code> documentation</a>.
+</p>
+</div>
+<h3>Toolchain management with <code>rustup</code></h3>
+<p>
+  Rust is installed and managed by the
+  <a><code>rustup</code></a>
+  tool. Rust has a 6-week
+  <a>
+    rapid release process
+  </a> and supports a
+  <a>great
+  number of platforms</a>, so there are many builds of Rust available at
+  any time. <code>rustup</code> manages these builds in a consistent way
+  on every platform that Rust supports, enabling installation of Rust
+  from the beta and nightly release channels as well as support for
+  additional cross-compilation targets.
+</p>
+<p>
+  If you've installed <code>rustup</code> in the past, you can update
+  your installation by running <code>rustup update</code>.
+</p>
+<p>
+  For more information see the
+  <a>
+<code>rustup</code> documentation</a>.
+</p>
+<h3>Configuring the <code>PATH</code> environment
+variable</h3>
+<p>
+  In the Rust development environment, all tools are installed to the
+  <span class="platform-specific not-win di">
+<code>~/.cargo/bin</code>
+</span>
+<span class="platform-specific win dn">
+<code>%USERPROFILE%\.cargo\bin</code>
+</span> directory, and this is where you will find the Rust toolchain,
+  including <code>rustc</code>, <code>cargo</code>, and <code>rustup</code>.
+</p>
+<p>
+  Accordingly, it is customary for Rust developers to include this
+  directory in their
+  <a>
+<code>PATH</code> environment variable</a>. During installation
+  <code>rustup</code> will attempt to configure the <code>PATH</code>.
+  Because of differences between platforms, command shells, and bugs in
+  <code>rustup</code>, the modifications to <code>PATH</code> may not
+  take effect until the console is restarted, or the user is logged out,
+  or it may not succeed at all.
+</p>
+<p>
+  If, after installation, running <code>rustc --version</code> in the
+  console fails, this is the most likely reason.
+</p>
+<h3>Uninstall Rust</h3>
+<p>
+  If at any point you would like to uninstall Rust, you can run
+  <code>rustup self uninstall</code>.
+  We'll miss you though!
+</p>
+</div>
+</div>
+</section>
+<section class="purple" id="other-methods">
+<div class="w-100 mw-none ph3 mw8-m mw9-l center f3">
+<header>
+<h2>Other installation methods</h2>
+<div class="highlight"></div>
+</header>
+<p>
+      The installation described above, via
+<code>rustup</code>, is the preferred way to install Rust for most
+developers. However, Rust can be installed via other methods as well.
+    </p>
+<a class="button button-secondary">
+      Learn more
+    </a>
+</div>
+</section>
+</main>
+<footer>
+<div class="w-100 mw-none ph3 mw8-m mw9-l center f3">
+<div class="flex flex-column flex-row-l pv0-l">
+<div class="flex flex-column mw8 w-100 measure-wide-l pv2 pv5-m pv2-ns ph4-m ph4-l" id="get-help">
+<h4>Get help!</h4>
+<ul>
+<li><a>Documentation</a></li>
+<li><a>Rust Forge (Contributor Documentation)</a></li>
+<li><a>Ask a Question on the Users Forum</a></li>
+</ul>
+<div class="languages">
+<div class="select">
+<label class="hidden">Language</label>
+<select id="language-footer">
+<option>English (en-US)</option>
+<option>Español (es)</option>
+<option>Français (fr)</option>
+<option>Italiano (it)</option>
+<option>日本語 (ja)</option>
+<option>Português (pt-BR)</option>
+<option>Русский (ru)</option>
+<option>Türkçe (tr)</option>
+<option>简体中文 (zh-CN)</option>
+<option>正體中文 (zh-TW)</option>
+</select>
+</div>
+</div>
+</div>
+<div class="flex flex-column mw8 w-100 measure-wide-l pv2 pv5-m pv2-ns ph4-m ph4-l">
+<h4>Terms and policies</h4>
+<ul>
+<li><a>Code of Conduct</a></li>
+<li><a>Licenses</a></li>
+<li><a>Logo Policy and Media Guide</a></li>
+<li><a>Security Disclosures</a></li>
+<li><a>Privacy Notice</a>
+</li>
+<li><a>All Policies</a></li>
+</ul>
+</div>
+<div class="flex flex-column mw8 w-100 measure-wide-l pv2 pv5-m pv2-ns ph4-m ph4-l">
+<h4>Social</h4>
+<div class="flex flex-row flex-wrap items-center">
+<a><img src="assets/icon_6312ead7afed.svg"/></a>
+<a><img src="assets/icon_3efbf8707443.svg"/></a>
+<a><img class="pv2" src="assets/icon_876e5f76b3a4.svg"/></a>
+<a><img src="assets/icon_a14aa79ea135.svg"/></a>
+</div>
+</div>
+</div>
+<div class="attribution">
+<p>
+            Maintained by the Rust Team. See a bug?
+<a>File an issue!</a>
+</p>
+<p>Web site built every day at 22:00 UTC</p>
+</div>
+</div>
+</footer>
+<style></style></body>
+</html>

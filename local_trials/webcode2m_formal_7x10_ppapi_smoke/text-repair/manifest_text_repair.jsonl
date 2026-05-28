@@ -1,0 +1,18 @@
+{"instance_id": "webcode2m_1100002_en", "bucket": "mp", "status": "ok", "task_type": ["Loss of Interactivity"]}
+{"instance_id": "webcode2m_1100005_en", "bucket": "mp", "status": "ok", "task_type": ["Alignment"]}
+{"instance_id": "webcode2m_1100006_en", "bucket": "mp", "status": "ok", "task_type": ["Crowding"]}
+{"instance_id": "webcode2m_1100007_en", "bucket": "mp", "status": "ok", "task_type": ["Overflow"]}
+{"instance_id": "webcode2m_1100009_en", "bucket": "mp", "status": "ok", "task_type": ["Sizing Proportion"]}
+{"instance_id": "webcode2m_1100010_en", "bucket": "mp", "status": "ok", "task_type": ["Nesting Error"]}
+{"instance_id": "webcode2m_1100012_en", "bucket": "mp", "status": "error", "error": "Exception: Failed after 3 attempts. Last error: Failed to apply search/replace in assets/css_3a2ecfc5e5ef.css (block 0).\nSearch text (first 200 chars): body{font-family:\"Inter\",sans-serif;color:var(--m24-off-black);background-color:var(--m24-white);margin:0;padding:0}...\nThis may indicate LLM generated invalid modifications."}
+{"instance_id": "webcode2m_1100013_en", "bucket": "mp", "status": "ok", "task_type": ["Crowding"]}
+{"instance_id": "webcode2m_1100014_en", "bucket": "mp", "status": "ok", "task_type": ["Alignment"]}
+{"instance_id": "webcode2m_1100015_en", "bucket": "mp", "status": "ok", "task_type": ["Crowding"]}
+{"instance_id": "webcode2m_1100001_en", "bucket": "sp", "status": "ok", "task_type": ["Occlusion"]}
+{"instance_id": "webcode2m_1100002_en", "bucket": "mp", "status": "skip_existing"}
+{"instance_id": "webcode2m_1100003_en", "bucket": "sp", "status": "ok", "task_type": ["Loss of Interactivity"]}
+{"instance_id": "webcode2m_1100004_en", "bucket": "mp", "status": "error", "error": "Exception: Failed after 3 attempts. Last error: Failed to apply search/replace in ja.html (block 0).\nSearch text (first 200 chars): <h1> </h1>...\nThis may indicate LLM generated invalid modifications."}
+{"instance_id": "webcode2m_1100005_en", "bucket": "mp", "status": "skip_existing"}
+{"instance_id": "webcode2m_1100006_en", "bucket": "mp", "status": "skip_existing"}
+{"instance_id": "webcode2m_1100007_en", "bucket": "mp", "status": "skip_existing"}
+{"instance_id": "webcode2m_1100003_en", "bucket": "sp", "status": "ok", "task_type": ["Loss of Interactivity"]}

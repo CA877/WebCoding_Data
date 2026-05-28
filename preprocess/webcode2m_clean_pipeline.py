@@ -24,14 +24,32 @@ import mimetypes
 from pathlib import Path
 import re
 import shutil
+import sys
 import time
 from typing import Any
 from urllib.parse import urljoin, urlparse
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Doctype
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+WEBCODE2M_ROOT = REPO_ROOT / "third_party" / "naturalcc" / "examples" / "webcode2m"
+WEBCODE2M_DEPS = WEBCODE2M_ROOT / ".deps"
+if WEBCODE2M_DEPS.exists() and str(WEBCODE2M_DEPS) not in sys.path:
+    sys.path.insert(0, str(WEBCODE2M_DEPS))
+if str(WEBCODE2M_ROOT) not in sys.path:
+    sys.path.insert(0, str(WEBCODE2M_ROOT))
+
+try:
+    from scripts.data_cc_pipeline.format_utils import formatCss, formatHtml, mergeHtmlCss
+
+    OFFICIAL_FORMAT_IMPORT_ERROR = ""
+except Exception as exc:  # noqa: BLE001
+    formatCss = formatHtml = mergeHtmlCss = None  # type: ignore[assignment]
+    OFFICIAL_FORMAT_IMPORT_ERROR = f"{type(exc).__name__}: {exc}"
 
 
 MEDIA_ATTRS = ("src", "data-src", "data-lazy-src", "data-bg", "poster")
@@ -50,6 +68,7 @@ ICON_HINT_RE = re.compile(
 IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".ico"}
 FONT_EXTS = {".woff", ".woff2", ".ttf", ".otf", ".eot"}
 CSS_EXTS = {".css"}
+OFFICIAL_CLEAN_ATTR = "data-cleaned-by"
 
 
 VISUAL_ASSET_SVG = """<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
@@ -96,6 +115,7 @@ def sha1(value: str | bytes) -> str:
 
 def build_session() -> requests.Session:
     session = requests.Session()
+    session.trust_env = False
     retry = Retry(total=2, backoff_factor=0.5, status_forcelist=(429, 500, 502, 503, 504))
     adapter = HTTPAdapter(max_retries=retry, pool_connections=16, pool_maxsize=16)
     session.mount("http://", adapter)
@@ -234,6 +254,62 @@ def rewrite_srcset(value: str, localize) -> str:
     return ", ".join(out)
 
 
+def collect_absolute_child_links(soup: BeautifulSoup, base_url: str = "") -> list[str]:
+    links: list[str] = []
+    for a in soup.find_all("a", href=True):
+        href = str(a["href"]).strip()
+        if not href or is_data_or_safe(href) or TRACKING_RE.search(href):
+            continue
+        absolute = href
+        if href.startswith("//"):
+            absolute = "https:" + href
+        elif not href.startswith(("http://", "https://")):
+            if not base_url:
+                continue
+            absolute = urljoin(base_url, href)
+        parsed = urlparse(absolute)
+        clean = parsed._replace(fragment="").geturl()
+        if parsed.scheme in {"http", "https"} and clean not in links:
+            links.append(clean)
+    return links
+
+
+def official_webcode2m_purify(html: str, uri: str = "") -> tuple[str, dict[str, Any]]:
+    """Run the downloaded WebCode2M HTML/CSS purification code when available."""
+    info: dict[str, Any] = {
+        "enabled": False,
+        "source": "third_party/naturalcc/examples/webcode2m/scripts/data_cc_pipeline/format_utils.py",
+    }
+    if not (formatHtml and formatCss and mergeHtmlCss):
+        info["error"] = OFFICIAL_FORMAT_IMPORT_ERROR or "official_format_utils_unavailable"
+        return html, info
+
+    try:
+        soup = BeautifulSoup(html, "html.parser")
+        style_contents = [style.get_text() for style in soup.find_all("style") if style.get_text()]
+        for style in soup.find_all("style"):
+            style.decompose()
+        css = "\n".join(style_contents)
+        official_html = formatHtml(str(soup), uri)
+        official_css = formatCss(css, official_html) if css.strip() else ""
+        purified = mergeHtmlCss(official_html, official_css)
+        purified_soup = BeautifulSoup(purified, "html.parser")
+        for item in list(purified_soup.contents):
+            if isinstance(item, Doctype):
+                item.extract()
+        body = purified_soup.body or purified_soup
+        body[OFFICIAL_CLEAN_ATTR] = "webcode2m-format-utils"
+        info["enabled"] = True
+        info["html_chars_before"] = len(html)
+        info["html_chars_after"] = len(str(purified_soup))
+        info["css_chars_before"] = len(css)
+        info["css_chars_after"] = len(official_css)
+        return str(purified_soup), info
+    except Exception as exc:  # noqa: BLE001
+        info["error"] = f"{type(exc).__name__}: {exc}"
+        return html, info
+
+
 def clean_row(row: dict[str, Any], output_dir: Path, session: requests.Session, args: argparse.Namespace) -> dict[str, Any]:
     row_idx = int(row["row_idx"])
     project_name = f"webcode2m_{row_idx:03d}_{row.get('lang') or 'unk'}"
@@ -245,6 +321,9 @@ def clean_row(row: dict[str, Any], output_dir: Path, session: requests.Session, 
     shared = write_shared_assets(project_dir)
 
     html = row.get("text") or ""
+    raw_soup = BeautifulSoup(html, "html.parser")
+    source_url = str(row.get("url") or "")
+    child_links = collect_absolute_child_links(raw_soup, source_url)
     soup = BeautifulSoup(html, "html.parser")
     stats = Counter()
     actions: list[dict[str, Any]] = []
@@ -360,27 +439,31 @@ def clean_row(row: dict[str, Any], output_dir: Path, session: requests.Session, 
     for tag in soup.find_all("style"):
         tag.string = rewrite_css_urls(tag.get_text(), localize)
 
-    # Remove hrefs only when they are clearly tracking/noise. WebCode2M preview
-    # rows in the current sample do not expose normal anchors, but this keeps the
-    # script robust for larger slices.
-    child_links: list[str] = []
+    # Keep hrefs during local resource rewriting. Official WebCode2M formatting
+    # runs after link collection and removes href attributes from the final text.
     for a in soup.find_all("a", href=True):
         href = str(a["href"])
         if TRACKING_RE.search(href):
             a["href"] = "#"
             stats["neutralized_tracking_href"] += 1
-        elif href.startswith(("http://", "https://")):
-            child_links.append(href)
 
     index_path = project_dir / "index.html"
-    index_path.write_text(str(soup), encoding="utf-8")
+    purified_index, official_clean_info = official_webcode2m_purify(str(soup), uri=source_url)
+    if official_clean_info.get("enabled"):
+        stats["official_webcode2m_purified"] += 1
+    else:
+        stats["official_webcode2m_purify_failed"] += 1
+    index_path.write_text(purified_index, encoding="utf-8")
 
     pages = [{"path": "index.html", "source": "webcode2m_text"}]
-    crawl_result = try_crawl_child_pages(child_links, project_dir, session, args)
+    crawl_result = try_crawl_child_pages(child_links, project_dir, session, args, shared, source_url)
     pages.extend(crawl_result["pages"])
     stats.update(crawl_result["stats"])
+    actions.extend(crawl_result.get("actions", []))
+    download_infos.extend(crawl_result.get("download_results", []))
 
-    original_img = row.get("image", {}).get("local_path")
+    image_meta = row.get("image") or {}
+    original_img = image_meta.get("local_path")
     if original_img and Path(original_img).exists():
         shutil.copy2(original_img, project_dir / "original_webcode2m_screenshot.png")
 
@@ -393,8 +476,9 @@ def clean_row(row: dict[str, Any], output_dir: Path, session: requests.Session, 
         "image": row.get("image"),
         "pages": pages,
         "multipage_status": "ok" if len(pages) > 1 else "multipage_unavailable",
-        "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text" if len(pages) == 1 else "",
+        "reason_if_single_page": "no crawlable internal hrefs in source HTML" if len(pages) == 1 else "",
         "stats": dict(stats),
+        "official_clean": official_clean_info,
         "resource_actions": actions,
         "download_results": download_infos,
     }
@@ -402,40 +486,198 @@ def clean_row(row: dict[str, Any], output_dir: Path, session: requests.Session, 
     return {"project": project_name, "status": "ok", "stats": dict(stats), "pages": len(pages)}
 
 
-def try_crawl_child_pages(links: list[str], project_dir: Path, session: requests.Session, args: argparse.Namespace) -> dict[str, Any]:
-    if not links or args.max_child_pages <= 0:
-        return {"pages": [], "stats": Counter()}
+def safe_child_page_name(parsed_url, index: int, used_names: set[str]) -> str:
+    stem = Path(parsed_url.path).stem or f"page_{index+1}"
+    stem = re.sub(r"[^A-Za-z0-9._-]+", "_", stem).strip("._-") or f"page_{index+1}"
+    name = f"{stem}.html"
+    if name == "index.html":
+        name = f"page_{index+1}.html"
+    base = name
+    suffix = 2
+    while name in used_names:
+        name = f"{Path(base).stem}_{suffix}.html"
+        suffix += 1
+    used_names.add(name)
+    return name
+
+
+def clean_crawled_child_html(
+    html: str,
+    source_url: str,
+    project_dir: Path,
+    session: requests.Session,
+    args: argparse.Namespace,
+    shared: dict[str, str],
+) -> tuple[str, Counter, list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]]:
+    soup = BeautifulSoup(html, "html.parser")
     stats = Counter()
+    actions: list[dict[str, Any]] = []
+    download_infos: list[dict[str, Any]] = []
+    assets_dir = project_dir / "assets"
+    cache: dict[str, str | None] = {}
+
+    def localize(raw_url: str, context: str) -> str | None:
+        url = (raw_url or "").strip().strip("\"'")
+        if not url or is_data_or_safe(url):
+            return url if url.startswith("data:") else None
+        absolute = urljoin(source_url, normalize_remote(url))
+        if url in cache:
+            return cache[url]
+        kind = classify_url(url)
+        if kind == "noise":
+            stats["child_removed_noise_ref"] += 1
+            actions.append({"url": url, "kind": kind, "action": "child_removed_noise", "context": context, "source_page": source_url})
+            cache[url] = None
+            return None
+        if is_remote(url) or url.startswith("/") or kind in {"image", "icon", "avatar", "asset", "css", "font"}:
+            local, info = download_asset(session, absolute, assets_dir, kind, args.timeout)
+            info["source_page"] = source_url
+            download_infos.append(info)
+            if local:
+                stats["child_downloaded"] += 1
+                actions.append({"url": url, "kind": kind, "action": "child_downloaded", "local": local, "context": context, "source_page": source_url})
+                cache[url] = local
+                return local
+            fallback = fallback_for(kind, shared)
+            if fallback:
+                stats["child_fallback_asset"] += 1
+                actions.append({"url": url, "kind": kind, "action": "child_fallback", "local": fallback, "context": context, "source_page": source_url, "error": info.get("error")})
+            else:
+                stats["child_removed_unavailable"] += 1
+                actions.append({"url": url, "kind": kind, "action": "child_removed_unavailable", "context": context, "source_page": source_url, "error": info.get("error")})
+            cache[url] = fallback
+            return fallback
+        cache[url] = url
+        return url
+
+    for tag in soup.find_all("script"):
+        tag.decompose()
+        stats["child_removed_script"] += 1
+
+    for tag in soup.find_all(True):
+        if not any(tag.has_attr(attr) for attr in MEDIA_ATTRS + ("srcset",)):
+            continue
+        removed = False
+        for attr in MEDIA_ATTRS:
+            if not tag.has_attr(attr):
+                continue
+            new = localize(str(tag.get(attr)), context=f"child.{tag.name}.{attr}")
+            if new:
+                tag[attr] = new
+            else:
+                if tag.name in {"img", "iframe", "embed"}:
+                    tag.decompose()
+                    removed = True
+                else:
+                    del tag[attr]
+                break
+        if removed:
+            continue
+        if tag.has_attr("srcset"):
+            new_srcset = rewrite_srcset(str(tag["srcset"]), localize)
+            if new_srcset:
+                tag["srcset"] = new_srcset
+            else:
+                del tag["srcset"]
+        if tag.name == "img" and not tag.get("alt"):
+            tag["alt"] = "Decorative visual asset"
+
+    for tag in soup.find_all("link"):
+        href = tag.get("href")
+        rel = " ".join(tag.get("rel") or []).lower()
+        if not href:
+            continue
+        if any(token in rel for token in ("dns-prefetch", "preconnect", "canonical", "alternate", "manifest")):
+            tag.decompose()
+            stats["child_removed_noise_link"] += 1
+            continue
+        if "stylesheet" in rel or "icon" in rel or classify_url(str(href)) in {"css", "icon"}:
+            new = localize(str(href), context=f"child.link.{rel or 'asset'}")
+            if new:
+                tag["href"] = new
+            else:
+                tag.decompose()
+
+    for tag in soup.find_all(style=True):
+        tag["style"] = rewrite_css_urls(str(tag["style"]), localize)
+    for tag in soup.find_all("style"):
+        tag.string = rewrite_css_urls(tag.get_text(), localize)
+    for a in soup.find_all("a", href=True):
+        href = str(a["href"])
+        if TRACKING_RE.search(href):
+            a["href"] = "#"
+            stats["child_neutralized_tracking_href"] += 1
+
+    purified, official_info = official_webcode2m_purify(str(soup), uri=source_url)
+    if official_info.get("enabled"):
+        stats["child_official_webcode2m_purified"] += 1
+    else:
+        stats["child_official_webcode2m_purify_failed"] += 1
+    return purified, stats, actions, download_infos, official_info
+
+
+def try_crawl_child_pages(
+    links: list[str],
+    project_dir: Path,
+    session: requests.Session,
+    args: argparse.Namespace,
+    shared: dict[str, str],
+    source_url: str = "",
+) -> dict[str, Any]:
+    if not links or args.max_child_pages <= 0:
+        return {"pages": [], "stats": Counter(), "actions": [], "download_results": []}
+    stats = Counter()
+    actions: list[dict[str, Any]] = []
+    download_results: list[dict[str, Any]] = []
     parsed_links = [urlparse(link) for link in links if link.startswith(("http://", "https://"))]
     if not parsed_links:
-        return {"pages": [], "stats": stats}
+        return {"pages": [], "stats": stats, "actions": actions, "download_results": download_results}
+    source_domain = urlparse(source_url).netloc
     domain_counts = Counter(p.netloc for p in parsed_links)
-    base_domain = domain_counts.most_common(1)[0][0]
+    base_domain = source_domain or domain_counts.most_common(1)[0][0]
     pages = []
     seen = set()
+    used_names = {"index.html"}
+    attempts = 0
     for link in links:
         parsed = urlparse(link)
         if parsed.netloc != base_domain or link in seen:
             continue
+        path_suffix = Path(parsed.path).suffix.lower()
+        if path_suffix and path_suffix not in {".html", ".htm", ".php", ".asp", ".aspx"}:
+            continue
         seen.add(link)
         if len(pages) >= args.max_child_pages:
             break
+        if attempts >= args.max_child_attempts:
+            break
+        attempts += 1
         try:
             response = session.get(link, timeout=args.timeout)
             if response.status_code >= 400 or "text/html" not in response.headers.get("content-type", ""):
                 stats["child_page_failed"] += 1
                 continue
-            name = Path(parsed.path).name or f"page_{len(pages)+1}.html"
-            if not name.endswith((".html", ".htm")):
-                name = f"page_{len(pages)+1}.html"
+            name = safe_child_page_name(parsed, len(pages), used_names)
             target = project_dir / name
-            target.write_text(response.text, encoding=response.encoding or "utf-8", errors="ignore")
-            pages.append({"path": name, "source": link})
+            cleaned_html, child_stats, child_actions, child_downloads, official_info = clean_crawled_child_html(
+                response.text,
+                link,
+                project_dir,
+                session,
+                args,
+                shared,
+            )
+            target.write_text(cleaned_html, encoding=response.encoding or "utf-8", errors="ignore")
+            pages.append({"path": name, "source": link, "official_clean": official_info})
             stats["child_page_downloaded"] += 1
+            stats.update(child_stats)
+            actions.extend(child_actions)
+            download_results.extend(child_downloads)
             time.sleep(0.2)
-        except Exception:
+        except Exception as exc:  # noqa: BLE001
             stats["child_page_failed"] += 1
-    return {"pages": pages, "stats": stats}
+            actions.append({"url": link, "action": "child_page_failed", "error": f"{type(exc).__name__}: {exc}"})
+    return {"pages": pages, "stats": stats, "actions": actions, "download_results": download_results}
 
 
 def main() -> None:
@@ -446,6 +688,7 @@ def main() -> None:
     parser.add_argument("--workers", type=int, default=8)
     parser.add_argument("--timeout", type=float, default=12.0)
     parser.add_argument("--max-child-pages", type=int, default=6)
+    parser.add_argument("--max-child-attempts", type=int, default=30)
     parser.add_argument("--overwrite", action="store_true")
     args = parser.parse_args()
 

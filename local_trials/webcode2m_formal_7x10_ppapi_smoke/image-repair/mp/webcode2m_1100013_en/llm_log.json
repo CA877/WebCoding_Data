@@ -1,0 +1,23 @@
+{
+  "llm_raw_response": "<description>\n[\n  {\"task_type\": \"Crowding\", \"description\": \"Remove the margin between the download architecture buttons (amd64, aarch64, other) so they are crowded together without spacing.\"}\n]\n</description>\n<search_replace path=\"page_1.html\">\n<search>\n<a class=\"download-button-release\">amd64</a>\n<a class=\"download-button-release\">aarch64</a>\n<a class=\"download-button-release\">other</a>\n</search>\n<replace>\n<a class=\"download-button-release\" style=\"margin:0\">amd64</a><a class=\"download-button-release\" style=\"margin:0\">aarch64</a><a class=\"download-button-release\" style=\"margin:0\">other</a>\n</replace>\n</search_replace>",
+  "llm_metadata": {
+    "model": "kimi-k2.6",
+    "total_attempts": 1,
+    "all_attempts": [
+      {
+        "attempt": 1,
+        "raw_response": "<description>\n[\n  {\"task_type\": \"Crowding\", \"description\": \"Remove the margin between the download architecture buttons (amd64, aarch64, other) so they are crowded together without spacing.\"}\n]\n</description>\n<search_replace path=\"page_1.html\">\n<search>\n<a class=\"download-button-release\">amd64</a>\n<a class=\"download-button-release\">aarch64</a>\n<a class=\"download-button-release\">other</a>\n</search>\n<replace>\n<a class=\"download-button-release\" style=\"margin:0\">amd64</a><a class=\"download-button-release\" style=\"margin:0\">aarch64</a><a class=\"download-button-release\" style=\"margin:0\">other</a>\n</replace>\n</search_replace>",
+        "success": true,
+        "error": null,
+        "stage": "apply"
+      }
+    ]
+  },
+  "synthetic_modified_files": [
+    {
+      "path": "page_1.html",
+      "search": "<a class=\"download-button-release\">amd64</a>\n<a class=\"download-button-release\">aarch64</a>\n<a class=\"download-button-release\">other</a>",
+      "replace": "<a class=\"download-button-release\" style=\"margin:0\">amd64</a><a class=\"download-button-release\" style=\"margin:0\">aarch64</a><a class=\"download-button-release\" style=\"margin:0\">other</a>"
+    }
+  ]
+}

@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<link/>
+<link/>
+<title>The GNU Operating System and the Free Software Movement</title>
+</head>
+<body data-cleaned-by="webcode2m-format-utils">
+<div class="inner">
+<div id="top">
+<a class="skip"><b>Skip to main text</b></a>
+</div>
+<div id="fsf-frame">
+<form id="fssbox">
+<div>
+<input/>
+<input/>
+<input/>
+<input/>
+<label>
+<a>Free Software Supporter</a>:
+  </label>
+<input id="frmEmail"/>
+<input/>
+</div>
+</form>
+<div class="button" id="join-fsf"><a>JOIN THE FSF</a>
+</div>
+</div>
+<div id="header">
+<p id="gnu-banner">
+<a>
+<img height="48" src="assets/generated-visual.svg" width="49"/><strong>GNU</strong> <span class="hide">Operating System</span></a><br/>
+<small id="fsf-support">Supported by the
+ <a>Free Software Foundation</a></small>
+</p>
+<div id="switches">
+<div class="switch" id="search-button">
+<a>
+<img height="30" id="search-icon" src="assets/generated-icon.svg" width="30"/></a>
+</div>
+<div class="switch" id="language-button">
+<a>
+<img height="30" id="language-icon" src="assets/generated-icon.svg" width="37"/></a>
+</div>
+<div class="switch" id="notification-button">
+<a id="notification-bell">
+<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#52616f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
+<path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
+</svg>
+<span id="notification-badge" class="notification-badge hidden">0</span>
+</a>
+<div id="notification-dropdown" class="notification-dropdown hidden">
+<div class="notification-header">
+<h3>Notifications</h3>
+<button id="mark-all-read" class="mark-all-read">Mark all as read</button>
+</div>
+<div id="notification-list" class="notification-list">
+</div>
+</div>
+</div>
+</div>
+</replace>
+<search_replace path="index.html">
+<search>
+</head>
+<body data-cleaned-by="webcode2m-format-utils">
+</search>
+<replace>
+</head>
+<style>
+#notification-button {
+  position: relative;
+}
+
+#notification-bell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: #e74c3c;
+  color: #fff;
+  font-size: 10px;
+  font-weight: bold;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+}
+
+.notification-badge.hidden {
+  display: none;
+}
+
+.notification-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 360px;
+  max-height: 480px;
+  background: #fff;
+  border: 1px solid #c9d8e8;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+}
+
+.notification-dropdown.hidden {
+  display: none;
+}
+
+.notification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e8f0f8;
+}
+
+.notification-header h3 {
+  margin: 0;
+  font-size: 15px;
+  color: #2c3e50;
+}
+
+.mark-all-read {
+  background: none;
+  border: none;
+  color: #4f83cc;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.mark-all-read:hover {
+  background: #f4f7fb;
+}
+
+.notification-list {
+  overflow-y: auto;
+  max-height: 400px;
+}
+
+.notification-group {
+  border-bottom: 1px solid #f0f4f8;
+}
+
+.notification-group:last-child {
+  border-bottom: none;
+}
+
+.notification-group-title {
+  padding: 8px 16px;
+  font-size: 11px;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #7f8c8d;
+  background: #f8fafc;
+  letter-spacing: 0.5px;
+}
+
+.notification-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background 0.15s;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  position: relative;
+}
+
+.notification-item:hover {
+  background: #f4f7fb;
+}
+
+.notification-item.unread {
+  background: #f0f7ff;
+}
+
+.notification-item.unread:hover {
+  background: #e8f2ff;
+}
+
+.notification-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.notification-icon.info {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.notification-icon.success {
+  background: #e8f5e9;
+  color: #388e3c;
+}
+
+.notification-icon.warning {
+  background: #fff3e0;
+  color: #f57c00;
+}
+
+.notification-icon.error {
+  background: #ffebee;
+  color: #d32f2f;
+}
+
+.notification-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.notification-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.notification-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 2px;
+}
+
+.notification-message {
+  font-size: 12px;
+  color: #5a6c7d;
+  line-height: 1.4;
+}
+
+.notification-time {
+  font-size: 11px;
+  color: #95a5a6;
+  margin-top: 4px;
+}
+
+.notification-empty {
+  padding: 32px 16px;
+  text-align: center;
+  color: #95a5a6;
+  font-size: 13px;
+}
+
+.notification-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4f83cc;
+  flex-shrink: 0;
+  margin-top: 8px;
+}
+
+.notification-item.unread .notification-dot {
+  background: #e74c3c;
+}
+
+#notification-button {
+  position: relative;
+}
+
+@media (max-width: 640px) {
+  .notification-dropdown {
+    width: calc(100vw - 32px);
+    right: -8px;
+  }
+}
+</style>
+<body data-cleaned-by="webcode2m-format-utils">
+</replace>
+<search_replace path="index.html">
+<search>
+<div style="clear: both"></div>
+<div id="content">
+</search>
+<replace>
+<div style="clear: both"></div>
+<script>
+(function() {
+  const notifications = [];
+  let notificationId = 0;
+
+  const notificationData = [
+    { title: 'New GNU release available', message: 'GNU Emacs 29.2 has been released with improved tree-sitter support.', type: 'info', group: 'Today' },
+    { title: 'Donation successful', message: 'Thank you for your contribution to the Free Software Foundation.', type: 'success', group: 'Today' },
+    { title: 'Security advisory', message: 'Important security update for GNU Bash. Please review the advisory.', type: 'warning', group: 'Today' },
+    { title: 'Build failed', message: 'The automated build for guix-latest failed on aarch64.', type: 'error', group: 'Yesterday' },
+    { title: 'Welcome to GNU', message: 'Learn about the GNU operating system and free software philosophy.', type: 'info', group: 'Yesterday' },
+    { title: 'License updated', message: 'GPL v3.0 license text has been updated with new translations.', type: 'success', group: 'This Week' },
+    { title: 'Event reminder', message: 'LibrePlanet 2024 early bird registration closes soon.', type: 'warning', group: 'This Week' },
+  ];
+
+  const typeIcons = {
+    info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>',
+    success: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+    warning: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+    error: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>'
+  };
+
+  const realTimeMessages = [
+    { title: 'New mirror added', message: 'A new GNU software mirror has been added in Brazil.', type: 'info' },
+    { title: 'Translation complete', message: 'Spanish translation of the GNU Manifesto is now available.', type: 'success' },
+    { title: 'Maintenance scheduled', message: 'Planned maintenance for Savannah servers this weekend.', type: 'warning' },
+    { title: 'Package updated', message: 'GNU Coreutils 9.4 has been updated in the repository.', type: 'info' },
+  ];
+
+  function initNotifications() {
+    notificationData.forEach((data, index) => {
+      notifications.push({
+        id: notificationId++,
+        title: data.title,
+        message: data.message,
+        type: data.type,
+        group: data.group,
+        read: index > 2,
+        time: new Date(Date.now() - (index < 2 ? 0 : index < 4 ? 86400000 : 86400000 * 3))
+      });
+    });
+    renderNotifications();
+  }
+
+  function formatTime(date) {
+    const now = new Date();
+    const diff = now - date;
+    if (diff < 60000) return 'Just now';
+    if (diff < 3600000) return Math.floor(diff / 60000) + 'm ago';
+    if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago';
+    return date.toLocaleDateString();
+  }
+
+  function renderNotifications() {
+    const list = document.getElementById('notification-list');
+    const badge = document.getElementById('notification-badge');
+    const unreadCount = notifications.filter(n => !n.read).length;
+
+    if (unreadCount > 0) {
+      badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+      badge.classList.remove('hidden');
+    } else {
+      badge.classList.add('hidden');
+    }
+
+    if (notifications.length === 0) {
+      list.innerHTML = '<div class="notification-empty">No notifications</div>';
+      return;
+    }
+
+    const groups = {};
+    notifications.forEach(n => {
+      if (!groups[n.group]) groups[n.group] = [];
+      groups[n.group].push(n);
+    });
+
+    const groupOrder = ['Today', 'Yesterday', 'This Week', 'Earlier'];
+    let html = '';
+
+    groupOrder.forEach(groupName => {
+      if (!groups[groupName]) return;
+      html += '<div class="notification-group">';
+      html += '<div class="notification-group-title">' + groupName + '</div>';
+      groups[groupName].forEach(n => {
+        html += '<button class="notification-item ' + (n.read ? '' : 'unread') + '" data-id="' + n.id + '">';
+        html += '<div class="notification-icon ' + n.type + '">' + typeIcons[n.type] + '</div>';
+        html += '<div class="notification-content">';
+        html += '<div class="notification-title">' + escapeHtml(n.title) + '</div>';
+        html += '<div class="notification-message">' + escapeHtml(n.message) + '</div>';
+        html += '<div class="notification-time">' + formatTime(n.time) + '</div>';
+        html += '</div>';
+        html += '<div class="notification-dot"></div>';
+        html += '</button>';
+      });
+      html += '</div>';
+    });
+
+    list.innerHTML = html;
+
+    list.querySelectorAll('.notification-item').forEach(item => {
+      item.addEventListener('click', function() {
+        const id = parseInt(this.dataset.id);
+        markAsRead(id);
+      });
+    });
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  function markAsRead(id) {
+    const n = notifications.find(n => n.id === id);
+    if (n) {
+      n.read = true;
+      renderNotifications();
+    }
+  }
+
+  function markAllAsRead() {
+    notifications.forEach(n => n.read = true);
+    renderNotifications();
+  }
+
+  function addRealTimeNotification(data) {
+    const newNotif = {
+      id: notificationId++,
+      title: data.title,
+      message: data.message,
+      type: data.type,
+      group: 'Today',
+      read: false,
+      time: new Date()
+    };
+    notifications.unshift(newNotif);
+    renderNotifications();
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    initNotifications();
+
+    const bell = document.getElementById('notification-bell');
+    const dropdown = document.getElementById('notification-dropdown');
+    const markAllBtn = document.getElementById('mark-all-read');
+
+    bell.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      dropdown.classList.toggle('hidden');
+    });
+
+    markAllBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      markAllAsRead();
+    });
+
+    document.addEventListener('click', function(e) {
+      if (!dropdown.contains(e.target) && e.target !== bell && !bell.contains(e.target)) {
+        dropdown.classList.add('hidden');
+      }
+    });
+
+    setInterval(function() {
+      if (Math.random() > 0.7) {
+        const msg = realTimeMessage[Math.floor(Math.random() * realTimeMessage.length)];
+        addRealTimeNotification(msg);
+      }
+    }, 15000);
+  });
+})();
+</script>
+<div id="content">
+</replace>
+<search_replace path="index.html">
+<search>
+  setInterval(function() {
+      if (Math.random() > 0.7) {
+        const msg = realTimeMessage[Math.floor(Math.random() * realTimeMessage.length)];
+        addRealTimeNotification(msg);
+      }
+    }, 15000);
+</search>
+<replace>
+  setInterval(function() {
+      if (Math.random() > 0.7) {
+        const msg = realTimeMessages[Math.floor(Math.random() * realTimeMessages.length)];
+        addRealTimeNotification(msg);
+      }
+    }, 15000);
+</div>
+<div style="clear: both"></div>
+<div id="navigation">
+<a id="more-links">
+<span>Site navigation</span></a>
+<a id="less-links"><b>Skip</b></a>
+<ul>
+<li id="tabAboutGNU"><a>ABOUT GNU</a></li>
+<li id="tabPhilosophy"><a>PHILOSOPHY</a></li>
+<li id="tabLicenses"><a>LICENSES</a></li>
+<li id="tabEducation"><a>EDUCATION</a></li>
+<li id="tabSoftware"><a>SOFTWARE</a></li>
+<li id="tabDistros"><a>DISTROS</a></li>
+<li id="tabDoc"><a>DOCS</a></li>
+<li id="tabMalware"><a>MALWARE</a></li>
+<li id="tabHelp"><a>HELP GNU</a></li>
+<li id="tabAV"><a>AUDIO &amp; VIDEO</a></li>
+<li id="tabArt"><a>GNU ART</a></li>
+<li id="tabFun"><a>FUN</a></li>
+<li id="tabPeople"><a>GNU'S WHO?</a></li>
+<li><a>SOFTWARE DIRECTORY</a></li>
+<li><a>HARDWARE</a></li>
+<li><a>SITEMAP</a></li>
+</ul>
+<div style="clear: both"></div>
+</div>
+<div id="content">
+<p class="no-display">GNU is the only operating system developed
+specifically to give its users freedom.  What is GNU, and what freedom
+is at stake?</p>
+<div id="home">
+<div class="first-column">
+<div id="vid-container">
+<video height="288" width="512">
+<source src="assets/generated-visual.svg"/>
+<source src="assets/generated-visual.svg"/>
+<source src="assets/generated-visual.svg"/>
+<track src="assets/asset_4cfde5714c28.vtt"/>
+<track src="assets/asset_3db8d07d9ebd.vtt"/>
+<track src="assets/asset_bb17cbfc8e2f.vtt"/>
+<track src="assets/asset_01ba937b739f.vtt"/>
+<track src="assets/asset_358c45de7643.vtt"/>
+<track src="assets/asset_0009cf7d9359.vtt"/>
+<track src="assets/asset_5a55b251551e.vtt"/>
+<track src="assets/asset_1d7549ed184a.vtt"/>
+<track src="assets/generated-visual.svg"/>
+<track src="assets/asset_51c0c5c14557.vtt"/>
+</video>
+<p><a>
+Escape to Freedom: A video from the FSF</a></p>
+</div>
+<h2>What is GNU?</h2>
+<p>GNU is an operating system that
+is <a>free software</a>—that is,
+it respects users' freedom.  The GNU operating system consists of GNU
+packages (programs specifically released by the GNU Project) as well
+as free software released by third parties.  The development of GNU
+made it possible to use a computer without software that would trample
+your freedom.</p>
+<p>We recommend <a>installable
+versions of GNU</a> (more precisely, GNU/Linux distributions) which
+are entirely free software.  <a>More about GNU
+below</a>.</p>
+<p id="btn-left"><a>Try GNU/Linux</a></p>
+<div style="clear:both"></div>
+<div id="gnu-linux">
+<div id="screenshot">
+</div>
+<div id="thumbs">
+<p>
+<a><img height="72" src="assets/generated-visual.svg" width="128"/></a><br/>
+<small>Dragora / TDE</small>
+</p>
+<p>
+<a><img height="72" src="assets/generated-visual.svg" width="128"/></a><br/>
+<small>Guix / Plasma</small>
+</p>
+<p>
+<a><img height="72" src="assets/generated-visual.svg" width="128"/></a><br/>
+<small>Hyperbola / i3</small>
+</p>
+<p>
+<a><img height="72" src="assets/generated-visual.svg" width="128"/></a><br/>
+<small>Parabola / LXDE</small>
+</p>
+<p>
+<a><img height="72" src="assets/generated-visual.svg" width="128"/></a><br/>
+<small>PureOS / GNOME3</small>
+</p>
+<p>
+<a><img height="72" src="assets/generated-visual.svg" width="128"/></a><br/>
+<small>Trisquel / MATE</small>
+</p>
+</div>
+</div>
+<p id="btn-right">... or <a>
+Try parts of GNU</a></p>
+<div style="clear:both"></div>
+<h2>What is the Free Software Movement?</h2>
+<p>The free software movement campaigns to win for the users of
+computing the freedom that comes from free software.  Free software
+puts its users in control of their own computing.  Nonfree software
+puts its users under the power of the software's developer.  See
+<a>
+the video explanation</a>.</p>
+<h2>What is Free Software?</h2>
+<p><strong>Free software means the users have the freedom to run,
+copy, distribute, study, change and improve the software.</strong></p>
+<p>Free software is a matter of liberty, not price.  To understand the
+concept, you should think of “free” as in “free
+speech,” not as in “free beer.”</p>
+<p>More precisely, free software means users of a program have
+the <a>four essential
+freedoms</a>:</p>
+<ul>
+<li>The freedom to run the program as you wish,
+    for any purpose (freedom 0).</li>
+<li>The freedom to study how the program works, and change it so it
+    does your computing as you wish (freedom 1). Access to the source
+    code is a precondition for this.</li>
+<li>The freedom to redistribute copies so you can help others
+    (freedom 2).</li>
+<li>The freedom to distribute copies of your modified versions
+    to others (freedom 3).  By doing this you can give the whole
+    community a chance to benefit from your changes.
+    Access to the source code is a precondition for this.</li>
+</ul>
+<p>Developments in technology and network use have made these freedoms
+<a>even more
+important now</a> than they were in 1983.</p>
+<p>Nowadays the free software movement goes far beyond developing the
+GNU system.  See <a>the Free Software
+Foundation's web site</a> for more about what we do, and a list
+of <a>ways you can help</a>.</p>
+<h2 id="More-GNU">More about GNU</h2>
+<p>GNU is a Unix-like operating system.  That
+means it is a collection of many programs: applications, libraries,
+developer tools, even games.  The development of GNU, started in
+January 1984, is known as the GNU Project.  Many of the programs in
+GNU are released under the auspices of the GNU Project; those we
+call <a>GNU packages</a>.</p>
+<p>The name “GNU” is a recursive acronym for “GNU's
+Not
+Unix.” <a>“GNU”
+is pronounced <em>g'noo</em></a>, as one syllable, like saying
+“grew” but replacing the <em>r</em> with <em>n</em>.</p>
+<p>The program in a Unix-like system that allocates machine resources
+and talks to the hardware is called the “kernel.”  GNU is
+typically used with a kernel called Linux.  This combination is
+the <a><strong>GNU/Linux operating
+system</strong></a>.  GNU/Linux is used by millions, though
+many <a>call it “Linux” by
+mistake</a>.</p>
+<p>GNU's own kernel, the <a>GNU Hurd</a>,
+was started in 1990 (before Linux was started).  Volunteers continue
+developing the Hurd because it is an interesting technical
+project.</p>
+<p class="button right-align"><a>More information</a></p>
+</div>
+<div class="second-column">
+<p style="margin-top: 2.3em">
+<a>
+<img src="assets/generated-visual.svg" style="width:12em; height:auto"/></a></p>
+<div class="emph-box color1" id="kind-comm">
+<p>The GNU Project strongly urges the community to communicate in 
+ways that are friendly, welcoming and kind. See the 
+<a>
+GNU Kind Communications Guidelines</a>.</p>
+</div>
+<div class="emph-box color2" id="franklin">
+<blockquote>
+<p><i>As we enjoy great advantages from the inventions of others, we should be
+glad of an opportunity to serve others by any invention of ours, and this we
+should do freely and generously.</i><br/> —<a>Benjamin
+Franklin, <cite>Autobiography</cite></a></p>
+</blockquote>
+</div>
+<div class="emph-box color1" id="Flashes">
+<h3><a>Planet GNU</a>
+<span class="gnun-split"></span>
+<a><img height="15" src="assets/generated-icon.svg" width="15"/></a></h3>
+<div class="ltr">
+<p><a>
+<span class="gnun-split"></span>GNU Parallel 20260522 ('Hantavirus') released<span class="gnun-split"></span></a><span class="gnun-split"></span>:
+ GNU Parallel 20260522 ('Hantavirus') has been released. It is available for download at: lbry://@GnuParallel:4 Quote of the mont...</p>
+<p><a>
+<span class="gnun-split"></span>Thinking about life - chat with Protesilaos<span class="gnun-split"></span></a><span class="gnun-split"></span>:
+ In the recent weeks I've been engaging <a>Prot as a coach</a> to help review
+my ...</p>
+<p><a>
+<span class="gnun-split"></span>Forty-six free software meetups on six continents<span class="gnun-split"></span></a><span class="gnun-split"></span>:
+ BOSTON, Massachusetts, USA (Tuesday, May 19, 2026) The Free Software Foundation (FSF) reports that its global call for free software support...</p>
+</div>
+</div>
+<div class="emph-box color2" id="Action">
+<h3>Take Action</h3>
+<ul>
+<li><strong><a>Support current FSF
+campaigns</a></strong>.</li>
+<li id="petition"><a>Sign the petition
+for freedom in the classroom</a>.</li>
+<li id="copilot"><a>Join the 
+Copilot Watch Group</a>.</li>
+</ul>
+<p class="back"><a>More action items</a></p>
+</div>
+<div class="emph-box color1" id="priority">
+<p><strong>Can you help GNU with any of these projects?</strong></p>
+<ul>
+<li><a>GNU high priority enhancement projects</a></li>
+<li><a>Free program to subtract 
+background music</a></li>
+</ul>
+</div>
+<div class="emph-box color2">
+<p id="long-term"><strong>Can you contribute to any of
+the <a>long-term 
+high priority projects</a>?</strong></p>
+</div>
+<div class="emph-box color1" id="unmaint">
+<p><strong>Can you help <a>maintain a GNU package</a>? 
+These packages are looking for maintainers:</strong></p>
+<ul>
+<li><span class="gnun-split"></span>
+<a>halifax</a>,
+  <a>quickthreads</a>,
+  <a>guile-sdl</a>,
+  <a>superopt</a>,
+  <a>wdiff</a><span class="gnun-split"></span>.</li>
+</ul>
+<p>Also, these packages are looking for co-maintainers:</p>
+<ul>
+<li><span class="gnun-split"></span>
+<a>aspell</a>,
+  <a>bison</a>,
+  <a>gnuae</a>,
+  <a>gnubatch</a>,
+  <a>gnubik</a>,
+  <a>gnuspool</a>,
+  <a>metaexchange</a>,
+  <a>powerguru</a><span class="gnun-split"></span>.</li>
+</ul>
+<p>See the package web pages for more information.</p>
+</div>
+<div class="emph-box color2" id="blurb">
+<p><strong><a>Recent GNU
+releases</a></strong></p>
+<p><strong><a>Short descriptions for all GNU
+packages</a></strong></p>
+<p style="margin-top: 2em">Today's random package…</p>
+<div class="ltr">
+<h4 id="libgcrypt">
+<a>Libgcrypt</a></h4><p>
+Libgcrypt is a general-purpose cryptographic library.  It provides the
+standard cryptographic building blocks such as symmetric ciphers, hash
+algorithms, public key algorithms, large integer functions and random
+number generation.
+<small>(<a>doc</a>)</small></p>
+</div>
+</div>
+</div>
+</div>
+<div style="clear:both"></div>
+</div>
+<div style="clear:both"></div>
+<div id="language-container">
+<div class="backtotop">
+<hr class="no-display"/>
+<a><b>▲</b></a>
+</div>
+<div class="rounded-corners" id="languages">
+<div class="button">
+<a class="close"><span>BACK TO TOP</span></a>
+</div>
+<div class="button" id="set-language">
+<span class="gnun-split"></span>
+<a>
+   Set language
+   <span class="gnun-split"></span>
+</a>
+</div>
+<p>Available for this page:</p>
+<div id="translations">
+<p>
+<span class="original">[en] <a>English</a>  </span>
+<span>[de] <a>Deutsch</a>  </span>
+<span>[el] <a>ÎµÎ»Î»Î·Î½Î¹ÎºÎ¬</a>  </span>
+<span>[es] <a>espaÃ±ol</a>  </span>
+<span>[fa] <a>ÙØ§Ø±Ø³Û</a>  </span>
+<span>[fr] <a>franÃ§ais</a>  </span>
+<span>[it] <a>italiano</a>  </span>
+<span>[ja] <a>æ¥æ¬èª</a>  </span>
+<span>[nl] <a>Nederlands</a>  </span>
+<span>[pt-br] <a>portuguÃªs</a>  </span>
+<span>[ru] <a>ÑÑÑÑÐºÐ¸Ð¹</a>  </span>
+<span>[sq] <a>Shqip</a>  </span>
+<span>[tr] <a>TÃ¼rkÃ§e</a>  </span>
+<span>[zh-cn] <a>ç®ä½ä¸­æ</a>  </span>
+<span>[zh-tw] <a>ç¹é«ä¸­æ</a>  </span>
+</p>
+</div>
+</div>
+</div>
+<div id="mission-statement">
+<div class="backtotop">
+<hr class="no-display"/>
+<a><span>BACK TO TOP </span>▲</a>
+</div>
+<div style="clear: both"></div>
+<blockquote>
+<p style="direction:ltr; text-align:left"><a><img height="25" id="fsfbanner" src="assets/generated-icon.svg" width="75"/></a><strong>
+“The Free Software Foundation (FSF) is a nonprofit with a worldwide
+mission to promote computer user freedom. We defend the rights of all
+software users.”</strong></p>
+</blockquote>
+<div class="button" id="support-the-fsf">
+<a class="join">JOIN</a>
+<a class="donate">DONATE</a>
+<a class="shop">SHOP</a>
+</div>
+</div>
+<p id="sisters">The <a>FSF</a> also has sister
+organizations in <a>Europe</a>, <a>Latin America</a> and <a>India</a>.<br/>
+Feel free to join them!</p>
+<div id="footer">
+<div class="unprintable">
+<p id="ContactInfo">Please send general FSF &amp; GNU inquiries to
+<a>&lt;gnu@gnu.org&gt;</a>.
+There are also <a>other ways to contact</a>
+the FSF.  Broken links and other corrections or suggestions can be sent
+to <a>&lt;webmasters@gnu.org&gt;</a>.</p>
+<p>
+Please see the <a>Translations
+README</a> for information on coordinating and contributing translations
+of this article.</p>
+</div>
+<p>Copyright © 1996-2026 <a>Free Software Foundation</a>, Inc.</p>
+<p>This page is licensed under a <a>Creative
+Commons Attribution-NoDerivatives 4.0 International License</a>.</p>
+<div class="unprintable" id="bottom-notes">
+<p><a>Copyright Infringement Notification</a></p>
+<div id="generic">
+</div>
+</div>
+<p class="unprintable">Updated:
+
+$Date: 2026/05/24 17:24:06 $
+
+</p>
+</div>
+</div>
+<style>.first-column, .second-column {
+    width: 46em;
+    max-width: 100%;
+    margin: auto
+    }
+h2 {
+    margin: 1.1em 0 0.8em
+    }
+#vid-container, #screenshot {
+    width: 32em;
+    max-width: 100%
+    }
+#vid-container p, #screenshot p {
+    line-height: 1.2em;
+    margin-top: 0.5em
+    }
+#vid-container {
+    margin: 2em auto
+    }
+video {
+    width: 100%;
+    height: auto
+    }
+#screenshot {
+    margin: 0 auto
+    }
+#thumbs p {
+    display: inline-block;
+    width: 30%
+    }
+#thumbs img {
+    width: 80%;
+    height: auto;
+    border: 1px solid #444
+    }
+#btn-left {
+    float: left;
+    margin: 1.8em 0 2em
+    }
+#btn-right {
+    float: right;
+    margin: 2em 0 0.2em
+    }
+#btn-right a {
+    margin-left: 0.7em
+    }
+.first-column .button {
+    margin-bottom: 0
+    }
+.second-column .emph-box {
+    margin-top: 2.3em
+    }
+.second-column .emph-box.color1 {
+    background: #f6f6ff;
+    background: linear-gradient(#eef, white)
+    }
+.second-column .emph-box.color2 {
+    background: #eff;
+    background: linear-gradient(#dff, white)
+    }
+.second-column .emph-box .back {
+    margin-top: 1em
+    }
+.emph-box h3 {
+    font-size: 1.4em
+    }
+h3 img {
+    height: 0.8em;
+    width: 0.8em;
+    vertical-align: middle;
+    padding: 0 0.5em 0.2em;
+    background: none
+    }
+#blurb h4 {
+    text-align: left;
+    font-size: 1.4em;
+    margin-top: 0.4em
+    }
+#blurb div p {
+    margin-bottom: 0
+    }
+#Flashes p, #unmaint, #blurb p, #blurb p small {
+    font-size: 0.9em
+    }
+#unmaint li, #blurb p {
+    color: #404040
+    }
+#unmaint strong {
+    display: block;
+    font-size: 1.1em;
+    color: black;
+    margin-bottom: 0.5em
+    }
+.ltr {
+    direction: ltr;
+    text-align: left
+    }
+#sisters {
+    font-size: 0.9em;
+    text-align: center;
+    background-color: white;
+    padding: 0 3% 2em;
+    margin: 0
+    }</style></body>
+</html>
