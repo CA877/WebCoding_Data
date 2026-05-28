@@ -1,0 +1,60 @@
+{
+  "project_name": "webcode2m_069_en",
+  "row_idx": 69,
+  "hash": "b3bcfc02330bd6d01d83c5655bb0c143abd59c3cd5ecbbef1c3245a0fada95ae",
+  "lang": "en",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/69/image/image.png?Expires=1779975359&Signature=gk2D-myU3JBa3Rc9KM9NfaUYyrMtmbYqSvNOY-6KZas2EVebSPMkBqEla1eTZ-9iqBwFW6m8TQnGhn12Ddpya-igx7Qc~t8WcCB9u-uVTJi61vFCCnZb6jIVhEtur0HkRHGnQ72FXy-OzEMeAsjZ245ouU~cUaV~jQWVsXI4-ZnfLw0Xk8coNOFnAd2PjoaD2QZn4PLqF9gxCcPyo9MTkTD-KHbgBysShhcDmU8WfqsLL2Klu6KkL2AwhfLpVWoEeCgKJwXsM~o9nz3t7YNeNjgwn5AWf7AZ0Wjt67yUPuQstH1HFOtmgabkFd9R5glnrXGRJiLmg0sHyx9Pji4RJg__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_069.png",
+    "width": 1280,
+    "height": 1488
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {
+    "downloaded": 2
+  },
+  "resource_actions": [
+    {
+      "url": "https://coqualitas.com/wp-content/uploads/2023/04/logo-coqualitas.svg",
+      "kind": "icon",
+      "action": "downloaded",
+      "local": "assets/icon_0b8bdfc04e11.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "https://coqualitas.com/wp-content/uploads/2023/03/logo-todoestaenmadrid.png",
+      "kind": "icon",
+      "action": "downloaded",
+      "local": "assets/icon_68a5995b105b.png",
+      "context": "img.src"
+    }
+  ],
+  "download_results": [
+    {
+      "url": "https://coqualitas.com/wp-content/uploads/2023/04/logo-coqualitas.svg",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_0b8bdfc04e11.svg",
+      "bytes": 15561,
+      "content_type": "image/svg+xml"
+    },
+    {
+      "url": "https://coqualitas.com/wp-content/uploads/2023/03/logo-todoestaenmadrid.png",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_68a5995b105b.png",
+      "bytes": 29043,
+      "content_type": "image/png"
+    }
+  ]
+}

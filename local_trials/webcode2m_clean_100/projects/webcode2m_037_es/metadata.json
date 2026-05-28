@@ -1,0 +1,147 @@
+{
+  "project_name": "webcode2m_037_es",
+  "row_idx": 37,
+  "hash": "c395942dd37c67ad224362bcc8f33eab123a629bedc95f47b1e3820035ac8701",
+  "lang": "es",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/37/image/image.png?Expires=1779975358&Signature=AU7oDLNhpsH3qhH80VcHZcRJYSCXmHrtCREQjgOku5mWY-mXT~bV~avz2zqqwj7VZfqGHFi5Rz9BHQE59B5SOxrCa3OiE3E2NyRoUC-tjB1L7KFcgReJTrUNC3BZvlqmjroPJU9hje-~0ZErNWn-4mG8nv1164D1cXldgC4VxunpORM2A7dHL24PonrrvJ72G5TqIzeOF9JGl30jboZhe5Adt-BOjjm3M4jUAZfklA1MaRsvrDw2m~xvHGx369sQrCYZDugR80GPAk0HJx7eIG1FPUqa2VFZiBzV2fZ9Wq6JAgCTPfGS28FBACsUPwF079Ib6H-kbcRndPpVACgnog__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_037.png",
+    "width": 1280,
+    "height": 1923
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {
+    "removed_noise_ref": 1,
+    "downloaded": 7
+  },
+  "resource_actions": [
+    {
+      "url": "https://www.googletagmanager.com/ns.html?id=GTM-KMHXFMZ",
+      "kind": "noise",
+      "action": "removed_noise",
+      "context": "iframe.src"
+    },
+    {
+      "url": "//images.ctfassets.net/o65uf8qogksw/2a1JixBvwUHANpfLih10iq/455115241145f6b569cf05efa5752941/logo-nosotras-principal.svg",
+      "kind": "icon",
+      "action": "downloaded",
+      "local": "assets/icon_cc32f136e3e6.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "//images.ctfassets.net/o65uf8qogksw/hLR3DJ5FBlgsk4HBwWL0y/b7abfd6f0b889f1bdd53cc28b8f0f73a/ciclo-fase-menstrual.png",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_3b4fb617e299.png",
+      "context": "img.src"
+    },
+    {
+      "url": "//images.ctfassets.net/o65uf8qogksw/2PJeYw5C32WzGX2gZ4J6zJ/788db70914a0ebf7f65ba96c25d1c778/kit-emergencia-periodo-mini.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_7d06d74cd357.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "//images.ctfassets.net/o65uf8qogksw/1z9Tb7gXe8Ckf3AODyj0Fh/fa36c914b3b9bfbac2aee5fa5cb0471d/tips-unas-sanas-y-largas-mini.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_2944705f5f52.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "//images.ctfassets.net/o65uf8qogksw/58lc6YvkAh49pOZaDurc5Y/c6dba9e7efccd157708186041fee5448/rutina-de-belleza-mini.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_5a9262291eea.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "//images.ctfassets.net/o65uf8qogksw/7BUcR8fIj8zOollkLrl2od/9c8e1a0c0a2faadb3d512dd4ab19f34d/banner-tienda-web.webp?w=1920&q=50",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_c3525866495d.webp",
+      "context": "img.src"
+    },
+    {
+      "url": "//images.ctfassets.net/o65uf8qogksw/6nvHqCU6US7Y5w9gKNwe0T/eb240a5cc7ef3d1971e6598dc67879eb/bolivia-flag.png",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_95a19697054d.png",
+      "context": "img.src"
+    }
+  ],
+  "download_results": [
+    {
+      "url": "https://images.ctfassets.net/o65uf8qogksw/2a1JixBvwUHANpfLih10iq/455115241145f6b569cf05efa5752941/logo-nosotras-principal.svg",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_cc32f136e3e6.svg",
+      "bytes": 9678,
+      "content_type": "image/svg+xml"
+    },
+    {
+      "url": "https://images.ctfassets.net/o65uf8qogksw/hLR3DJ5FBlgsk4HBwWL0y/b7abfd6f0b889f1bdd53cc28b8f0f73a/ciclo-fase-menstrual.png",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_3b4fb617e299.png",
+      "bytes": 4026,
+      "content_type": "image/png"
+    },
+    {
+      "url": "https://images.ctfassets.net/o65uf8qogksw/2PJeYw5C32WzGX2gZ4J6zJ/788db70914a0ebf7f65ba96c25d1c778/kit-emergencia-periodo-mini.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_7d06d74cd357.jpg",
+      "bytes": 42368,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://images.ctfassets.net/o65uf8qogksw/1z9Tb7gXe8Ckf3AODyj0Fh/fa36c914b3b9bfbac2aee5fa5cb0471d/tips-unas-sanas-y-largas-mini.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_2944705f5f52.jpg",
+      "bytes": 44951,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://images.ctfassets.net/o65uf8qogksw/58lc6YvkAh49pOZaDurc5Y/c6dba9e7efccd157708186041fee5448/rutina-de-belleza-mini.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_5a9262291eea.jpg",
+      "bytes": 50366,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://images.ctfassets.net/o65uf8qogksw/7BUcR8fIj8zOollkLrl2od/9c8e1a0c0a2faadb3d512dd4ab19f34d/banner-tienda-web.webp?w=1920&q=50",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_c3525866495d.webp",
+      "bytes": 17720,
+      "content_type": "image/webp"
+    },
+    {
+      "url": "https://images.ctfassets.net/o65uf8qogksw/6nvHqCU6US7Y5w9gKNwe0T/eb240a5cc7ef3d1971e6598dc67879eb/bolivia-flag.png",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_95a19697054d.png",
+      "bytes": 782,
+      "content_type": "image/png"
+    }
+  ]
+}

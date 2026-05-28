@@ -1,0 +1,124 @@
+{
+  "project_name": "webcode2m_012_en",
+  "row_idx": 12,
+  "hash": "4c387f75332901afcb58f7b7e0bae2f2a71454756b7fb4f5a81779fa1118ed6e",
+  "lang": "en",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/12/image/image.png?Expires=1779975357&Signature=LkkQa~9wl3q66GCRyVps4Cp89TCthWu-ggt1wIuNGz4q03y8tWI-0FqLpoFw61hrK-Hei6WJ6mrXFjSVKl3R5NVTDAgk0Limzn7j3h1KvD4s0Na42jwbO3VT2ZwBiVCfYj0m1oKA7Vb8rZ-MCUmLkTAzC~4g2IPflqghprd5OeO5Ylp34bvdHcj91rfpoP2r83gud4YDYZKbxipIrUrw1DYuY-R9xRogQ~ClgjCakGInuavZaGt9equAJcyLnFgGebhNcvaIPt-9GcLQqItKHqvYgCZBr1gShpBrdlIaFNmIS~g4t~EC2UJrTiEdbsMbZUwPkBB~uNL4uEtPxUZAuw__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_012.png",
+    "width": 1280,
+    "height": 1262
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {
+    "downloaded": 6
+  },
+  "resource_actions": [
+    {
+      "url": "http://thepaneljumper.com/wp-content/uploads/2018/12/cropped-PanelJumper-Header-website2.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_924f5bdc8ff3.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "http://thepaneljumper.com/wp-content/themes/mantra/resources/images/socials/Facebook.png",
+      "kind": "icon",
+      "action": "downloaded",
+      "local": "assets/icon_c12fde058d4a.png",
+      "context": "img.src"
+    },
+    {
+      "url": "http://thepaneljumper.com/wp-content/themes/mantra/resources/images/socials/Twitter.png",
+      "kind": "icon",
+      "action": "downloaded",
+      "local": "assets/icon_53333717a3d6.png",
+      "context": "img.src"
+    },
+    {
+      "url": "http://thepaneljumper.com/wp-content/themes/mantra/resources/images/socials/YouTube.png",
+      "kind": "icon",
+      "action": "downloaded",
+      "local": "assets/icon_43564f7d38d7.png",
+      "context": "img.src"
+    },
+    {
+      "url": "http://thepaneljumper.com/wp-content/uploads/2020/10/PBP269_thumb-229x150.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_b5d3b265384a.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "http://thepaneljumper.com/wp-content/uploads/2020/09/04212020_thumb-1-250x141.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_60c49e76680f.jpg",
+      "context": "img.src"
+    }
+  ],
+  "download_results": [
+    {
+      "url": "http://thepaneljumper.com/wp-content/uploads/2018/12/cropped-PanelJumper-Header-website2.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_924f5bdc8ff3.jpg",
+      "bytes": 22152,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "http://thepaneljumper.com/wp-content/themes/mantra/resources/images/socials/Facebook.png",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_c12fde058d4a.png",
+      "bytes": 714,
+      "content_type": "image/png"
+    },
+    {
+      "url": "http://thepaneljumper.com/wp-content/themes/mantra/resources/images/socials/Twitter.png",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_53333717a3d6.png",
+      "bytes": 3360,
+      "content_type": "image/png"
+    },
+    {
+      "url": "http://thepaneljumper.com/wp-content/themes/mantra/resources/images/socials/YouTube.png",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_43564f7d38d7.png",
+      "bytes": 3162,
+      "content_type": "image/png"
+    },
+    {
+      "url": "http://thepaneljumper.com/wp-content/uploads/2020/10/PBP269_thumb-229x150.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_b5d3b265384a.jpg",
+      "bytes": 15520,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "http://thepaneljumper.com/wp-content/uploads/2020/09/04212020_thumb-1-250x141.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_60c49e76680f.jpg",
+      "bytes": 11082,
+      "content_type": "image/jpeg"
+    }
+  ]
+}

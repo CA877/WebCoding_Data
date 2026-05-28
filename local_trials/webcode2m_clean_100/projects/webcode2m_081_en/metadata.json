@@ -1,0 +1,76 @@
+{
+  "project_name": "webcode2m_081_en",
+  "row_idx": 81,
+  "hash": "7ff8ddf1b5ed5d390232440974046089b781c38599ff981788428ed35b41d2d8",
+  "lang": "en",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/81/image/image.png?Expires=1779975360&Signature=ebCyrn1mSXLaevMm~Unxt3vLPYCEYQpz6IddjXL8lB4TuJmX54fXOd4vLhBK1NqAh3Xfph59tKyxDcdev0jI7e0Vdwq-1XmXpwafWe9-XDR8oqdhMyYrUFlSBJ62w6wfTLoYI0QD51u~IF8FCXjm7iRXp2MChSg0X0~ZAe~m-7bMZ3mGv4fNpwbYSUErSz5XZAPhDLlbPQOkzqt74KLanuGt~F8duLiTjSYOVJ41nR8ySUX0qyImSxvH0j52mLLbXvbb4YIb~F2mTETHWLxHHu-~mfNRjvCjyRr5K2U46e0~uQLwRamSXwzvPg9Ykuo0t-gIvqI03be6-oKsoi-q-A__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_081.png",
+    "width": 1280,
+    "height": 2172
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {
+    "downloaded": 3
+  },
+  "resource_actions": [
+    {
+      "url": "https://kajabi-storefronts-production.kajabi-cdn.com/kajabi-storefronts-production/file-uploads/themes/2154480992/settings_images/bd2aa0b-d7c6-8da-6f8a-4b6bc1c0ef57_962a878a-5317-4d89-b884-ebb332eb6e52.png",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_3c3a30ea9e67.png",
+      "context": "img.src"
+    },
+    {
+      "url": "https://kajabi-storefronts-production.kajabi-cdn.com/kajabi-storefronts-production/site/24361/products/RtOW8BSSuu5bcld7d0AE_MP_Capsule_v2.png",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_580b3378bb0d.png",
+      "context": "img.src"
+    },
+    {
+      "url": "https://kajabi-storefronts-production.kajabi-cdn.com/kajabi-storefronts-production/themes/2154480992/assets/placeholder.png?16994286690586932",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_6fd7990a506c.png",
+      "context": "img.src"
+    }
+  ],
+  "download_results": [
+    {
+      "url": "https://kajabi-storefronts-production.kajabi-cdn.com/kajabi-storefronts-production/file-uploads/themes/2154480992/settings_images/bd2aa0b-d7c6-8da-6f8a-4b6bc1c0ef57_962a878a-5317-4d89-b884-ebb332eb6e52.png",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_3c3a30ea9e67.png",
+      "bytes": 22645,
+      "content_type": "image/png"
+    },
+    {
+      "url": "https://kajabi-storefronts-production.kajabi-cdn.com/kajabi-storefronts-production/site/24361/products/RtOW8BSSuu5bcld7d0AE_MP_Capsule_v2.png",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_580b3378bb0d.png",
+      "bytes": 16065,
+      "content_type": "image/png"
+    },
+    {
+      "url": "https://kajabi-storefronts-production.kajabi-cdn.com/kajabi-storefronts-production/themes/2154480992/assets/placeholder.png?16994286690586932",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_6fd7990a506c.png",
+      "bytes": 12072,
+      "content_type": "image/png"
+    }
+  ]
+}

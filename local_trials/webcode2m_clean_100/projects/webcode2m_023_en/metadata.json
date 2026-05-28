@@ -1,0 +1,88 @@
+{
+  "project_name": "webcode2m_023_en",
+  "row_idx": 23,
+  "hash": "e117ff5ef8b6feba3dc41fc7c659e4206e63a7915a9782921f0410052396197c",
+  "lang": "en",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/23/image/image.png?Expires=1779975357&Signature=KrOd1~LdX0r5XHj-~0Vql1gEoq8feNOTBmAE04hM8gZ8yYGY8wYgZ8ncVuTb8v7JYOrdalJ2nu4d-XkUSChjGB6o0UBCYSY6i4tm~AJcwsdhGA~R8i~y2is8fGWxic3kfltH3HdMdu-70YOLFWzHgBm5HaT5ioT7bHXnBAp7Q28Jfj53T4XsNxJLAMGHWHdH7A-RrWMKYJWcII4tpXtcecYjMi5rIXu4sHx6KM4QbXxwHmTgGyorOTEXLjn2puODwhSXdk7CPpLnjqbIGigbUPHVI1q1DoKYl1~YNcZrfa8XGM1Gfcun0DUf1QCRojATbXjvoGqO~kie9qo3eGwG7g__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_023.png",
+    "width": 1280,
+    "height": 2588
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {
+    "fallback_asset": 4
+  },
+  "resource_actions": [
+    {
+      "url": "//html5-player.libsyn.com/embed/episode/id/26631729/height/45/theme/standard/thumbnail/yes/direction/forward/tdest_id/334559/",
+      "kind": "asset",
+      "action": "fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "iframe.src",
+      "error": "html_embed_not_localized"
+    },
+    {
+      "url": "//html5-player.libsyn.com/embed/episode/id/26558190/height/45/theme/standard/thumbnail/yes/direction/forward/tdest_id/334559/",
+      "kind": "asset",
+      "action": "fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "iframe.src",
+      "error": "html_embed_not_localized"
+    },
+    {
+      "url": "//html5-player.libsyn.com/embed/episode/id/26489190/height/45/theme/standard/thumbnail/yes/direction/forward/tdest_id/334559/",
+      "kind": "asset",
+      "action": "fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "iframe.src",
+      "error": "html_embed_not_localized"
+    },
+    {
+      "url": "//html5-player.libsyn.com/embed/episode/id/26424582/height/45/theme/standard/thumbnail/yes/direction/forward/tdest_id/334559/",
+      "kind": "asset",
+      "action": "fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "iframe.src",
+      "error": "html_embed_not_localized"
+    }
+  ],
+  "download_results": [
+    {
+      "url": "https://html5-player.libsyn.com/embed/episode/id/26631729/height/45/theme/standard/thumbnail/yes/direction/forward/tdest_id/334559/",
+      "kind": "asset",
+      "ok": false,
+      "status": 200,
+      "error": "html_embed_not_localized"
+    },
+    {
+      "url": "https://html5-player.libsyn.com/embed/episode/id/26558190/height/45/theme/standard/thumbnail/yes/direction/forward/tdest_id/334559/",
+      "kind": "asset",
+      "ok": false,
+      "status": 200,
+      "error": "html_embed_not_localized"
+    },
+    {
+      "url": "https://html5-player.libsyn.com/embed/episode/id/26489190/height/45/theme/standard/thumbnail/yes/direction/forward/tdest_id/334559/",
+      "kind": "asset",
+      "ok": false,
+      "status": 200,
+      "error": "html_embed_not_localized"
+    },
+    {
+      "url": "https://html5-player.libsyn.com/embed/episode/id/26424582/height/45/theme/standard/thumbnail/yes/direction/forward/tdest_id/334559/",
+      "kind": "asset",
+      "ok": false,
+      "status": 200,
+      "error": "html_embed_not_localized"
+    }
+  ]
+}

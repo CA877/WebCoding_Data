@@ -1,0 +1,96 @@
+{
+  "project_name": "webcode2m_055_de",
+  "row_idx": 55,
+  "hash": "9bb883c458be506bf2de64062b19ce833e35152484c6e39bc04423b81b7fe9de",
+  "lang": "de",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/55/image/image.png?Expires=1779975358&Signature=SLPiXLJRvyR1jo~GcuwV4W2p1vqykPR2NcO-ymZNOWBU6kSS97BBhe9wYgp7hj9HhdMcGptnY4~EiJ~QaJ2zeHehFvfNAE9VuGUGWQ9T6YgU~czbACnrY08wnHebXvcRqP3icweQQNem6gw2CMBu1TUz-XWkwkTFoLdlu1zk2T4Z4DqzgKE4cMZVi5Pe9u3BUErG5x2g5KF-jxTAzWvGKsqTxwcsy-r4uR0cDTCd2a23ZXht6c5OL4oMdRyxOPEaHRqVSxtbfCoc3l8t012LYHtMWkdBmYpu-mPKrQtTCEZ46TBSN41wDDkrN~FdxtKqKiXSHF4lCM97YnAOrjQBUg__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_055.png",
+    "width": 1280,
+    "height": 2123
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {
+    "root_relative_fallback": 5,
+    "downloaded": 2
+  },
+  "resource_actions": [
+    {
+      "url": "/templates/beez_20/images/logo.gif",
+      "kind": "icon",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "http://www.drehpunktkultur.at/images/stories/stories/stories/stories/stories/banners/kostenlos aber.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_185f2113987d.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "/media/system/images/printButton.png",
+      "kind": "icon",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/media/system/images/emailButton.png",
+      "kind": "icon",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/images/stories/bi20-08/423.jpg",
+      "kind": "image",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "http://www.drehpunktkultur.at/images/banners/logo-stadt.gif",
+      "kind": "icon",
+      "action": "downloaded",
+      "local": "assets/icon_420c8d5e4269.gif",
+      "context": "img.src"
+    },
+    {
+      "url": "/images/shim.gif",
+      "kind": "image",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "a.src"
+    }
+  ],
+  "download_results": [
+    {
+      "url": "http://www.drehpunktkultur.at/images/stories/stories/stories/stories/stories/banners/kostenlos aber.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_185f2113987d.jpg",
+      "bytes": 14456,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "http://www.drehpunktkultur.at/images/banners/logo-stadt.gif",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_420c8d5e4269.gif",
+      "bytes": 3379,
+      "content_type": "image/gif"
+    }
+  ]
+}

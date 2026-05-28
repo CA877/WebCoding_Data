@@ -1,0 +1,89 @@
+{
+  "project_name": "webcode2m_075_en",
+  "row_idx": 75,
+  "hash": "89c9db6416ef9470f580de1e24759b3a6818ac9b775281ebf252a65d9a01fba4",
+  "lang": "en",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/75/image/image.png?Expires=1779975359&Signature=mN8rYTz7DKiHR6zHSO~zWEIQLxTtqwru0OdBA6AMY3bS1nvTy~3HXnKprAEwoFJ4S9pSZLRISVPOi9AJ-InCaCENcjIu24ND4SA2ZfTRf1EgxCL8POmNhXqf~LLdU72vKBcziv7bzciq3EVE-FTylUIcsqkDTMYB8o1CRVmVOnmraKIfn50Kg4rKaggi26EuY6xwXUTOV4q2VMSO~lN1~ceJVBYhz1PhDO6m4oW-7CFm8ILvVhMtA4WOaSpeWaEcLQGBWSiLbBhXNFr~Bxrq71USFbRYa9zJ8BSjfRXs4VldcemuaKrZK5PLD6yB-AeFDcgUJnsgpoEJ68GDYHDylw__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_075.png",
+    "width": 1280,
+    "height": 1446
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {
+    "removed_noise_ref": 1,
+    "downloaded": 2,
+    "root_relative_fallback": 3
+  },
+  "resource_actions": [
+    {
+      "url": "//www.googletagmanager.com/ns.html?id=GTM-KDWN8Z",
+      "kind": "noise",
+      "action": "removed_noise",
+      "context": "iframe.src"
+    },
+    {
+      "url": "https://www.asu.edu/asuthemes/5.0/assets/arizona-state-university-logo-vertical.png",
+      "kind": "icon",
+      "action": "downloaded",
+      "local": "assets/icon_cc8b240db57f.png",
+      "context": "img.src"
+    },
+    {
+      "url": "https://www.asu.edu/asuthemes/5.0/assets/arizona-state-university-logo.png",
+      "kind": "icon",
+      "action": "downloaded",
+      "local": "assets/icon_bc0a5b422cb8.png",
+      "context": "img.src"
+    },
+    {
+      "url": "/sites/default/files/inline-images/CP.png",
+      "kind": "image",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/sites/default/files/ASU_KnowledgeEnterprise_White.png",
+      "kind": "image",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/modules/custom/uds_header/images/GlobalFooter-No1Innovation.png",
+      "kind": "image",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "img.src"
+    }
+  ],
+  "download_results": [
+    {
+      "url": "https://www.asu.edu/asuthemes/5.0/assets/arizona-state-university-logo-vertical.png",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_cc8b240db57f.png",
+      "bytes": 5109,
+      "content_type": "image/png"
+    },
+    {
+      "url": "https://www.asu.edu/asuthemes/5.0/assets/arizona-state-university-logo.png",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_bc0a5b422cb8.png",
+      "bytes": 19128,
+      "content_type": "image/png"
+    }
+  ]
+}

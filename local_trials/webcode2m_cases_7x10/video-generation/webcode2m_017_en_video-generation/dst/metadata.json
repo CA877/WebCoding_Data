@@ -1,0 +1,92 @@
+{
+  "project_name": "webcode2m_017_en",
+  "row_idx": 17,
+  "hash": "1cf4c31a50fe34c69b48541c6f57988a8c194708d51ea262fda81203d60982af",
+  "lang": "en",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/17/image/image.png?Expires=1779975357&Signature=ClQ2480qifp3AmT-mZ2h-G5RQl5dZ11i~1IE7CUw6E4NDJUBTmrRkyU~U2ZQlppUhExUIkEFJf~HPFGtQn~em-Q6CzRmLPEgE-2oOJZ5oiqDSB6mQoiIqBCx~arIp94SPgJboyyzVKyLrpBkYsEswJpAFxaeExA1KoiFCt8WVmgPaun1gL-UZm-HGrwmbsm8PexMoyByPE02jjwOFxCYgcQA6-7WOL9me6nWr4rSKIPHrGLhW3pY8kBIgNWzaf8WMuALb2NBjS44YHK33AMydCC20zF0UVIaDRAnsnM3BLQsrSf78roP72NAB-cJGaV-7WRgAyXwmCPKMO2ld8MkIw__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_017.png",
+    "width": 1280,
+    "height": 2473
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {
+    "downloaded": 4
+  },
+  "resource_actions": [
+    {
+      "url": "https://i0.wp.com/moyommoja.org/wp-content/uploads/2011/10/MoyoMmoja_Outside21-300x273.jpg?resize=273%2C248",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_eb887c3344b1.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "https://i0.wp.com/moyommoja.org/wp-content/uploads/2011/10/MoyoMmoja_LivingRoom-300x289.jpg?resize=274%2C264",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_0f40ada9ae56.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "https://i0.wp.com/moyommoja.org/wp-content/uploads/2011/10/MoyoMmoja_Room_BigHouse-300x293.jpg?resize=265%2C258",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_12371977bcf8.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "http://moyommoja.org/wp-content/uploads/2012/02/Hippo_hut_3-Welcome1-164x300.png",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_006fda20a68d.png",
+      "context": "img.src"
+    }
+  ],
+  "download_results": [
+    {
+      "url": "https://i0.wp.com/moyommoja.org/wp-content/uploads/2011/10/MoyoMmoja_Outside21-300x273.jpg?resize=273%2C248",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_eb887c3344b1.jpg",
+      "bytes": 20496,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://i0.wp.com/moyommoja.org/wp-content/uploads/2011/10/MoyoMmoja_LivingRoom-300x289.jpg?resize=274%2C264",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_0f40ada9ae56.jpg",
+      "bytes": 18906,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://i0.wp.com/moyommoja.org/wp-content/uploads/2011/10/MoyoMmoja_Room_BigHouse-300x293.jpg?resize=265%2C258",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_12371977bcf8.jpg",
+      "bytes": 19003,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "http://moyommoja.org/wp-content/uploads/2012/02/Hippo_hut_3-Welcome1-164x300.png",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_006fda20a68d.png",
+      "bytes": 79595,
+      "content_type": "image/png"
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "project_name": "webcode2m_020_bg",
+  "row_idx": 20,
+  "hash": "c82facfd2e59e1d5b857b8dc5004e5361f001e9c25373c3a2b6831e8e0599116",
+  "lang": "bg",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/20/image/image.png?Expires=1779975357&Signature=NB6syDo6nl6R5hU-GJ8JYHaSjESuhyzuH-9a~M~X-4AUYdi39NT1NW-zGLehBeUdP1-ECZw3vegA6s6hrA90bZ3AZ1SWXjB9jBhgQkw1CtOJ1gyy3OCiPSN8qp2mY-OHpa9RKd8qPiyn-WJcOWDLATCkgn8anpQSxHVQNyyJ6bm2mlE-yCdaqXp82jAxGoBCmhh5qYLIYG3rOKxUpNCuZrhVCS~5tutNwXavm26xlxsCljHdEIyCxlmj2ViuhpMIB2hrsxhA5KWNalHF4mzGVvh1NKD5mwwBsu6xlrEGldfoUnwnF0BPHfLxXYg9B4MTxwPg0nS9mkg6JXrCqzUpig__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_020.png",
+    "width": 1280,
+    "height": 2468
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {
+    "downloaded": 3
+  },
+  "resource_actions": [
+    {
+      "url": "https://www.syr.se/wp-content/uploads/2016/12/cropped-icon_huvud.jpg",
+      "kind": "icon",
+      "action": "downloaded",
+      "local": "assets/icon_81441fea8167.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "https://www.syr.se/wp-content/uploads/2016/12/cropped-icon_huvud-270x270.jpg",
+      "kind": "icon",
+      "action": "downloaded",
+      "local": "assets/icon_4bd9518a8488.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "https://www.syr.se/wp-content/uploads/2021/03/fb.png",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_6f9063bb5e85.png",
+      "context": "img.src"
+    }
+  ],
+  "download_results": [
+    {
+      "url": "https://www.syr.se/wp-content/uploads/2016/12/cropped-icon_huvud.jpg",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_81441fea8167.jpg",
+      "bytes": 45413,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://www.syr.se/wp-content/uploads/2016/12/cropped-icon_huvud-270x270.jpg",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_4bd9518a8488.jpg",
+      "bytes": 20482,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://www.syr.se/wp-content/uploads/2021/03/fb.png",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_6f9063bb5e85.png",
+      "bytes": 13090,
+      "content_type": "image/png"
+    }
+  ]
+}

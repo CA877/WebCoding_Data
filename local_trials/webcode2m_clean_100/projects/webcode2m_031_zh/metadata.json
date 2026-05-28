@@ -1,0 +1,73 @@
+{
+  "project_name": "webcode2m_031_zh",
+  "row_idx": 31,
+  "hash": "3f8e5448f65b8ce97ca7419286b6ccecc0087497ee8284273228cf69dc538ee6",
+  "lang": "zh",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/31/image/image.png?Expires=1779975358&Signature=ynheNG7gQ6JLDGt6o8An5BDxGO2cG6277k0KRmNqDEZTy9~w3bj4tdVqdDxW86LMWAZagAJdxl6rHv7FrPGekw9OiKWlmUjaxh6usJ~1n3UpDDe7nI~-adsVLn8ajo9sbvw0EfLXB~mG6gnSmUahZWP4qA7lWeIzPNx5~5oGK~9wKWoRKS~xgzRJzlX6~X9y2xeZCwGVHRSo1tr2sg1IhaRlURW01Y2QBZhT8eEj2vDPje2r~1uI9OSPz6VtaMJLE0aemOHXSypGq2EbCZyRFqqfQCYsIVQVEbRJHf2gKz1F~Bbpxms6ddqkf-MTM24n-RHcWuxG2pW3WSHLq9kbIQ__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_031.png",
+    "width": 1408,
+    "height": 2568
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {
+    "root_relative_fallback": 4,
+    "downloaded": 1
+  },
+  "resource_actions": [
+    {
+      "url": "/images/vx.png",
+      "kind": "image",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/images/header.jpg",
+      "kind": "image",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/images/logo.png",
+      "kind": "icon",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "https://www.hebsky.org.cn/images/hui.png",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_12625b8f9f68.png",
+      "context": "img.src"
+    },
+    {
+      "url": "/images/dw.png",
+      "kind": "image",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "img.src"
+    }
+  ],
+  "download_results": [
+    {
+      "url": "https://www.hebsky.org.cn/images/hui.png",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_12625b8f9f68.png",
+      "bytes": 2123,
+      "content_type": "image/png"
+    }
+  ]
+}

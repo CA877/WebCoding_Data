@@ -1,0 +1,81 @@
+{
+  "project_name": "webcode2m_003_ru",
+  "row_idx": 3,
+  "hash": "4f48f9200456f7a4ae5c76ca599857ac65e06d9cc6757a226c3419019a091c73",
+  "lang": "ru",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/3/image/image.png?Expires=1779975356&Signature=CtKMPR~g7XXJgcRv1HxRnPWe8~clOHZ2MwXlmXsvMQjgyb5h~uFOoDbuckkhDBKqWu~qObLn5smetVaOOII0~I51OT-ph6XWvrfw6h6eCJWAcKfmondbzzWmedR0sddM8kvgnSG0K6W8PKy8cAX0BcOOAXbrScpooc~LoijBOBwQz8-4mbDmBEAWPC3SYXa6gU9l7vy7o-8C6tCJpKnVsbmlSrfMNm6zaE5stPHNi1jacebISKdG8cblgj~I2PrfxGgQRJLae3x9wNP5KF6tE7XLMlJ6oY3alSEbpocnUmjLmLfLx6J5cd4wp7BizrQxYqH306jLwKUpCszxNtDgZA__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_003.png",
+    "width": 1280,
+    "height": 1726
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {
+    "removed_noise_ref": 3,
+    "root_relative_fallback": 5
+  },
+  "resource_actions": [
+    {
+      "url": "https://mc.yandex.ru/watch/57523894",
+      "kind": "noise",
+      "action": "removed_noise",
+      "context": "img.src"
+    },
+    {
+      "url": "/pub/images/vk-znak-group-blue.png",
+      "kind": "icon",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/pub/images/ok-znak-group-orange.png",
+      "kind": "icon",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/pub/images/buttons/social-201404/rutube.png",
+      "kind": "icon",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/pub/images/buttons/social-201404/open-data.png",
+      "kind": "icon",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "https://top-fwz1.mail.ru/counter?id=3248818;js=na",
+      "kind": "noise",
+      "action": "removed_noise",
+      "context": "img.src"
+    },
+    {
+      "url": "/pub/images/pinfo/qr-footer.gif",
+      "kind": "image",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "https://informer.yandex.ru/informer/57523894/3_1_FFFFFFFF_EFEFEFFF_0_pageviews",
+      "kind": "noise",
+      "action": "removed_noise",
+      "context": "img.src"
+    }
+  ],
+  "download_results": []
+}

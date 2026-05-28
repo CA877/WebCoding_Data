@@ -1,0 +1,92 @@
+{
+  "project_name": "webcode2m_013_en",
+  "row_idx": 13,
+  "hash": "78b051071e23a2588840b09d29ae1bcb97a880696440c00202e29785301f63ea",
+  "lang": "en",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/13/image/image.png?Expires=1779975357&Signature=C9Emap4RvphG5P-OXsFEIIuKrne5kdO6kz9euJmknUjbGLjSXx~~PWYI2ysGvwN-lviy-SN5W2T0XDiYist9cJKkzSLhjZwngeEkw57~sQAI1JFQY7vdKj-VdKektRQE-P9UeG66Mi1X5HhVcm45ynSZZg8hhfb~3FfYSYNBLqWrMOKhj2VFM742zeBAGC3B22IqplsKg01Datf~EInDq5ajkX5q3s5d7Ps3Zb8JJWzGiK-1AaekHe60i-Cv~1~lZBRZVjhODUNymG00eN4GRXqjEguCJIjhi~yHTQQuaw~Zy5HBQ4FT0QpC5yXzVuGVMv5ySTH3FC0i9jlho6rKzA__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_013.png",
+    "width": 1280,
+    "height": 2518
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {
+    "downloaded": 3,
+    "fallback_asset": 1
+  },
+  "resource_actions": [
+    {
+      "url": "https://i0.wp.com/2of.ca/wp-content/uploads/2021/08/191311751_86650f672d_b.jpg?resize=700%2C465&ssl=1",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_c32d0acea66e.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "https://2of.ca/wp-content/uploads/2021/08/2of_S01_E11_Shrinkage_pt2.mp3",
+      "kind": "asset",
+      "action": "fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "audio.src",
+      "error": "too_large"
+    },
+    {
+      "url": "https://i0.wp.com/2of.ca/wp-content/uploads/2021/08/14392019778_cf3877f0f1_b.jpg?resize=700%2C516&ssl=1",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_5365385d09c7.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "https://i0.wp.com/2of.ca/wp-content/uploads/2021/08/36169288_f58a33cc20_b.jpg?resize=700%2C525&ssl=1",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_2ff573aa4a48.jpg",
+      "context": "img.src"
+    }
+  ],
+  "download_results": [
+    {
+      "url": "https://i0.wp.com/2of.ca/wp-content/uploads/2021/08/191311751_86650f672d_b.jpg?resize=700%2C465&ssl=1",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_c32d0acea66e.jpg",
+      "bytes": 114414,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://2of.ca/wp-content/uploads/2021/08/2of_S01_E11_Shrinkage_pt2.mp3",
+      "kind": "asset",
+      "ok": false,
+      "status": 200,
+      "error": "too_large"
+    },
+    {
+      "url": "https://i0.wp.com/2of.ca/wp-content/uploads/2021/08/14392019778_cf3877f0f1_b.jpg?resize=700%2C516&ssl=1",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_5365385d09c7.jpg",
+      "bytes": 48218,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://i0.wp.com/2of.ca/wp-content/uploads/2021/08/36169288_f58a33cc20_b.jpg?resize=700%2C525&ssl=1",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_2ff573aa4a48.jpg",
+      "bytes": 34502,
+      "content_type": "image/jpeg"
+    }
+  ]
+}

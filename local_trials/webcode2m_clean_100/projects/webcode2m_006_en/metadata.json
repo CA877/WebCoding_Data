@@ -1,0 +1,76 @@
+{
+  "project_name": "webcode2m_006_en",
+  "row_idx": 6,
+  "hash": "4294fe86cecbd2937d9920bc798e95136c061b7b92b7e80e7080b238d3519e3d",
+  "lang": "en",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/6/image/image.png?Expires=1779975356&Signature=PJ1t~GMJN5f6zZSIOesAYXubdGZ22h6oGYGbWnhnd0bGeEx0CTsmjob44nwei~HS9H~lOg0oPLjQji2k5nt2F15ne-bum0AiK57Fl1mZAIBlWzY0a2ODkydrHhXL2~cVc9k7tUwH~xFaNiikEQJw-JKi1vCsXZw6ZM2sF4NIk5ImPah1icKgRE9N4SsdiXZxa7xBwNvQP1JVEogTBhTveShiWCBI-abwlg6G9NJMW8ahBJNR6Lb7jqtPnOliEA8JxR~10aHJyreZvoX8n2gC-KZDSv4CZyqyaNz0KVSsSwFXtcmFQOR4OF-4smOly4S~Is3y8kl9z~yu494yTKXXzw__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_006.png",
+    "width": 1280,
+    "height": 1207
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {
+    "downloaded": 3
+  },
+  "resource_actions": [
+    {
+      "url": "https://lamonacaironworks.com/wp-content/uploads/2020/07/lamonaca-logo-sm.png",
+      "kind": "icon",
+      "action": "downloaded",
+      "local": "assets/icon_7420eef2ffef.png",
+      "context": "img.src"
+    },
+    {
+      "url": "https://lamonacaironworks.com/wp-content/uploads/2019/07/TH-500.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_7b1d3b669a00.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "https://lamonacaironworks.com/wp-content/uploads/2019/07/TH-500-300x75.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_1a43992d1253.jpg",
+      "context": "img.src"
+    }
+  ],
+  "download_results": [
+    {
+      "url": "https://lamonacaironworks.com/wp-content/uploads/2020/07/lamonaca-logo-sm.png",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_7420eef2ffef.png",
+      "bytes": 7307,
+      "content_type": "image/png"
+    },
+    {
+      "url": "https://lamonacaironworks.com/wp-content/uploads/2019/07/TH-500.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_7b1d3b669a00.jpg",
+      "bytes": 24936,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://lamonacaironworks.com/wp-content/uploads/2019/07/TH-500-300x75.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_1a43992d1253.jpg",
+      "bytes": 6295,
+      "content_type": "image/jpeg"
+    }
+  ]
+}

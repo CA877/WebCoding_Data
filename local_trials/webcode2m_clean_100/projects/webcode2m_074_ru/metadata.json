@@ -1,0 +1,85 @@
+{
+  "project_name": "webcode2m_074_ru",
+  "row_idx": 74,
+  "hash": "4b5854e4bcba6b7741aa7eb2c31a930b349fedcb14697b8bde0100c5015ee842",
+  "lang": "ru",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/74/image/image.png?Expires=1779975359&Signature=UXmtF1LSV0FN1f4RQASgg7p5PUNEsRxLg9aezGguoLcPreP0cKe0dK2Bvsr38ZeOf1F6-Q1ljTR07oPTN32pkD~qjkfHw0XShwZAg4-PVairLMP9GfZF1LCGEmwN-oNhD49Nv6KjeGa4dhyBePQLx3yz4infzm~RuxIqZuqOelOllbua2XLPqxuy2D68vPAkjKyar1mvJgeeqRjiXui0rP4rxP53BaRl0H9-z7~HYmVjM4RMmks-C3x~TNWi1jOH2tisoQDJza68jpQ15BmQamzXc82InsJXryjL3wbEv6wLGgTKIyTar9idPloy~r6o2tVWCz8YIyW29PCWgGjz6Q__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_074.png",
+    "width": 1415,
+    "height": 1768
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {
+    "root_relative_fallback": 4,
+    "fallback_asset": 1,
+    "removed_noise_ref": 2
+  },
+  "resource_actions": [
+    {
+      "url": "/default_images/logo-ko.svg",
+      "kind": "icon",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/wp-content/uploads/465651.jpg",
+      "kind": "image",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "https://kredit-otziv.ru/wp-content/uploads/6545661561.jpg",
+      "kind": "image",
+      "action": "fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "img.src",
+      "error": "HTTP 403"
+    },
+    {
+      "url": "/default_images/logo_vk.svg",
+      "kind": "icon",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/default_images/logo_ok.svg",
+      "kind": "icon",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "https://top-fwz1.mail.ru/counter?id=3240138;js=na",
+      "kind": "noise",
+      "action": "removed_noise",
+      "context": "img.src"
+    },
+    {
+      "url": "https://mc.yandex.ru/watch/19019047",
+      "kind": "noise",
+      "action": "removed_noise",
+      "context": "img.src"
+    }
+  ],
+  "download_results": [
+    {
+      "url": "https://kredit-otziv.ru/wp-content/uploads/6545661561.jpg",
+      "kind": "image",
+      "ok": false,
+      "status": 403,
+      "error": "HTTP 403"
+    }
+  ]
+}

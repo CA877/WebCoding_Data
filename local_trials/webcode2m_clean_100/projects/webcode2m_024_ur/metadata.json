@@ -1,0 +1,60 @@
+{
+  "project_name": "webcode2m_024_ur",
+  "row_idx": 24,
+  "hash": "174f574b725706892f50f5dadd6a2a8843b6a0b860fe5ef8856ce345f87dea0c",
+  "lang": "ur",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/24/image/image.png?Expires=1779975357&Signature=gLffBzlUQHTdYuOTD~o8o1YUthyjJWR~H8t-0-K28koHxAFRh2rnmEBYdZKiRPHWeKhiy2w2cY9tEHtxTN3GWpL4fSJ~ViRjIbHS2buhpoAWKefyLHwVsUYZmuG3fJEUq5CZ3z418eguSZqRrxvCSC6yOoByUJwgcRLDrbY2q0~K78gtjY-jC6kNPwnc41KJeTsdHbSsk-EOw89nCE5bqn3PgVGqfdgKShUNeRnVinY4rg7kM-iIyaARLKHKMwmbjyzmemwcfZgBdwkAeLz7hPW3CysM39mUhLtCs5SMPsM54aCt~trgsZtUdp5N6RgpeCwXMr9AAroRdzT0rq~21g__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_024.png",
+    "width": 1280,
+    "height": 2394
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {
+    "downloaded": 2
+  },
+  "resource_actions": [
+    {
+      "url": "https://fotografschaft.com/wordpress/wp-content/uploads/2016/10/FGS16_Logo_RGB_copper2.jpg",
+      "kind": "icon",
+      "action": "downloaded",
+      "local": "assets/icon_1484e0bdedc8.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "https://fotografschaft.com/wordpress/wp-content/uploads/2014/10/slider-bg3-440x320.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_cf453e25604d.jpg",
+      "context": "img.src"
+    }
+  ],
+  "download_results": [
+    {
+      "url": "https://fotografschaft.com/wordpress/wp-content/uploads/2016/10/FGS16_Logo_RGB_copper2.jpg",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_1484e0bdedc8.jpg",
+      "bytes": 85180,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://fotografschaft.com/wordpress/wp-content/uploads/2014/10/slider-bg3-440x320.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_cf453e25604d.jpg",
+      "bytes": 26285,
+      "content_type": "image/jpeg"
+    }
+  ]
+}

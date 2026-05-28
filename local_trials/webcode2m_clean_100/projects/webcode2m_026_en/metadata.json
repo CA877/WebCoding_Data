@@ -1,0 +1,66 @@
+{
+  "project_name": "webcode2m_026_en",
+  "row_idx": 26,
+  "hash": "b5c8fbf1fe2b93ee6e3d30638495df44ec9666a8861a73fb847d227844c5b6a5",
+  "lang": "en",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/26/image/image.png?Expires=1779975357&Signature=E8vKsh-0iIj8em-OBtm13ZVLRdmrD4-oriTbPbGorAeGFqzLHbIAHD5J6UOcbRjuKNzFIfd4~N6S-qvHhHoSlZ7GLZcr8NA6dJP96jt1hG8V3s4PSghEnX6jOuGRnIIOqi3W8cmjXOivFESu24~yTaH6aslFagXaP5BrvpjewV1PJxUyPGyOusTB8NQJyglWZBXFV0IFdPioQyVb1rgyFwzP2TfVulnWYLJCy3l~ryzmnVwyLKC6yfCofMN5D3CXQVPFVavgc5cQkAWkssRtAKfeGD1GpkFuBjmkPP~cbMJVFsRyVMeC2Pz4Tvm3KWMH7W8JYvd3ubxNwGYC9PrniA__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_026.png",
+    "width": 1280,
+    "height": 1670
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {
+    "root_relative_fallback": 3,
+    "downloaded": 1
+  },
+  "resource_actions": [
+    {
+      "url": "/images/logo.2.jpg",
+      "kind": "icon",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/girls/Autumn.jpg",
+      "kind": "image",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/images/cc.gif",
+      "kind": "image",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "http://www.L7.net/images/logo.gif",
+      "kind": "icon",
+      "action": "downloaded",
+      "local": "assets/icon_006d5bfc5b9f.gif",
+      "context": "img.src"
+    }
+  ],
+  "download_results": [
+    {
+      "url": "http://www.L7.net/images/logo.gif",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_006d5bfc5b9f.gif",
+      "bytes": 3566,
+      "content_type": "image/gif"
+    }
+  ]
+}

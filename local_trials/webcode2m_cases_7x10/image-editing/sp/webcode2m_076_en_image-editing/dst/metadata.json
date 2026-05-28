@@ -1,0 +1,284 @@
+{
+  "project_name": "webcode2m_076_en",
+  "row_idx": 76,
+  "hash": "c737a67f9e7f07321e8602858173af9c8b8dd0987781da548e7654e419b334dc",
+  "lang": "en",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/76/image/image.png?Expires=1779975359&Signature=kfbl4geDvuzJxawuvDLYQJ1KaKmN-IV6qkw9wVZCv3ZJBmEpDC-XyqcKkhT5SKI8h2BODLRnPiTpMtzra5PPWpQmkoaC2u1tM3-e5EtqorDHXdwkdwpgarPOuMYBhgvOzNedNy8GZb-rYdZCCoy~K3hMx9lmT~dmdXz5lxaDJSteZwVb7ydbvTFlcF8dtwQlYavRRt95lACspQtfhmSc1f77EyjNPBMnUsGKWuG-FYWhmeSB2lUd20dV7BwHr7AGKevv~9IY3G9tt6ijLClU9QhVH28cWQ~fUayqoquU7MA3oBJxwy-~boJ3sSldh3pA1mkKCbuAldQkzBzSgz~3-A__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_076.png",
+    "width": 1296,
+    "height": 1869
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {
+    "downloaded": 16
+  },
+  "resource_actions": [
+    {
+      "url": "//files.sysers.com/cp/upload/jumpnparty/editor/4E642CBF-A382-4CB4-87FB-1265229C3C7E.png",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_33461d27726e.png",
+      "context": "img.src"
+    },
+    {
+      "url": "//files.sysers.com/cp/upload/jumpnparty/editor/med/girl-jumpers.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_bad2989fe0b1.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "//files.sysers.com/cp/upload/jumpnparty/editor/med/boy-jumpers.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_5f0133bd958d.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "//files.sysers.com/cp/upload/jumpnparty/editor/med/4n1-dry-combos.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_7a1905f8ae7e.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "//files.sysers.com/cp/upload/jumpnparty/editor/med/5n1-combos.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_1c0294c4142a.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "//files.sysers.com/cp/upload/jumpnparty/editor/med/interactives-games.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_aa44c5902273.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "//files.sysers.com/cp/upload/jumpnparty/editor/med/obstacle-courses.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_a59b3e19f631.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "//files.sysers.com/cp/upload/jumpnparty/editor/med/toddler-playland.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_d495effe6c6a.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "//files.sysers.com/cp/upload/jumpnparty/editor/med/dry-slides.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_46759cdbfedd.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "//files.sysers.com/cp/upload/jumpnparty/editor/med/waterslides.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_4e515bd9f0b5.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "//files.sysers.com/cp/upload/jumpnparty/editor/med/waterslide-obstacle-courses.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_33fcfd8a41ed.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "//files.sysers.com/cp/upload/jumpnparty/editor/med/inflatable-movie-screens.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_1d4355437182.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "//files.sysers.com/cp/upload/jumpnparty/editor/med/backyard-games.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_718c829e6ca6.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "//files.sysers.com/cp/upload/jumpnparty/editor/med/concessions.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_678f0e4f83da.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "//files.sysers.com/cp/upload/jumpnparty/editor/med/package-addons.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_8c39f43c23f7.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "//files.sysers.com/cp/upload/jumpnparty/items/IMG_6039.JPG",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_5aaba3272eb4.jpg",
+      "context": "img.src"
+    }
+  ],
+  "download_results": [
+    {
+      "url": "https://files.sysers.com/cp/upload/jumpnparty/editor/4E642CBF-A382-4CB4-87FB-1265229C3C7E.png",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_33461d27726e.png",
+      "bytes": 85923,
+      "content_type": "image/png"
+    },
+    {
+      "url": "https://files.sysers.com/cp/upload/jumpnparty/editor/med/girl-jumpers.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_bad2989fe0b1.jpg",
+      "bytes": 11523,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://files.sysers.com/cp/upload/jumpnparty/editor/med/boy-jumpers.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_5f0133bd958d.jpg",
+      "bytes": 12096,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://files.sysers.com/cp/upload/jumpnparty/editor/med/4n1-dry-combos.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_7a1905f8ae7e.jpg",
+      "bytes": 8049,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://files.sysers.com/cp/upload/jumpnparty/editor/med/5n1-combos.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_1c0294c4142a.jpg",
+      "bytes": 10056,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://files.sysers.com/cp/upload/jumpnparty/editor/med/interactives-games.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_aa44c5902273.jpg",
+      "bytes": 11200,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://files.sysers.com/cp/upload/jumpnparty/editor/med/obstacle-courses.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_a59b3e19f631.jpg",
+      "bytes": 5134,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://files.sysers.com/cp/upload/jumpnparty/editor/med/toddler-playland.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_d495effe6c6a.jpg",
+      "bytes": 9498,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://files.sysers.com/cp/upload/jumpnparty/editor/med/dry-slides.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_46759cdbfedd.jpg",
+      "bytes": 9887,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://files.sysers.com/cp/upload/jumpnparty/editor/med/waterslides.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_4e515bd9f0b5.jpg",
+      "bytes": 8717,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://files.sysers.com/cp/upload/jumpnparty/editor/med/waterslide-obstacle-courses.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_33fcfd8a41ed.jpg",
+      "bytes": 5836,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://files.sysers.com/cp/upload/jumpnparty/editor/med/inflatable-movie-screens.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_1d4355437182.jpg",
+      "bytes": 4824,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://files.sysers.com/cp/upload/jumpnparty/editor/med/backyard-games.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_718c829e6ca6.jpg",
+      "bytes": 10219,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://files.sysers.com/cp/upload/jumpnparty/editor/med/concessions.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_678f0e4f83da.jpg",
+      "bytes": 6372,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://files.sysers.com/cp/upload/jumpnparty/editor/med/package-addons.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_8c39f43c23f7.jpg",
+      "bytes": 9243,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://files.sysers.com/cp/upload/jumpnparty/items/IMG_6039.JPG",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_5aaba3272eb4.jpg",
+      "bytes": 26178,
+      "content_type": "image/jpeg"
+    }
+  ]
+}

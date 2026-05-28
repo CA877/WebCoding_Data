@@ -1,0 +1,44 @@
+{
+  "project_name": "webcode2m_080_en",
+  "row_idx": 80,
+  "hash": "398bc324557068cc04fc4c0ffaddae27bcd38d7c9aaa0c97f88c8859998d86d1",
+  "lang": "en",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/80/image/image.png?Expires=1779975359&Signature=jS7s9dctGd6MpBIw0RFrkUk03rut5CCvHHuyEHSiuKv5Ai45EH4L4nTVZgGHfOin72Z5APgc6QsreZQsF0II12VjkqKUSiWONdu6C~MzSH3vfHGevS2xxaPXcm6YGT8o1Cv01osEml6BsIdJA3d0EIyn1hlgDbYXz7FDU40q76n-bf-ZFmkwpYh5~U5-zLWfNXUdtK3LoTM8BXQh~Oj-3K1~IrAhMBf0EFzLh0cbgEF8k2~7qP8SyUDKo41r-R4aG7OK9hnLArw0PbeuOWjuc9cJSX-mmwOs6vYb7x6V0UjN-pUHmydSkB63EvPmw5b3-UP2XS4QOSfufNhBFwqsmw__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_080.png",
+    "width": 1280,
+    "height": 1342
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {
+    "downloaded": 1
+  },
+  "resource_actions": [
+    {
+      "url": "https://lisamooredesign.com/sydney/wp-content/uploads/2020/05/LMDlogo.png",
+      "kind": "icon",
+      "action": "downloaded",
+      "local": "assets/icon_76b9fd8220b5.png",
+      "context": "img.src"
+    }
+  ],
+  "download_results": [
+    {
+      "url": "https://lisamooredesign.com/sydney/wp-content/uploads/2020/05/LMDlogo.png",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_76b9fd8220b5.png",
+      "bytes": 1646,
+      "content_type": "image/png"
+    }
+  ]
+}

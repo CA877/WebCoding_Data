@@ -1,0 +1,60 @@
+{
+  "project_name": "webcode2m_034_de",
+  "row_idx": 34,
+  "hash": "e6f09e0522880d8ae1a37ee88ca2dbd4941490b8c97be80639e82ba9e959637f",
+  "lang": "de",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/34/image/image.png?Expires=1779975358&Signature=Wl~9FUnO-DBQTZXPn8JYlMMxB99cJGNSxpoTQ1Zz8L-LGBiQS5P5ghC-deEuE-50Xmn4yw-7UD9kq3xa5~OFVlF24qT8E9aryTzEvLJzOve552U9ue8LAPkbAnFiXyjvkxEBKffQXvqRx9~GdpQjcX-lGZtyLVaIGPJmql5aJIHcXS1trCTgSaYnU99G7MLA1ZAC5V6Rkhlb2vh3iMG4kFo43ZhwvQObsi9CYeKz0ZwsulzvIpVO0ZY~9HGQRNnfh4OkNIxiscBib8lGG2CCzpiS~yISg04sIzEHeItEqdH3EGWdUF-6JUlR6izftVaSYlFmJN9bRPvULIQb0hkugQ__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_034.png",
+    "width": 1280,
+    "height": 1735
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {
+    "downloaded": 2
+  },
+  "resource_actions": [
+    {
+      "url": "https://secure.gravatar.com/avatar/f439e83fcc821226fd734e31cc21dded?s=72&d=mm&r=g",
+      "kind": "avatar",
+      "action": "downloaded",
+      "local": "assets/avatar_c01b99aea4a9.jpg",
+      "context": "amp-img.src"
+    },
+    {
+      "url": "https://vielleserin.de/wp-content/uploads/2018/03/Blogtour-1.png",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_4a8ffbf2b4db.png",
+      "context": "img.src"
+    }
+  ],
+  "download_results": [
+    {
+      "url": "https://secure.gravatar.com/avatar/f439e83fcc821226fd734e31cc21dded?s=72&d=mm&r=g",
+      "kind": "avatar",
+      "ok": true,
+      "status": 200,
+      "path": "assets/avatar_c01b99aea4a9.jpg",
+      "bytes": 2566,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://vielleserin.de/wp-content/uploads/2018/03/Blogtour-1.png",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_4a8ffbf2b4db.png",
+      "bytes": 50134,
+      "content_type": "image/png"
+    }
+  ]
+}

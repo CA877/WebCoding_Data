@@ -1,0 +1,170 @@
+{
+  "project_name": "webcode2m_022_de",
+  "row_idx": 22,
+  "hash": "dd0225a8c01bd13c142882dc90626399b95860a66495fee35a439c78997fee8d",
+  "lang": "de",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/22/image/image.png?Expires=1779975357&Signature=pJMSX9DpMsp74JudY9-RK7iXAAlcfaCMQH4d90wX8k5pZErJBQUC4l9v4q~EL1oOqJXmdj-itFblKPI6tg~EXSqaxpEeNRjmqpET9pZtQ7XzcF7oI5w9SVwErPLkKAHMf9L6woVO7U1ggKqVc~Zz6TUjz2H3-97hdhTQxROHceHhWmQDVBgRXSFIpnP8k8itFHu91tKga1dolAHTmRcivgvfB28-VcvNWK3YZTvLcIghTjLkQWy13RTCc-mO6bvyUR3nFUzOx8Z7qj5Hi2Gj4825TMfQaGOmPeuHY31kiPpi5lsT5Dg5gmDNwZNdxPgmY-G-UP8pHt85PwWFQuqLMA__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_022.png",
+    "width": 1280,
+    "height": 2032
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {
+    "downloaded": 6,
+    "root_relative_fallback": 1,
+    "relative_fallback": 3,
+    "fallback_asset": 1
+  },
+  "resource_actions": [
+    {
+      "url": "https://www.retter-radio.de/radioforum/images/xmaslogo.jpg",
+      "kind": "icon",
+      "action": "downloaded",
+      "local": "assets/icon_6c989cefa52c.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "/radioforum/header1.php",
+      "kind": "asset",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "iframe.src"
+    },
+    {
+      "url": "https://www.retter-radio.de/radioforum/radiostats/hier_klicken2.png",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_4da904e3d3dc.png",
+      "context": "img.src"
+    },
+    {
+      "url": "jgs_graf/lupe.gif",
+      "kind": "image",
+      "action": "relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "images/MrryXmas/go.gif",
+      "kind": "image",
+      "action": "relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "input.src"
+    },
+    {
+      "url": "https://phonepublisher.com/banner.do?uk=b280bd34e00d46dae0df9ce34d427684280d50ad",
+      "kind": "asset",
+      "action": "downloaded",
+      "local": "assets/asset_218dbefab149.do",
+      "context": "img.src"
+    },
+    {
+      "url": "https://www.retter-radio.de/images/sponsor/radiou.gif",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_714fbb873878.gif",
+      "context": "img.src"
+    },
+    {
+      "url": "https://www.retter-radio.de/images/sponsor/web_logo88a.gif",
+      "kind": "icon",
+      "action": "fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src",
+      "error": "HTTP 404"
+    },
+    {
+      "url": "https://www.retter-radio.de/images/sponsor/radiodienste_32.png",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_89445a095807.png",
+      "context": "img.src"
+    },
+    {
+      "url": "https://www.retter-radio.de/images/sponsor/spampoison.gif",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_652df5f0a306.gif",
+      "context": "img.src"
+    },
+    {
+      "url": "images/MrryXmas/footer_bg.gif",
+      "kind": "image",
+      "action": "relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "css"
+    }
+  ],
+  "download_results": [
+    {
+      "url": "https://www.retter-radio.de/radioforum/images/xmaslogo.jpg",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_6c989cefa52c.jpg",
+      "bytes": 67816,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://www.retter-radio.de/radioforum/radiostats/hier_klicken2.png",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_4da904e3d3dc.png",
+      "bytes": 64542,
+      "content_type": "image/png"
+    },
+    {
+      "url": "https://phonepublisher.com/banner.do?uk=b280bd34e00d46dae0df9ce34d427684280d50ad",
+      "kind": "asset",
+      "ok": true,
+      "status": 200,
+      "path": "assets/asset_218dbefab149.do",
+      "bytes": 26257,
+      "content_type": "image/GIF"
+    },
+    {
+      "url": "https://www.retter-radio.de/images/sponsor/radiou.gif",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_714fbb873878.gif",
+      "bytes": 32334,
+      "content_type": "image/gif"
+    },
+    {
+      "url": "https://www.retter-radio.de/images/sponsor/web_logo88a.gif",
+      "kind": "icon",
+      "ok": false,
+      "status": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "url": "https://www.retter-radio.de/images/sponsor/radiodienste_32.png",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_89445a095807.png",
+      "bytes": 866,
+      "content_type": "image/png"
+    },
+    {
+      "url": "https://www.retter-radio.de/images/sponsor/spampoison.gif",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_652df5f0a306.gif",
+      "bytes": 254,
+      "content_type": "image/gif"
+    }
+  ]
+}

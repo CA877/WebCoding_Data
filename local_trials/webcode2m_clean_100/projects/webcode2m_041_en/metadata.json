@@ -1,0 +1,76 @@
+{
+  "project_name": "webcode2m_041_en",
+  "row_idx": 41,
+  "hash": "0be8c2cbf58bc3ae796c80c989800622e4116e3c76e5d05480f68854ae6f99c6",
+  "lang": "en",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/41/image/image.png?Expires=1779975358&Signature=OaCNPng94lMfZaXOsO6mZQFOgvEcYeMQh2rnonhFlpgp77AUq3P3ROX3ahv~5v~ewMtLl-4xKyVi~6pij1DHUj2mg5GdMURKMJyJQDcEXR4GyeXwfnbbHo5YKDLWIImpnLrMRUxZ1w3hSscypalZ~XXNOqSVMYDAQ51s8oJZ3iBEbq3UJL3o7xHekj9cqAw7k~yYrEZfeEO30XDAeGymztKF5wfvu1UzSz6EHPZcmEiRJN3z8dFvg-zJpQTzna2UogTT6M3jLvr-adMbmymWVT5TVe7qDGPijDrq62IYtKeShPtdIPVSwWk3AmdavpTBHRIXQeSH1Ed2PN-p1S9t3w__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_041.png",
+    "width": 1280,
+    "height": 2312
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {
+    "downloaded": 3
+  },
+  "resource_actions": [
+    {
+      "url": "https://zolotaya-provinciya.ru/wp-content/uploads/2021/12/золотая-провинция-логотип-1.png",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_37df29431c59.png",
+      "context": "img.src"
+    },
+    {
+      "url": "https://zolotaya-provinciya.ru/wp-content/uploads/2021/12/vk_compact_logo_2021-present.svg",
+      "kind": "icon",
+      "action": "downloaded",
+      "local": "assets/icon_55acd43b9c62.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "https://zolotaya-provinciya.ru/wp-content/uploads/2022/01/afisha-soczseti-2-1-724x1024.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_fd8f9794b888.jpg",
+      "context": "img.src"
+    }
+  ],
+  "download_results": [
+    {
+      "url": "https://zolotaya-provinciya.ru/wp-content/uploads/2021/12/золотая-провинция-логотип-1.png",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_37df29431c59.png",
+      "bytes": 37011,
+      "content_type": "image/png"
+    },
+    {
+      "url": "https://zolotaya-provinciya.ru/wp-content/uploads/2021/12/vk_compact_logo_2021-present.svg",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_55acd43b9c62.svg",
+      "bytes": 847,
+      "content_type": "image/svg+xml"
+    },
+    {
+      "url": "https://zolotaya-provinciya.ru/wp-content/uploads/2022/01/afisha-soczseti-2-1-724x1024.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_fd8f9794b888.jpg",
+      "bytes": 213104,
+      "content_type": "image/jpeg"
+    }
+  ]
+}

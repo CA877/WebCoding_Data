@@ -1,0 +1,60 @@
+{
+  "project_name": "webcode2m_091_en",
+  "row_idx": 91,
+  "hash": "2830ff1be5cf9c071b35a00b35e652fd0abfff446ebe8d661089c2c2d3687a0e",
+  "lang": "en",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/91/image/image.png?Expires=1779975360&Signature=QkGKXU3YCxzvKSDAGGSNBseniZXswOroHhsIpf~nBcGMI8UZP2Ql1EYrhEy3dNmEBo3Jw99KaEGLh~eWiuiiBr7PGmfSV7y750ApCMDAKRpnU2XlTu83b5VwgbKskmfnU0sgXrqkDiqsAMAoWVicT~uv5gZCTz2deSq~Be6BGiw9136-HYx~OqbK5iKW~1PtYkgk1elAPTBvaFlszCa7HZJa2hmaduCpuCe8z-8YFuEAE1C~AdqcEuf~-MhANyezb5lsddLLmk8SCAfCYaAtK1riGpLqp7qwGv8LtgZlvg5glHyekSeg41PSbOKZJCLVLmx2jobgTgQVpexst2-Nrg__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_091.png",
+    "width": 1280,
+    "height": 1563
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {
+    "downloaded": 2
+  },
+  "resource_actions": [
+    {
+      "url": "https://sa1s3optim.patientpop.com/50x/filters:format(webp)/sc-assets/prd/practices/4e4f4a4d-0401-417d-9437-676a41e5b2d2/gE4-aJooWYg3PDVy3txxbW_MTjD2x-8Pfldjr4463KubeO_jGephj8rR56wSnuaw4m_tTdqzgNAWVng4ZI6BgEtCYBHRu4g.png",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_698bbfad99c7.png",
+      "context": "img.src"
+    },
+    {
+      "url": "https://sa1s3optim.patientpop.com/50x/filters:format(webp)/sc-assets/prd/practices/4e4f4a4d-0401-417d-9437-676a41e5b2d2/9cAr2jeGmYnn1UGXivK7qd2ZSuykvOAkLZoj14nlAJkGtKFLVDkTj4sDodcB3yTw_VQM-JlLaCVz7-IKfZ-f___5Z2qg1nw.png",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_242552bbb646.png",
+      "context": "img.src"
+    }
+  ],
+  "download_results": [
+    {
+      "url": "https://sa1s3optim.patientpop.com/50x/filters:format(webp)/sc-assets/prd/practices/4e4f4a4d-0401-417d-9437-676a41e5b2d2/gE4-aJooWYg3PDVy3txxbW_MTjD2x-8Pfldjr4463KubeO_jGephj8rR56wSnuaw4m_tTdqzgNAWVng4ZI6BgEtCYBHRu4g.png",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_698bbfad99c7.png",
+      "bytes": 668,
+      "content_type": "image/webp"
+    },
+    {
+      "url": "https://sa1s3optim.patientpop.com/50x/filters:format(webp)/sc-assets/prd/practices/4e4f4a4d-0401-417d-9437-676a41e5b2d2/9cAr2jeGmYnn1UGXivK7qd2ZSuykvOAkLZoj14nlAJkGtKFLVDkTj4sDodcB3yTw_VQM-JlLaCVz7-IKfZ-f___5Z2qg1nw.png",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_242552bbb646.png",
+      "bytes": 988,
+      "content_type": "image/webp"
+    }
+  ]
+}

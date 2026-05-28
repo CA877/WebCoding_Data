@@ -1,0 +1,69 @@
+{
+  "project_name": "webcode2m_090_en",
+  "row_idx": 90,
+  "hash": "99eccd7f1af6f7f4aba8484334878844b6e571ffd65e45f9723aa6cbbf31e739",
+  "lang": "en",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/90/image/image.png?Expires=1779975360&Signature=ugDvIvtSUuWUAxg7giyaeRhqTB8ku4Fi1IlEP3QmeBQKR0xGO8MIjmzQkuN8bYLjFUHA3yUC-edgfFSsbFG8w0ODBTYFDOLWxA0izNA2HUrY3vVw9gB51aXWeL0~nvz5JCx-1oFo5UZuZ7GQDvvcgrH0PhwFZhrwx~5LtXSs7D9z8Sr9vAkLPFsgkORaoCkdwXNoqDryh1q33DUSDoR6TYy93K9Fbkcg1bQqhD2p3e3e1lQaEx0BzgrvGte9mm5sxbXM7RLPYvQ20UQv8snF6WECwBS9QeWyiTP89w44izXONCBJ~4EitI02wcAUhew-TdJe9GxuHdoZ38bxwacN7A__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_090.png",
+    "width": 1280,
+    "height": 1544
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {
+    "root_relative_fallback": 6
+  },
+  "resource_actions": [
+    {
+      "url": "/sap(====)/support/notes/service/sap_logo.png",
+      "kind": "icon",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/sap(====)/support/notes/service/facebook.svg",
+      "kind": "icon",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/sap(====)/support/notes/service/twitter.svg",
+      "kind": "icon",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/sap(====)/support/notes/service/youtube.svg",
+      "kind": "icon",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/sap(====)/support/notes/service/linkedin.svg",
+      "kind": "icon",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/sap(====)/support/notes/service/instagram2.svg",
+      "kind": "icon",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    }
+  ],
+  "download_results": []
+}

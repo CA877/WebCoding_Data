@@ -1,0 +1,128 @@
+{
+  "project_name": "webcode2m_082_pt",
+  "row_idx": 82,
+  "hash": "e3ee4a9f10662d6506425456c1dd00947c04616cee86d1081c3178f9c1b5c39f",
+  "lang": "pt",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/82/image/image.png?Expires=1779975360&Signature=UA~EsEV-aHPdq7Ev9NtiRj7UugWLmjJ0ZYJGTnPmv0J~XXj5PKwRJkcaK6AAPkxacHAHvy4qeuhLcYAIF05nWbGvpeDpkiKVUvrSQlIwZS03GHeXJeqLalWT6tVHfwfXrJ27A76q6yz0X5Io3j7gkH2OUzf8LpZSEs4ROXkB9~QwotNPfhHvgL2oRfDwvZxFNvrVqFFsBLsFCCwuY3JJOpSh7~-EJGH6SDzHs0NbFB2NwoQ0wjumgWCDHRoEth9q58g6p6GsKm26KUTQb8kH2jo6viL~YxmPCTKMTUdvLtQi4o~53xkzHfkKqaT5-ogh8Qleyt988BSLdz515cdaQA__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_082.png",
+    "width": 1288,
+    "height": 860
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {
+    "downloaded": 4,
+    "root_relative_fallback": 5
+  },
+  "resource_actions": [
+    {
+      "url": "https://cdn16.oss-accelerate.aliyuncs.com/EF86CBD0E0DAw1170h700.jpeg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_f824bf40cfc0.jpeg",
+      "context": "img.src"
+    },
+    {
+      "url": "//store.biubiunew.com/logo/2022-10-16/02F82B75F8DD.svg",
+      "kind": "icon",
+      "action": "downloaded",
+      "local": "assets/icon_e80b89c534da.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "//store.biubiunew.com/uploads/20230819/F8/EF86CBD0E0DAw1170h700.jpeg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_bced213a25bd.jpeg",
+      "context": "img.src"
+    },
+    {
+      "url": "/home/domainshare?host=biubiunew.com&domaingroupid=1",
+      "kind": "asset",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "iframe.src"
+    },
+    {
+      "url": "http://store.412lala.com/uploads/20230819/F8/EF86CBD0E0DAw1170h700.jpeg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_2b18efb7ba82.jpeg",
+      "context": "img.src"
+    },
+    {
+      "url": "/Content/global/icon/fbicon.png",
+      "kind": "icon",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/Content/global/icon/twittericon.png",
+      "kind": "icon",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/Content/global/icon/lineicon.png",
+      "kind": "icon",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/Content/images/cartoon/jtxk.svg",
+      "kind": "icon",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    }
+  ],
+  "download_results": [
+    {
+      "url": "https://cdn16.oss-accelerate.aliyuncs.com/EF86CBD0E0DAw1170h700.jpeg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_f824bf40cfc0.jpeg",
+      "bytes": 29497,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://store.biubiunew.com/logo/2022-10-16/02F82B75F8DD.svg",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_e80b89c534da.svg",
+      "bytes": 11537,
+      "content_type": "image/svg+xml"
+    },
+    {
+      "url": "https://store.biubiunew.com/uploads/20230819/F8/EF86CBD0E0DAw1170h700.jpeg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_bced213a25bd.jpeg",
+      "bytes": 29497,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "http://store.412lala.com/uploads/20230819/F8/EF86CBD0E0DAw1170h700.jpeg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_2b18efb7ba82.jpeg",
+      "bytes": 29497,
+      "content_type": "image/jpeg"
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "project_name": "webcode2m_027_ru",
+  "row_idx": 27,
+  "hash": "c5f544cafd1148ea69d2a5b8b1a9cafd20cb3df76cb6c117c96fe34fbc790d97",
+  "lang": "ru",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/27/image/image.png?Expires=1779975357&Signature=Y4XGk0Lttjdg-hWKCt0Rwc1Jel4xMKOdfYFj6nzdGUWs-DdS4H9nVxChcslbgw6v5TQo4y59MFZBeO648KZ0v9Uflg8xgQzodKRTYaOQC1~x3ong27IRCc2X3Ps8zdTVjyuPISuqUrunClil6BxYyULOYPH0nJlJ2M9VZfYl6-v5Lr7iNdEXzGdJaebGDt7D5YCz6XKl9m6YIaem0YbuwfzYrHive-pMbYwFwucWDL68tIcSXYagVYvlxhpzKlmew0v0-cEjIjXNeXipGpMtKz7sUqAZsgip9-5kPqAlookE0Uk89oB6SmoaaV9pLIMp-mZiN29S0yHm0YFmf9hJMQ__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_027.png",
+    "width": 1280,
+    "height": 2034
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {
+    "removed_noise_ref": 1,
+    "relative_fallback": 4
+  },
+  "resource_actions": [
+    {
+      "url": "//www.googletagmanager.com/ns.html?id=GTM-TMS57V",
+      "kind": "noise",
+      "action": "removed_noise",
+      "context": "iframe.src"
+    },
+    {
+      "url": "jamk_uusi_tiedostot/logo.png",
+      "kind": "icon",
+      "action": "relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "jamk_uusi_tiedostot/header_1600x425_lyhytkurssin_kuva_abstrakti.jpg",
+      "kind": "image",
+      "action": "relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "images/fla_uk.gif",
+      "kind": "image",
+      "action": "relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "jamk_uusi_tiedostot/logo-footer.png",
+      "kind": "icon",
+      "action": "relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    }
+  ],
+  "download_results": []
+}

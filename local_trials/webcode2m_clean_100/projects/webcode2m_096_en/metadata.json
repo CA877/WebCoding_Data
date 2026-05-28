@@ -1,0 +1,59 @@
+{
+  "project_name": "webcode2m_096_en",
+  "row_idx": 96,
+  "hash": "dcd244a1ad1a91f26d9786a7f7abfc1d1b78ee47240d6ca0f56190235a2b06e4",
+  "lang": "en",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/96/image/image.png?Expires=1779975360&Signature=k-2w~Sf12QvYogP1xLMmIsx3MvEpywbVhTlrs2yJCR6Hjq35kXdoX0sq6U4f7tyJbB7Nxvj6vZ4gSsVMKFvCwNZORvwE6E2BmVNruOwL-7~DUio1Jwwf0IWEPvD9nwCMq4n~QGlMzc4tdJI9WRA~o6XhkjwomPmzyLjIgMCkqYXchjYgfNk71sLHLiFBfaQD7XuQAxhQb~RXz7fzz3uLKY~YgtfCi-QpXseS5H1my8qOS60n7ekEpuo~gtCXld-fnvZ42o357-WX8ADEtTRGBw2LDAt3VnwD38ty91Upl6FIvm59~kukZ1eaEXfL22iWo1uAVcYz0BU~djIy1f3FFQ__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_096.png",
+    "width": 1284,
+    "height": 1848
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {
+    "root_relative_fallback": 2,
+    "downloaded": 1
+  },
+  "resource_actions": [
+    {
+      "url": "/uploads/5/4/4/7/544771/published/vswsa-4.png?1675785541",
+      "kind": "image",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/uploads/5/4/4/7/544771/9836836.jpg?136",
+      "kind": "image",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "//cdn2.editmysite.com/images/old/bg_feed.gif",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_c1e539c85da8.gif",
+      "context": "img.src"
+    }
+  ],
+  "download_results": [
+    {
+      "url": "https://cdn2.editmysite.com/images/old/bg_feed.gif",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_c1e539c85da8.gif",
+      "bytes": 299,
+      "content_type": "image/gif"
+    }
+  ]
+}

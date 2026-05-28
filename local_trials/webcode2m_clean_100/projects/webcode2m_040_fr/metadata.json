@@ -1,0 +1,83 @@
+{
+  "project_name": "webcode2m_040_fr",
+  "row_idx": 40,
+  "hash": "b41a9594fda685e198fc1a228ca171b32cf2a90dbb09cf29bfe8c29eba80482e",
+  "lang": "fr",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/40/image/image.png?Expires=1779975358&Signature=GQxKVUnL0SQoGhXoJLchSxt-qu68ZfBsBZ5z3F8Tmtlurnprwotr9OfjFGfqb0ywdE88DLeUAnwy52IK6HhhWjNeBssWLggiA01-Bt-Xunemp~lQ9bV8TxD33wwk4TzLZJs~q~JAopPwTFxWYHGS1Xq6mLekcTSL9TZRRo5XSqr710EDqyzwu-ZWPA-82HKEiqBIMJsQH5KcJ2ZjkOKXUzp-cCN25blgflyNpT7dPrnXGH4JokcgpV8zrcsGtyW5CEZBgxRQazQPr1t0oxkZcHFzd0D~u-lqCcrr0RD9g4eWd6LhfdwF83DUsUnib6o9FVTB56s~NyfKC9bp2GpvVQ__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_040.png",
+    "width": 1280,
+    "height": 1673
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {
+    "removed_noise_ref": 1,
+    "downloaded": 3
+  },
+  "resource_actions": [
+    {
+      "url": "https://www.googletagmanager.com/ns.html?id=GTM-T3KK259",
+      "kind": "noise",
+      "action": "removed_noise",
+      "context": "iframe.src"
+    },
+    {
+      "url": "https://ma-pergola.be/wp-content/uploads/2022/11/pergola_logo.png.webp",
+      "kind": "icon",
+      "action": "downloaded",
+      "local": "assets/icon_7365ff6e60eb.webp",
+      "context": "img.src"
+    },
+    {
+      "url": "https://ma-pergola.be/wp-content/uploads/2023/01/chassis-ersnt-logo.jpg.webp",
+      "kind": "icon",
+      "action": "downloaded",
+      "local": "assets/icon_38b9595ba8cd.webp",
+      "context": "img.src"
+    },
+    {
+      "url": "https://ma-pergola.be/wp-content/uploads/2022/11/cropped-pergola_favicon.png.webp",
+      "kind": "icon",
+      "action": "downloaded",
+      "local": "assets/icon_6f9fa73b2f6c.webp",
+      "context": "img.src"
+    }
+  ],
+  "download_results": [
+    {
+      "url": "https://ma-pergola.be/wp-content/uploads/2022/11/pergola_logo.png.webp",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_7365ff6e60eb.webp",
+      "bytes": 161232,
+      "content_type": "image/webp"
+    },
+    {
+      "url": "https://ma-pergola.be/wp-content/uploads/2023/01/chassis-ersnt-logo.jpg.webp",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_38b9595ba8cd.webp",
+      "bytes": 4598,
+      "content_type": "image/webp"
+    },
+    {
+      "url": "https://ma-pergola.be/wp-content/uploads/2022/11/cropped-pergola_favicon.png.webp",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_6f9fa73b2f6c.webp",
+      "bytes": 11124,
+      "content_type": "image/webp"
+    }
+  ]
+}

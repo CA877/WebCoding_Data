@@ -1,0 +1,24 @@
+{
+  "project_name": "webcode2m_048_nl",
+  "row_idx": 48,
+  "hash": "e22c8aac38ea044b6294927f28b084a7d1ae563e9a2dffa3d31efe00c824aae9",
+  "lang": "nl",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/48/image/image.png?Expires=1779975358&Signature=VNqH-I4doVfi1gmTDAqKjgKCaQ0LIQ9NA3Ha5AiwRqNInmu~BsoCpZHOsG2fprq53~B9k4~5voxYyVmMPpenbIKJsWIZspMB4DGrIrKEaF45Q6SjWTKmTmULh~qLS2AEc5IYgvB3bJEm3qOURUqjutkPuOPLWw5YDfBSNyU1CW92nd4vxQlkG7S9pmyxWYKMNGJtfXYPzwEukgkwJfbrSUVtVViAT-JH4S9N8XFLfqx04tkh-eTotUzhlIWyO~A2ULM~RKfNx8WnK1sC3GneCV3RFanZ5xd9QsZS9Ir459puzhHDwS5BuMFqm9XJ70x41~tLsoRcjvKqJ-gpbro6gg__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_048.png",
+    "width": 1280,
+    "height": 1235
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {},
+  "resource_actions": [],
+  "download_results": []
+}

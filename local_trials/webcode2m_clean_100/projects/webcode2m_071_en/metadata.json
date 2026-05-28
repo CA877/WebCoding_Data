@@ -1,0 +1,43 @@
+{
+  "project_name": "webcode2m_071_en",
+  "row_idx": 71,
+  "hash": "d9971f612dc6225edd29129d85e8207ffd8881299454ca5191bdeee2c8856885",
+  "lang": "en",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/71/image/image.png?Expires=1779975359&Signature=NhQULEVSG9yNKIBWaiCbHcLJGmqa5ZXS4Z35yYMq9rPZWHo0FIURhKmB1VTVuwASJHB6GKkWUHQhKQ8j79sK7NK5FvMhmJ-Qu399Zh8p9y1hzrl70D1nr2JLjzTpBVqnCyqoBfoAJj9mso5TXnDqeYkxv7hf~wwG8vCXnWLwvlVhXzpb9yZ-2KCfWk-QUmelV-yFanpbmHW-~MWbp1E4KfDeMsUF3rfjHBqD3LJ-1i7GY-hdaanyNE0d9s~L5NvUvnHrS0l5NjFYo1I7PdxpffO0OC54u1qGChu3kFpqFBlKUD0JvL-PMR01vNRQtplzoUICgOYViiPeq7ktJjyIZg__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_071.png",
+    "width": 1280,
+    "height": 1537
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {
+    "fallback_asset": 1
+  },
+  "resource_actions": [
+    {
+      "url": "https://agencyleverage.com/wp-content/uploads/AL-Final-Web.png",
+      "kind": "image",
+      "action": "fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "img.src",
+      "error": "HTTP 404"
+    }
+  ],
+  "download_results": [
+    {
+      "url": "https://agencyleverage.com/wp-content/uploads/AL-Final-Web.png",
+      "kind": "image",
+      "ok": false,
+      "status": 404,
+      "error": "HTTP 404"
+    }
+  ]
+}

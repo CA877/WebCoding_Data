@@ -1,0 +1,97 @@
+{
+  "project_name": "webcode2m_083_fr",
+  "row_idx": 83,
+  "hash": "7a64ee04848a0210ac616759993c45d872fb13c1f233d4df9026b7cc4c920575",
+  "lang": "fr",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/83/image/image.png?Expires=1779975360&Signature=Bw-b~M3Gi0BbDr5dBycySIcFF3m7HY33djCUoL0ZnYrtecCpjB8-~Cb3jUE5gbuChKRRnHUa46i5pMdJ-0enkvFTnpCuZHp2Z1MO-x9~nLAFnNyjFHsSIaPlRDSRw3ZS1pl5R-WTemM2-BEC3dJGtL67vwbvIsNqxlB4COInr3t1mMHdlW-2dBDvnRTJ1MbyEi1YhsPriCJO7UzvriRlUlz9gEftMxikkL-T70dyr8aBVEAdEiSqtQP8buIb-dYXOB5GTia8eTQVa6vgb95NQvQ2TqsZmSB7UNsLRAuaK-VZen-d4ZNhWFN5RO6DLHWS4HawSHImIaGJ0rLR8aYB1A__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_083.png",
+    "width": 1280,
+    "height": 1740
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {
+    "root_relative_fallback": 10
+  },
+  "resource_actions": [
+    {
+      "url": "/site/templates/data/adn_logo.jpg",
+      "kind": "icon",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/site/templates/data/stripes.svg",
+      "kind": "icon",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/site/templates/data/close.svg",
+      "kind": "icon",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/site/assets/files/1478/jbn_logotype_sw.svg",
+      "kind": "icon",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/site/assets/files/1479/tpr_logo_noir.svg",
+      "kind": "icon",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/site/assets/files/1480/steps_logo_fr.svg",
+      "kind": "icon",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/site/assets/files/1/empty.800x750.png",
+      "kind": "image",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/site/assets/files/1358/tabeamartin-nothingleft_kathrinluetscher_1200.800x750.jpg",
+      "kind": "image",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/site/templates/data/arrow_right.svg",
+      "kind": "icon",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/site/templates/data/arrow_left.svg",
+      "kind": "icon",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    }
+  ],
+  "download_results": []
+}

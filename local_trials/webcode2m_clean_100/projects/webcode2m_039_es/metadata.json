@@ -1,0 +1,60 @@
+{
+  "project_name": "webcode2m_039_es",
+  "row_idx": 39,
+  "hash": "f39009322f59aa31e36af18e8b2acaebc578fa1aadf94cff1840327d862f7106",
+  "lang": "es",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/39/image/image.png?Expires=1779975358&Signature=JwVFYCuQByxabwpB7OPI73Co~UnVaHatRCwSXEHAnqEM0wy6N4B68nglOvlaOz8Gkcszi2bX4cQP8l-BUH7fWguL68ifYDRvMLvZuYa3DbSrwZYDvqgLTiM2GsDjiNpo79N7A-CqryPjENTcbX4-STR2S-YMuHEq3zAYBUygMh8~EBgf4b1obg3ABvZUkMLgAxmLJMm9kpD8ozwkiCbkHxOo2647kW96WKEzNYXT6Y9RuCh2WkLnhFQOcf9tFL8~dCvlwx7R1mWhX22xbPRRt95itbkRonlzO4-qfCPfh5uihGT7PlsO~4kjlNaGwLvS6LyleZHkDJjsehohT~D3Fg__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_039.png",
+    "width": 1280,
+    "height": 2282
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {
+    "downloaded": 2
+  },
+  "resource_actions": [
+    {
+      "url": "//1.bp.blogspot.com/-ID3Qu5bQUxs/WpaQYzetgcI/AAAAAAAAB3g/XvjTF4S3ankV3QBtyK0c7cvY9gr1sClgwCK4BGAYYCw/s1600/orejablogspot.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_3e0da52d5425.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "//4.bp.blogspot.com/_6IvZa1d-9gw/ST44u3_YHoI/AAAAAAAAASM/-gJE4i1jq1g/s320/Mariann_Fischer_Boel_comisaria_europea_Agricultura.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_fabbc7d452a4.jpg",
+      "context": "img.src"
+    }
+  ],
+  "download_results": [
+    {
+      "url": "https://1.bp.blogspot.com/-ID3Qu5bQUxs/WpaQYzetgcI/AAAAAAAAB3g/XvjTF4S3ankV3QBtyK0c7cvY9gr1sClgwCK4BGAYYCw/s1600/orejablogspot.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_3e0da52d5425.jpg",
+      "bytes": 25478,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://4.bp.blogspot.com/_6IvZa1d-9gw/ST44u3_YHoI/AAAAAAAAASM/-gJE4i1jq1g/s320/Mariann_Fischer_Boel_comisaria_europea_Agricultura.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_fabbc7d452a4.jpg",
+      "bytes": 19701,
+      "content_type": "image/jpeg"
+    }
+  ]
+}

@@ -1,0 +1,83 @@
+{
+  "project_name": "webcode2m_067_en",
+  "row_idx": 67,
+  "hash": "ef7390b36dcb6f6d5e6cac9e617d93cd0920dd1057b7b64a3f54d9189dddb357",
+  "lang": "en",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/67/image/image.png?Expires=1779975359&Signature=sCadGet6vWykux32Gi75hlWryHlxwZ3YicgkU~YeJOlm4aXAf2jjT0BpDYZzxAf0o2szqoteuZA2FPYjsKXmKE54pCeIdjPEXJrKOuJ41HrrAeNKepEw2ZrAKpBacDVceztsrqXY2P32DjkIc~LvpEzdnu-OLB8HHDOcexVQAIbcEpQtTp1EUd-o-xbaVtyGSx2bqbqBlljMUi9hoi2-t9gJGZtYoPYsSEmHRxCs1pmBov5eWh0z9TWM2Enu3O0BWOOWLNel1bYkKVot1VuNdgJ3sWwSGo~4twqla0XeL78aPLNQwqjCPeOy88R2ois~-VnnafXUayJMS4rQbgXxRA__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_067.png",
+    "width": 1280,
+    "height": 1789
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {
+    "removed_noise_ref": 1,
+    "downloaded": 3
+  },
+  "resource_actions": [
+    {
+      "url": "http://www.perceptions-360.com/p360/wp-content/uploads/2015/06/P360-Logo-1280x549-Pixels.png",
+      "kind": "noise",
+      "action": "removed_noise",
+      "context": "img.src"
+    },
+    {
+      "url": "http://elegantthemesimages.com/images/premade/builder-blurbs-modules.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_a49239e62947.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "http://elegantthemesimages.com/images/premade/builder-blurbs-mobile.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_f399d145270f.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "http://elegantthemesimages.com/images/premade/builder-blurbs-commerce.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_1cb321e84749.jpg",
+      "context": "img.src"
+    }
+  ],
+  "download_results": [
+    {
+      "url": "http://elegantthemesimages.com/images/premade/builder-blurbs-modules.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_a49239e62947.jpg",
+      "bytes": 11607,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "http://elegantthemesimages.com/images/premade/builder-blurbs-mobile.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_f399d145270f.jpg",
+      "bytes": 10991,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "http://elegantthemesimages.com/images/premade/builder-blurbs-commerce.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_1cb321e84749.jpg",
+      "bytes": 13250,
+      "content_type": "image/jpeg"
+    }
+  ]
+}

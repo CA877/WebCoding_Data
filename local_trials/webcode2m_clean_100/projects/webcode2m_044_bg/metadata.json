@@ -1,0 +1,60 @@
+{
+  "project_name": "webcode2m_044_bg",
+  "row_idx": 44,
+  "hash": "7740f5e1081bdd1f8988c73e039ef524015e1f77ab559d1f58a6b621c33fa451",
+  "lang": "bg",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/44/image/image.png?Expires=1779975358&Signature=HXrOytr3ikuk5gb6Kd-3XS5bphDz9rRKm0lMssCwW7I60EqpmWIBWD73nvx~9tantFJNy~3r6vZAdPklt5V47rf889xpgG5fgachkP0WHjBigFnNN935HzI1eBxuPbpdOh~bJvYJ8karQ5cmxqLnsj5Hs9X9f87YmJjXg3c81vcvkfl4qQDC63umzCgpFr0GxH4YpRSUpE1wioJgdXrRJlsKH67RqJjdUBXIs584LIWdZbwrguHLUJ3p7DEV67KvihYiV30BVds~vSkOKCvif660X4f5cBkdBzlVRFvh66QGe5BT4x7zcAnllDcdcV1-SO1dC3CYEK9dfIMTjalFvg__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_044.png",
+    "width": 1280,
+    "height": 2091
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {
+    "downloaded": 2
+  },
+  "resource_actions": [
+    {
+      "url": "http://www.vratcom.com/wp-content/uploads/2017/04/Logo-vratcom-2.png",
+      "kind": "icon",
+      "action": "downloaded",
+      "local": "assets/icon_3726a633fb4d.png",
+      "context": "img.src"
+    },
+    {
+      "url": "https://www.vratcom.com/wp-content/uploads/2018/04/IMG_20180420_121825-1080x675.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_9fe9b78f4b19.jpg",
+      "context": "img.src"
+    }
+  ],
+  "download_results": [
+    {
+      "url": "http://www.vratcom.com/wp-content/uploads/2017/04/Logo-vratcom-2.png",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_3726a633fb4d.png",
+      "bytes": 1445,
+      "content_type": "image/png"
+    },
+    {
+      "url": "https://www.vratcom.com/wp-content/uploads/2018/04/IMG_20180420_121825-1080x675.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_9fe9b78f4b19.jpg",
+      "bytes": 100469,
+      "content_type": "image/jpeg"
+    }
+  ]
+}

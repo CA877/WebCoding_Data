@@ -1,0 +1,24 @@
+{
+  "project_name": "webcode2m_079_en",
+  "row_idx": 79,
+  "hash": "7b69105c7102dec5f73a99d9a87b7d8da8735a21aa17a6047e6b6c0f6634d81b",
+  "lang": "en",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/79/image/image.png?Expires=1779975359&Signature=dpFsLebbqz5BrceyaWLcpbEwsTyKQ457E5n~pXgKlLFRJ7ck8J02NY3VqbCEFZl1k07B-PS5jJ6sqf44FfNloKHccKt5QwDmbct0B7wuVy-FahuZmc9a6QBXo9PRsTmJRB-EJEzIYJl46mvrgY00zZKM7ypGdLgOGraLGDOzwQkMfCJDuZBPGdDsOhhBAWqXfMfqiQBDd5gttO6EvcHR6u0DrTIXfCaB-HxYOjvUn-26ZYvNmVrp8ut4fVr7mhEmxGr6VDk4TwNWbVvAOkKPVkzkx9I3wFbS4P8594DGSNlbGrrXQq7LQS0PwiT0E6vheNUSfubIhXcyC6pN4S0-fg__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_079.png",
+    "width": 1280,
+    "height": 2527
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {},
+  "resource_actions": [],
+  "download_results": []
+}

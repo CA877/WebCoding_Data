@@ -1,0 +1,156 @@
+{
+  "project_name": "webcode2m_072_hi",
+  "row_idx": 72,
+  "hash": "bc7533a96588a8ee22d86caf4dcee5a56bb490934e7edbfcb078959d2cf42906",
+  "lang": "hi",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/72/image/image.png?Expires=1779975359&Signature=UQO~~WKGJBs~vrq7Kf9R0dQ2iXNYXZbJF6s~gQl~7~JswRhUL12DVuR48TB4i1Mq8g5w7-E8~6OGuXE23DYH-BwfQjIDYMz62oWpl3q246PtcwKj~iSUXhgABLRscQqGwVCOP6ffjgt5bfH88~igdxZRhlQYN3bvuW-SYXbz2fAx53JuOeLI2h9C-482eVj7kOKRivuEfy8DwQtid6pdETwlH0kxXp3ndyYkBSAI4Vsjxs-o3VsPNeGbxl9NnPWOtztcVV2aCJ9KF64CxrytnxZ6Bsh7sL4qdGcME7a5u2Zyn00xCuxPCJEqXZIiACjODTFpltxo5lc2IydB7kQE3A__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_072.png",
+    "width": 1280,
+    "height": 1670
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {
+    "downloaded": 8
+  },
+  "resource_actions": [
+    {
+      "url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjzlpbVUCjFWk-iOhG4zA4G-BZpy5J8MW662kV2WsQ-xjQdFzm_2V2OBZEIAjgJk0f0tHQJRYPakPoR_piooM47IZMySqZfY4VKjegxYB6DebH9jP3DBfbBGw5vb-V8JblYRo6B5lU20V_8XQ0-WCK8PM5EUDnXC2NhlVU-oDr3IfnpcGWYcGUwC5KkZg/s300/Logokiri.png",
+      "kind": "icon",
+      "action": "downloaded",
+      "local": "assets/icon_ae09080b98ff.png",
+      "context": "img.src"
+    },
+    {
+      "url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEigl_QEPXWOCn5iKdjE8aER9uTTuIAu-WB1OrfgWFhlFQf0Eah34-79KxbgnFtXTzRG1TMhZ5Rp0cuckiJHFSqdWMqrXq-ruRuDARc_48vUEEGxwlXCzARrmE8zHzNddq2HzacYVw0GQow_l0WbXDxex7iBqW28rsv0t6TBzgyfsabpjqND53OTWicoNA/s16000/sejarah_bali2.png",
+      "kind": "icon",
+      "action": "downloaded",
+      "local": "assets/icon_60cfd28701aa.png",
+      "context": "img.src"
+    },
+    {
+      "url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhWXvX56GKP67uFWZdStfAkplCDneuCQxdKpuWinZMWBYy9VvsZ0ab8H7DD4ACL-YtM8fbNbhLms28Oi-6krBkYo5i_ER_2SXUhkV-DiCz_nW51Tu1MAtEGmiuS_WpYte2kGNf0tQMvRa-5Cd5Ud-8Jmtkhrt5LKt9m_J3Hxbua2A3ldt8WbQ0kQlO2Mg/s320/286648978_737821294082050_2870246123828776539_n.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_266d60a275b8.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhFS_Iv8PrEIrp8fUYDc9izDld3quAf6MGH223A_zZeZbIao4w8uAduEXc5zBsqegJu6nuJXxVtB8G7hlzDFotftYwBaIazo2tuRaBPwbAdGMnjQgx9of-1ZZq-tsKyajnXhCDzy3e2JI3vtYsr-MT491Mbbubt_qmUQKixuYGMRFOxwN5y3QC8yu0Mow/w680/297394439_380465664170233_3177792985517724684_n.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_2da3cafa26e1.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "https://1.bp.blogspot.com/-XexpOscgQ1Q/WNFP49Bs7UI/AAAAAAAALGA/owx2u2VpA_cRh3_TcQ7Oo7CP0qZpJmCUQCLcB/w680/15977907_10154422676728471_3274748270390029637_n.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_9846005a9897.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "https://4.bp.blogspot.com/-2ljHW4NHb_w/VBHjuaA0apI/AAAAAAAAEiI/0mkAaYtmUPI/w680/1472948_601924753176191_1683619963_n.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_fe50589f0ad2.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "//4.bp.blogspot.com/-RYq5JLJaT2I/VXrNoDsipdI/AAAAAAAAHek/0KL0sf-k_xA/w680/11125332_10200418673227160_8322127441064810499_n.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_06b7fabf8566.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "https://1.bp.blogspot.com/-8_kXQxkjJvU/VChn4wAshRI/AAAAAAAAFIU/8C2DTAieIfw/w680/17914_4034330955804_1844382556_n.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_f035dc23d7dd.jpg",
+      "context": "img.src"
+    }
+  ],
+  "download_results": [
+    {
+      "url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjzlpbVUCjFWk-iOhG4zA4G-BZpy5J8MW662kV2WsQ-xjQdFzm_2V2OBZEIAjgJk0f0tHQJRYPakPoR_piooM47IZMySqZfY4VKjegxYB6DebH9jP3DBfbBGw5vb-V8JblYRo6B5lU20V_8XQ0-WCK8PM5EUDnXC2NhlVU-oDr3IfnpcGWYcGUwC5KkZg/s300/Logokiri.png",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_ae09080b98ff.png",
+      "bytes": 53772,
+      "content_type": "image/png"
+    },
+    {
+      "url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEigl_QEPXWOCn5iKdjE8aER9uTTuIAu-WB1OrfgWFhlFQf0Eah34-79KxbgnFtXTzRG1TMhZ5Rp0cuckiJHFSqdWMqrXq-ruRuDARc_48vUEEGxwlXCzARrmE8zHzNddq2HzacYVw0GQow_l0WbXDxex7iBqW28rsv0t6TBzgyfsabpjqND53OTWicoNA/s16000/sejarah_bali2.png",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_60cfd28701aa.png",
+      "bytes": 154183,
+      "content_type": "image/png"
+    },
+    {
+      "url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhWXvX56GKP67uFWZdStfAkplCDneuCQxdKpuWinZMWBYy9VvsZ0ab8H7DD4ACL-YtM8fbNbhLms28Oi-6krBkYo5i_ER_2SXUhkV-DiCz_nW51Tu1MAtEGmiuS_WpYte2kGNf0tQMvRa-5Cd5Ud-8Jmtkhrt5LKt9m_J3Hxbua2A3ldt8WbQ0kQlO2Mg/s320/286648978_737821294082050_2870246123828776539_n.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_266d60a275b8.jpg",
+      "bytes": 59583,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhFS_Iv8PrEIrp8fUYDc9izDld3quAf6MGH223A_zZeZbIao4w8uAduEXc5zBsqegJu6nuJXxVtB8G7hlzDFotftYwBaIazo2tuRaBPwbAdGMnjQgx9of-1ZZq-tsKyajnXhCDzy3e2JI3vtYsr-MT491Mbbubt_qmUQKixuYGMRFOxwN5y3QC8yu0Mow/w680/297394439_380465664170233_3177792985517724684_n.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_2da3cafa26e1.jpg",
+      "bytes": 109717,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://1.bp.blogspot.com/-XexpOscgQ1Q/WNFP49Bs7UI/AAAAAAAALGA/owx2u2VpA_cRh3_TcQ7Oo7CP0qZpJmCUQCLcB/w680/15977907_10154422676728471_3274748270390029637_n.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_9846005a9897.jpg",
+      "bytes": 107537,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://4.bp.blogspot.com/-2ljHW4NHb_w/VBHjuaA0apI/AAAAAAAAEiI/0mkAaYtmUPI/w680/1472948_601924753176191_1683619963_n.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_fe50589f0ad2.jpg",
+      "bytes": 83721,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://4.bp.blogspot.com/-RYq5JLJaT2I/VXrNoDsipdI/AAAAAAAAHek/0KL0sf-k_xA/w680/11125332_10200418673227160_8322127441064810499_n.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_06b7fabf8566.jpg",
+      "bytes": 129155,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://1.bp.blogspot.com/-8_kXQxkjJvU/VChn4wAshRI/AAAAAAAAFIU/8C2DTAieIfw/w680/17914_4034330955804_1844382556_n.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_f035dc23d7dd.jpg",
+      "bytes": 135725,
+      "content_type": "image/jpeg"
+    }
+  ]
+}

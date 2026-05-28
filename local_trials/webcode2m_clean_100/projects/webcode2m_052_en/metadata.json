@@ -1,0 +1,43 @@
+{
+  "project_name": "webcode2m_052_en",
+  "row_idx": 52,
+  "hash": "b392bdab2a042174e001fc16d5472872f78155e0d08d48ec489e27d51affd645",
+  "lang": "en",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/52/image/image.png?Expires=1779975358&Signature=vZjEZgzXgqsL6tP3aAVIvYCDeadFvErjYYE1PyaaWeydm-JcG7tk~N6S5z-oK1iNVLJVQ8mLrwHcrQhY2tOzETj362SfYfpyQaqcGPhMZODg6McaXfGVuy9zw8lwlQGNzY0boP8kvOHBabVi5pwP2PmmSk6h~5c97cGiVWKspwKy9CXOjNtsTRTAU6T61YdnCrcceBXqQ5cfomiUoFQlHMp4JIgw7UbTXskDW5cOqBbLLLdSuBCnJ8V3XfKsGcNx~aD-1miJqoSsz58~OFE0XYxKdJLjtyzINYw7yOlInkL3z7BvwIVqaUvjawhepNQ1rLPcx0h4659YSJrNnc6McQ__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_052.png",
+    "width": 1280,
+    "height": 2071
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {
+    "fallback_asset": 1
+  },
+  "resource_actions": [
+    {
+      "url": "http://necrc.org/wp-content/uploads/2015/02/necrc-vertical-logo-300x75-300x75.jpg",
+      "kind": "icon",
+      "action": "fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src",
+      "error": "HTTP 404"
+    }
+  ],
+  "download_results": [
+    {
+      "url": "http://necrc.org/wp-content/uploads/2015/02/necrc-vertical-logo-300x75-300x75.jpg",
+      "kind": "icon",
+      "ok": false,
+      "status": 404,
+      "error": "HTTP 404"
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "project_name": "webcode2m_065_en",
+  "row_idx": 65,
+  "hash": "3e322be630496aec3b4abe1ccc44201a0730e05edd99d66ec2b3bd06f4b13dd2",
+  "lang": "en",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/65/image/image.png?Expires=1779975359&Signature=ag0RbFp4XjPxIarS14sN8~wb~TvnW7VVef7~05fxEmEo5j6uQN16~xfufwzlklzVXWIQoqGUjq9Gfq6DCO7rRbAMDSRYe8emzfLlLItLvCCHg~M-eapEInYn6VpdMYUbk~CmQqWzsLl8ivqb0rJX3VfOZSd3lAZ642rKMRCcl6FGoGTTSMQynUNTI1SUUJO19ixtNRMwOeijQrIsOy3096j7WcrmD6QoTvvulyk~VOKrq4YivMkL9jdS11GW68U1~FLMIIGTNjjgWxYDTnti1ON99R0peWXMpxfGYk-Y3PFnHMPenaTTh60rZkOWH152N5XJlT76qlncZGX~Qqrw8g__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_065.png",
+    "width": 1280,
+    "height": 1200
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {
+    "root_relative_fallback": 6,
+    "removed_noise_ref": 1
+  },
+  "resource_actions": [
+    {
+      "url": "/images/theme/egw-writing.gif",
+      "kind": "image",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/images/theme/research-project.gif",
+      "kind": "icon",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/images/theme/lt-corner.gif",
+      "kind": "image",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/images/theme/rt-corner.gif",
+      "kind": "image",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/images/theme/spacer.gif",
+      "kind": "image",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/images/keys_of_this_blood.jpg",
+      "kind": "image",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/images/theme/counter.php",
+      "kind": "noise",
+      "action": "removed_noise",
+      "context": "img.src"
+    }
+  ],
+  "download_results": []
+}

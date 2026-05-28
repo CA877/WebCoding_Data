@@ -1,0 +1,124 @@
+{
+  "project_name": "webcode2m_045_bg",
+  "row_idx": 45,
+  "hash": "09b20a9e53a91bf664fd7d8ccedf8f7bcdcb49d428cb8c05b416a60f26115dd4",
+  "lang": "bg",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/45/image/image.png?Expires=1779975358&Signature=QLx63CLGvu52yszeZP631nExJORX0VyxG1LCd7Ho53ADs2IisAgl9TnFIkXi2d9mCGFtjsGvE1PRVqx6uYryUb6i-dsVAXTMNDPVEUBwwsRVKhlSa3xwYmbVQjVqwVUfQDOSh9eDd0Spl9xdyhRl5a4n75CW3Gb1E6LiRgHae7AWKi1K5wzFPkKM0QYiigdwHPaZRACVVvi2w87X4fyiuIHHnbIayqQ51MSQd6uiw2jZJOCrGbPGTXxBiMlMDAyB7BoUbNebWZwNfW-kRxLcsqJQXAMKZZuDDGdoa21A79mZnuv4Zq7GBt1O6ire3v7NiTYJWKvE3nO4oI9zoZGTLw__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_045.png",
+    "width": 1280,
+    "height": 1399
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {
+    "downloaded": 6
+  },
+  "resource_actions": [
+    {
+      "url": "https://konferenside.se/wp-content/uploads/ki-logo-1.png",
+      "kind": "icon",
+      "action": "downloaded",
+      "local": "assets/icon_687ac62c17ff.png",
+      "context": "img.src"
+    },
+    {
+      "url": "https://konferenside.se/wp-content/uploads/06_hotell_skeppsholmen_576_org_2048-kopia-800x533.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_d09f6f5f1a5d.jpg",
+      "context": "css"
+    },
+    {
+      "url": "https://konferenside.se/wp-content/uploads/04_hotell_skeppsholmen_183_org_2048-kopia-800x533.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_f60e0903dd07.jpg",
+      "context": "css"
+    },
+    {
+      "url": "https://konferenside.se/wp-content/uploads/03_hotell_skeppsholmen_141_org_2048-kopia-800x533.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_a38f4f096a21.jpg",
+      "context": "css"
+    },
+    {
+      "url": "https://konferenside.se/wp-content/uploads/09_hotell_skeppsholmen_615_org_2048-kopia-533x800.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_d86a3ae65dd1.jpg",
+      "context": "css"
+    },
+    {
+      "url": "https://konferenside.se/wp-content/uploads/07_hotell_skeppsholmen_588_1_org_2048-kopia-800x533.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_b737215f4c8a.jpg",
+      "context": "css"
+    }
+  ],
+  "download_results": [
+    {
+      "url": "https://konferenside.se/wp-content/uploads/ki-logo-1.png",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_687ac62c17ff.png",
+      "bytes": 10079,
+      "content_type": "image/png"
+    },
+    {
+      "url": "https://konferenside.se/wp-content/uploads/06_hotell_skeppsholmen_576_org_2048-kopia-800x533.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_d09f6f5f1a5d.jpg",
+      "bytes": 109359,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://konferenside.se/wp-content/uploads/04_hotell_skeppsholmen_183_org_2048-kopia-800x533.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_f60e0903dd07.jpg",
+      "bytes": 105599,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://konferenside.se/wp-content/uploads/03_hotell_skeppsholmen_141_org_2048-kopia-800x533.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_a38f4f096a21.jpg",
+      "bytes": 97741,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://konferenside.se/wp-content/uploads/09_hotell_skeppsholmen_615_org_2048-kopia-533x800.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_d86a3ae65dd1.jpg",
+      "bytes": 97304,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://konferenside.se/wp-content/uploads/07_hotell_skeppsholmen_588_1_org_2048-kopia-800x533.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_b737215f4c8a.jpg",
+      "bytes": 123538,
+      "content_type": "image/jpeg"
+    }
+  ]
+}

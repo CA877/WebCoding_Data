@@ -1,0 +1,92 @@
+{
+  "project_name": "webcode2m_009_en",
+  "row_idx": 9,
+  "hash": "83625a59ff2f7a7fcfec797d056a342e51935c76bbdc1de135c129d070cda24d",
+  "lang": "en",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/9/image/image.png?Expires=1779975357&Signature=D1jUi9JysgRzRo2qpgZOSCNAP2S7IXBUQ1mdjdum7zUHTZBEdmWoCCj0Q1tynbvhKMJRpd~pVEYLiiEufh3cJmlK3P86OhyOvIUaRsKyXS6tlnGn7tN35jeFedwdA3V3~kc1QhJIoN-CHAWRauA5B4Vx7HNTswNYUPFcYCdqqcxEFFFKJDOF9ORmQgKyBQ8o1wRkOqAZd8iOyV2idoVCr~mL9erkgVV6GN1K~HybQ3-T82-TLzVpbONvb~UsOEooegSmEP1JnxtZVzDAorF6-C6lb~2aYc8yIDAK-21sAekbUu9MI1QPH-CjNtrbhnI-UgE636dmQESDNnSqvNF9NA__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_009.png",
+    "width": 1280,
+    "height": 2495
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {
+    "downloaded": 4
+  },
+  "resource_actions": [
+    {
+      "url": "https://static.wixstatic.com/media/520cda_41686b0d9ee748d1bdef3d28d67772c5~mv2.png/v1/fill/w_342,h_99,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/%25E7%25A4%25BE%25E5%2590%258D_edited.png",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_230d031fb515.png",
+      "context": "img.src"
+    },
+    {
+      "url": "https://static.wixstatic.com/media/520cda_f0c9f48f50284d10acc11e8913002438~mv2.jpg/v1/fill/w_756,h_536,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/SALE_200207_edited.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_ed669fcc11c3.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "https://static.wixstatic.com/media/520cda_694a5587f8184152adc50b0a2c91b67a~mv2.jpg/v1/fill/w_756,h_546,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/Sale_Pick%2520Up_edited.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_036dce1562f0.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "https://static.wixstatic.com/media/520cda_4f3cf126883243b696c960d71b96cd61~mv2.jpg/v1/fill/w_747,h_516,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/JILL15%25OFF%E3%83%81%E3%83%A9%E3%82%B7.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_b91f1d3c82b0.jpg",
+      "context": "img.src"
+    }
+  ],
+  "download_results": [
+    {
+      "url": "https://static.wixstatic.com/media/520cda_41686b0d9ee748d1bdef3d28d67772c5~mv2.png/v1/fill/w_342,h_99,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/%25E7%25A4%25BE%25E5%2590%258D_edited.png",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_230d031fb515.png",
+      "bytes": 32564,
+      "content_type": "image/png"
+    },
+    {
+      "url": "https://static.wixstatic.com/media/520cda_f0c9f48f50284d10acc11e8913002438~mv2.jpg/v1/fill/w_756,h_536,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/SALE_200207_edited.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_ed669fcc11c3.jpg",
+      "bytes": 139677,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://static.wixstatic.com/media/520cda_694a5587f8184152adc50b0a2c91b67a~mv2.jpg/v1/fill/w_756,h_546,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/Sale_Pick%2520Up_edited.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_036dce1562f0.jpg",
+      "bytes": 79960,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://static.wixstatic.com/media/520cda_4f3cf126883243b696c960d71b96cd61~mv2.jpg/v1/fill/w_747,h_516,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/JILL15%25OFF%E3%83%81%E3%83%A9%E3%82%B7.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_b91f1d3c82b0.jpg",
+      "bytes": 40995,
+      "content_type": "image/jpeg"
+    }
+  ]
+}

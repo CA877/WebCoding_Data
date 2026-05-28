@@ -1,0 +1,56 @@
+{
+  "project_name": "webcode2m_038_en",
+  "row_idx": 38,
+  "hash": "82a08382c76c1d5ee416610b2786bcdaaffc8eeb22be641b144549c4f4194493",
+  "lang": "en",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/38/image/image.png?Expires=1779975358&Signature=Mx3osLDWhn4UCTB0PUMQfHqpEwPfzvcuy6fy3Z1StB1oNNezoV6rLWz6-bjExpGmJOXZ2HXXtKJ5E13ZGNKTi5MgMiNLZJvzUlRRoRqRrDmmNZtkvqKDKIjPVsQRi0Qpl7mVVxCTyRcpEof34JAkuWdP4dkIffsb0sTdjcr5BvIDEy7Gy20mOxqDqJZwOAPyypQsuze9EYgr7bxgXmRBJQRLUeT8djxrCrCh0OEbB~Hw8s9pss05dv7aXS3Al1aebajzSVG8Z0qogvhL7fU80q1XdiZbwD6mQ-7wPOPKekhbujXEY5ZP9lWkX3A09KLvlrsdpy6ttJL7078i4whelA__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_038.png",
+    "width": 1280,
+    "height": 2059
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {
+    "fallback_asset": 2
+  },
+  "resource_actions": [
+    {
+      "url": "https://fintechexpress.news/wp-content/uploads/2023/05/FinTech_Logo__1___1__cleanup-removebg-preview.png",
+      "kind": "icon",
+      "action": "fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src",
+      "error": "SSLError: HTTPSConnectionPool(host='fintechexpress.news', port=443): Max retries exceeded with url: /wp-content/uploads/2023/05/FinTech_Logo__1___1__cleanup-removebg-preview.png (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1028)')))"
+    },
+    {
+      "url": "https://fintechexpress.news/wp-content/uploads/2023/06/Blockchain-node-1080x628.png",
+      "kind": "image",
+      "action": "fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "img.src",
+      "error": "SSLError: HTTPSConnectionPool(host='fintechexpress.news', port=443): Max retries exceeded with url: /wp-content/uploads/2023/06/Blockchain-node-1080x628.png (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1028)')))"
+    }
+  ],
+  "download_results": [
+    {
+      "url": "https://fintechexpress.news/wp-content/uploads/2023/05/FinTech_Logo__1___1__cleanup-removebg-preview.png",
+      "kind": "icon",
+      "ok": false,
+      "error": "SSLError: HTTPSConnectionPool(host='fintechexpress.news', port=443): Max retries exceeded with url: /wp-content/uploads/2023/05/FinTech_Logo__1___1__cleanup-removebg-preview.png (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1028)')))"
+    },
+    {
+      "url": "https://fintechexpress.news/wp-content/uploads/2023/06/Blockchain-node-1080x628.png",
+      "kind": "image",
+      "ok": false,
+      "error": "SSLError: HTTPSConnectionPool(host='fintechexpress.news', port=443): Max retries exceeded with url: /wp-content/uploads/2023/06/Blockchain-node-1080x628.png (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1028)')))"
+    }
+  ]
+}

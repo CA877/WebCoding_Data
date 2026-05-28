@@ -1,0 +1,140 @@
+{
+  "project_name": "webcode2m_059_es",
+  "row_idx": 59,
+  "hash": "0f26b873505d81586874f94f0743cc18ec7caba326db999bf7b4829c81ad1e07",
+  "lang": "es",
+  "score": 3,
+  "image": {
+    "src": "https://datasets-server.huggingface.co/cached-assets/xcodemind/webcode2m/--/f53cd4a9317364e32a6fc7d99dc50761fe54715f/--/default/train/59/image/image.png?Expires=1779975359&Signature=SecJvL1blYmovqd301ulCcRT3eSvkdLTuNk5IUTDGQc4-U0zc8wW60zoS7rdQ8z~SCGJVRsGNFRVNkdS-A3J5XJqKgxUHbbYwvsUcmL33y7p92~uiChvCXgYJR9EpZgRDHKPPSMc8MhmEwRhu6WT0Vistu-w7UzT-kZN9N5wIurYkAMLTK9VEyT0-75-ZdcE0T~yxZBvOHV-yLaIcQjHsFrsG6opWTeY8QqEBfZPwCkgfZAXnEf23M71jKHLrRKeId8RFzuZLY4pPM~iwCdSO7bZwisbOCNmKOV9cwaQRfiK6lo6dcdvHHzyFakvUwwkjzPD1-3nV0nR3GnvbJJ33Q__&Key-Pair-Id=K204OQ5RWQVDLD",
+    "local_path": "paper/research_samples/webcode2m_100_samples/images/sample_059.png",
+    "width": 1291,
+    "height": 2253
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    }
+  ],
+  "multipage_status": "multipage_unavailable",
+  "reason_if_single_page": "no crawlable absolute internal hrefs in WebCode2M text",
+  "stats": {
+    "downloaded": 7
+  },
+  "resource_actions": [
+    {
+      "url": "http://2.bp.blogspot.com/-vkgIOVoKUPU/XzD8fc0C94I/AAAAAAAADGo/EwAguk0f-lUQHALWk3INJXpiocX83eo0wCK4BGAYYCw/s1094/logo_2020_peque",
+      "kind": "icon",
+      "action": "downloaded",
+      "local": "assets/icon_b7bb75e742b8.png",
+      "context": "img.src"
+    },
+    {
+      "url": "https://1.bp.blogspot.com/-Iz2tjSeqLnE/WuXJKMu6z-I/AAAAAAAAGek/WtwWV5NQqMQWzsLfDNvFMBMkZHCKcLbcACLcBGAs/s1600/Cogam%2Bbien.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_e1f5bacc1f7b.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "https://2.bp.blogspot.com/-j8vaRu688Ps/WuXRHQguZLI/AAAAAAAAGe0/j5mtpeZxmcMhU9HXOVCj8Vstq2V7nOBWACLcBGAs/s320/unnamed_med_hr.jpeg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_2f7ab8df155d.jpeg",
+      "context": "img.src"
+    },
+    {
+      "url": "https://4.bp.blogspot.com/-lG0NOVNaxrw/WugwiBtApjI/AAAAAAAAGlM/cxQh56CWgycO_3K6H_u8T57X3-ry4tXsACLcBGAs/s200/q5Q5FPxQ_400x400.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_7cba12f22225.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "https://4.bp.blogspot.com/-HQ5zOSHNwWs/WugyNqo0MnI/AAAAAAAAGlY/olRaVF6ehz0B5mcHybQe1p5zWkDHUhM_ACLcBGAs/s200/LOGO%2BBCB%2B%25281%2529.jpg",
+      "kind": "icon",
+      "action": "downloaded",
+      "local": "assets/icon_ef8f7b61607c.jpg",
+      "context": "img.src"
+    },
+    {
+      "url": "https://1.bp.blogspot.com/-b_iA7nzXXeU/WugktlzTtRI/AAAAAAAAGkk/DCfMOpNepJI9a5X2ZnwJAdsbkgFLS0T-QCLcBGAs/s200/5FF85ED5-50CE-4911-B3EF-3231B228C353-e1523920618423.png",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_44a93b06425f.png",
+      "context": "img.src"
+    },
+    {
+      "url": "https://pbs.twimg.com/profile_images/1003703237340487680/f-N7cmpQ_400x400.jpg",
+      "kind": "image",
+      "action": "downloaded",
+      "local": "assets/image_d7812d5409e1.jpg",
+      "context": "img.src"
+    }
+  ],
+  "download_results": [
+    {
+      "url": "http://2.bp.blogspot.com/-vkgIOVoKUPU/XzD8fc0C94I/AAAAAAAADGo/EwAguk0f-lUQHALWk3INJXpiocX83eo0wCK4BGAYYCw/s1094/logo_2020_peque",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_b7bb75e742b8.png",
+      "bytes": 13412,
+      "content_type": "image/png"
+    },
+    {
+      "url": "https://1.bp.blogspot.com/-Iz2tjSeqLnE/WuXJKMu6z-I/AAAAAAAAGek/WtwWV5NQqMQWzsLfDNvFMBMkZHCKcLbcACLcBGAs/s1600/Cogam%2Bbien.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_e1f5bacc1f7b.jpg",
+      "bytes": 22643,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://2.bp.blogspot.com/-j8vaRu688Ps/WuXRHQguZLI/AAAAAAAAGe0/j5mtpeZxmcMhU9HXOVCj8Vstq2V7nOBWACLcBGAs/s320/unnamed_med_hr.jpeg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_2f7ab8df155d.jpeg",
+      "bytes": 17808,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://4.bp.blogspot.com/-lG0NOVNaxrw/WugwiBtApjI/AAAAAAAAGlM/cxQh56CWgycO_3K6H_u8T57X3-ry4tXsACLcBGAs/s200/q5Q5FPxQ_400x400.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_7cba12f22225.jpg",
+      "bytes": 9469,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://4.bp.blogspot.com/-HQ5zOSHNwWs/WugyNqo0MnI/AAAAAAAAGlY/olRaVF6ehz0B5mcHybQe1p5zWkDHUhM_ACLcBGAs/s200/LOGO%2BBCB%2B%25281%2529.jpg",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_ef8f7b61607c.jpg",
+      "bytes": 7689,
+      "content_type": "image/jpeg"
+    },
+    {
+      "url": "https://1.bp.blogspot.com/-b_iA7nzXXeU/WugktlzTtRI/AAAAAAAAGkk/DCfMOpNepJI9a5X2ZnwJAdsbkgFLS0T-QCLcBGAs/s200/5FF85ED5-50CE-4911-B3EF-3231B228C353-e1523920618423.png",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_44a93b06425f.png",
+      "bytes": 48797,
+      "content_type": "image/png"
+    },
+    {
+      "url": "https://pbs.twimg.com/profile_images/1003703237340487680/f-N7cmpQ_400x400.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_d7812d5409e1.jpg",
+      "bytes": 18231,
+      "content_type": "image/jpeg"
+    }
+  ]
+}
