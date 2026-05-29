@@ -274,7 +274,23 @@ def collect_absolute_child_links(soup: BeautifulSoup, base_url: str = "") -> lis
     return links
 
 
-def official_webcode2m_purify(html: str, uri: str = "") -> tuple[str, dict[str, Any]]:
+def read_local_stylesheet(href: str, project_dir: Path | None) -> str:
+    if not project_dir:
+        return ""
+    parsed = urlparse(href)
+    if parsed.scheme or href.startswith("//"):
+        return ""
+    css_path = (project_dir / parsed.path).resolve()
+    try:
+        css_path.relative_to(project_dir.resolve())
+    except ValueError:
+        return ""
+    if css_path.exists() and css_path.is_file():
+        return css_path.read_text(encoding="utf-8", errors="ignore")
+    return ""
+
+
+def official_webcode2m_purify(html: str, uri: str = "", project_dir: Path | None = None) -> tuple[str, dict[str, Any]]:
     """Run the downloaded WebCode2M HTML/CSS purification code when available."""
     info: dict[str, Any] = {
         "enabled": False,
@@ -289,6 +305,18 @@ def official_webcode2m_purify(html: str, uri: str = "") -> tuple[str, dict[str, 
         style_contents = [style.get_text() for style in soup.find_all("style") if style.get_text()]
         for style in soup.find_all("style"):
             style.decompose()
+        stylesheet_count = 0
+        stylesheet_chars = 0
+        for link in soup.find_all("link"):
+            href = str(link.get("href") or "").strip()
+            rel = " ".join(link.get("rel") or []).lower()
+            if href and ("stylesheet" in rel or classify_url(href) == "css"):
+                stylesheet_css = read_local_stylesheet(href, project_dir)
+                if stylesheet_css.strip():
+                    style_contents.append(stylesheet_css)
+                    stylesheet_count += 1
+                    stylesheet_chars += len(stylesheet_css)
+                link.decompose()
         css = "\n".join(style_contents)
         official_html = formatHtml(str(soup), uri)
         official_css = formatCss(css, official_html) if css.strip() else ""
@@ -304,6 +332,8 @@ def official_webcode2m_purify(html: str, uri: str = "") -> tuple[str, dict[str, 
         info["html_chars_after"] = len(str(purified_soup))
         info["css_chars_before"] = len(css)
         info["css_chars_after"] = len(official_css)
+        info["local_stylesheet_count"] = stylesheet_count
+        info["local_stylesheet_chars"] = stylesheet_chars
         return str(purified_soup), info
     except Exception as exc:  # noqa: BLE001
         info["error"] = f"{type(exc).__name__}: {exc}"
@@ -448,7 +478,7 @@ def clean_row(row: dict[str, Any], output_dir: Path, session: requests.Session, 
             stats["neutralized_tracking_href"] += 1
 
     index_path = project_dir / "index.html"
-    purified_index, official_clean_info = official_webcode2m_purify(str(soup), uri=source_url)
+    purified_index, official_clean_info = official_webcode2m_purify(str(soup), uri=source_url, project_dir=project_dir)
     if official_clean_info.get("enabled"):
         stats["official_webcode2m_purified"] += 1
     else:
@@ -608,7 +638,7 @@ def clean_crawled_child_html(
             a["href"] = "#"
             stats["child_neutralized_tracking_href"] += 1
 
-    purified, official_info = official_webcode2m_purify(str(soup), uri=source_url)
+    purified, official_info = official_webcode2m_purify(str(soup), uri=source_url, project_dir=project_dir)
     if official_info.get("enabled"):
         stats["child_official_webcode2m_purified"] += 1
     else:
