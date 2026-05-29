@@ -1,0 +1,1290 @@
+{
+  "summary": {
+    "total_rows": 100,
+    "unique_remote_refs_total": 300,
+    "remote_refs_probed": 80,
+    "remote_ok": 74,
+    "remote_failed": 6,
+    "relative_or_root_refs_total": 224,
+    "data_uri_refs_total": 15,
+    "note": "Relative/root paths cannot be fetched reliably because WebCode2M rows do not expose the original page base URL."
+  },
+  "results": [
+    {
+      "row_idx": 1,
+      "raw": "https://farm6.staticflickr.com/5566/15046064157_f283b4fd42_o.jpg",
+      "url": "https://farm6.staticflickr.com/5566/15046064157_f283b4fd42_o.jpg",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "content_length": "326929",
+      "error": null,
+      "final_url": "https://farm6.staticflickr.com/5566/15046064157_f283b4fd42_o.jpg"
+    },
+    {
+      "row_idx": 1,
+      "raw": "http://www.linkwithin.com/pixel.png",
+      "url": "http://www.linkwithin.com/pixel.png",
+      "ok": false,
+      "method": "HEAD",
+      "status": 404,
+      "content_type": null,
+      "content_length": null,
+      "error": "HTTPError: 404"
+    },
+    {
+      "row_idx": 1,
+      "raw": "https://resources.blogblog.com/img/icon18_edit_allbkg.gif",
+      "url": "https://resources.blogblog.com/img/icon18_edit_allbkg.gif",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/gif",
+      "content_length": "162",
+      "error": null,
+      "final_url": "https://resources.blogblog.com/img/icon18_edit_allbkg.gif"
+    },
+    {
+      "row_idx": 1,
+      "raw": "//blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgwqVZPozh4wmlP_YLcrw1A0yy9lGWy2QNngJTp2bM8jCktSJoIJN6MHzl-pwvidJ3s0P27RuVUFVM7suK-cbKLxSQf0oZb0e9FF2cOK72cl10uKwT4NZhvbiT-H4lg5A/s151/*",
+      "url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgwqVZPozh4wmlP_YLcrw1A0yy9lGWy2QNngJTp2bM8jCktSJoIJN6MHzl-pwvidJ3s0P27RuVUFVM7suK-cbKLxSQf0oZb0e9FF2cOK72cl10uKwT4NZhvbiT-H4lg5A/s151/*",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "content_length": "8021",
+      "error": null,
+      "final_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgwqVZPozh4wmlP_YLcrw1A0yy9lGWy2QNngJTp2bM8jCktSJoIJN6MHzl-pwvidJ3s0P27RuVUFVM7suK-cbKLxSQf0oZb0e9FF2cOK72cl10uKwT4NZhvbiT-H4lg5A/s151/*"
+    },
+    {
+      "row_idx": 3,
+      "raw": "https://mc.yandex.ru/watch/57523894",
+      "url": "https://mc.yandex.ru/watch/57523894",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/gif",
+      "content_length": "43",
+      "error": null,
+      "final_url": "https://mc.yandex.ru/watch/57523894/1?redirnss=1"
+    },
+    {
+      "row_idx": 3,
+      "raw": "https://top-fwz1.mail.ru/counter?id=3248818;js=na",
+      "url": "https://top-fwz1.mail.ru/counter?id=3248818;js=na",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/gif",
+      "content_length": "43",
+      "error": null,
+      "final_url": "https://top-fwz1.mail.ru/counter2?id=3248818;js=na"
+    },
+    {
+      "row_idx": 3,
+      "raw": "https://informer.yandex.ru/informer/57523894/3_1_FFFFFFFF_EFEFEFFF_0_pageviews",
+      "url": "https://informer.yandex.ru/informer/57523894/3_1_FFFFFFFF_EFEFEFFF_0_pageviews",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "1287",
+      "error": null,
+      "final_url": "https://informer.yandex.ru/informer/57523894/3_1_FFFFFFFF_EFEFEFFF_0_pageviews"
+    },
+    {
+      "row_idx": 4,
+      "raw": "//in.getclicky.com/101377506ns.gif",
+      "url": "https://in.getclicky.com/101377506ns.gif",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/gif",
+      "content_length": null,
+      "error": null,
+      "final_url": "https://in.getclicky.com/101377506ns.gif"
+    },
+    {
+      "row_idx": 6,
+      "raw": "https://lamonacaironworks.com/wp-content/uploads/2020/07/lamonaca-logo-sm.png",
+      "url": "https://lamonacaironworks.com/wp-content/uploads/2020/07/lamonaca-logo-sm.png",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "7307",
+      "error": null,
+      "final_url": "https://lamonacaironworks.com/wp-content/uploads/2020/07/lamonaca-logo-sm.png"
+    },
+    {
+      "row_idx": 6,
+      "raw": "https://lamonacaironworks.com/wp-content/uploads/2019/07/TH-500.jpg",
+      "url": "https://lamonacaironworks.com/wp-content/uploads/2019/07/TH-500.jpg",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "content_length": "24936",
+      "error": null,
+      "final_url": "https://lamonacaironworks.com/wp-content/uploads/2019/07/TH-500.jpg"
+    },
+    {
+      "row_idx": 6,
+      "raw": "https://lamonacaironworks.com/wp-content/uploads/2019/07/TH-500-300x75.jpg",
+      "url": "https://lamonacaironworks.com/wp-content/uploads/2019/07/TH-500-300x75.jpg",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "content_length": "6295",
+      "error": null,
+      "final_url": "https://lamonacaironworks.com/wp-content/uploads/2019/07/TH-500-300x75.jpg"
+    },
+    {
+      "row_idx": 7,
+      "raw": "//nikolashat.cerkov.ru/files/2020/03/cropped-DJI_0065.jpg",
+      "url": "https://nikolashat.cerkov.ru/files/2020/03/cropped-DJI_0065.jpg",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "content_length": "51053",
+      "error": null,
+      "final_url": "https://nikolashat.cerkov.ru/files/2020/03/cropped-DJI_0065.jpg"
+    },
+    {
+      "row_idx": 7,
+      "raw": "//shaturanik.ru/files/2020/11/3tnIn-jY4bE-100x100.jpg",
+      "url": "https://shaturanik.ru/files/2020/11/3tnIn-jY4bE-100x100.jpg",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "content_length": null,
+      "error": null,
+      "final_url": "https://shaturanik.ru/"
+    },
+    {
+      "row_idx": 7,
+      "raw": "//shaturanik.ru/files/2020/11/aYLm51bTaYw-100x100.jpg",
+      "url": "https://shaturanik.ru/files/2020/11/aYLm51bTaYw-100x100.jpg",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "content_length": null,
+      "error": null,
+      "final_url": "https://shaturanik.ru/"
+    },
+    {
+      "row_idx": 7,
+      "raw": "//shaturanik.ru/files/2020/11/RT1tVpvH8M4-100x100.jpg",
+      "url": "https://shaturanik.ru/files/2020/11/RT1tVpvH8M4-100x100.jpg",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "content_length": null,
+      "error": null,
+      "final_url": "https://shaturanik.ru/"
+    },
+    {
+      "row_idx": 7,
+      "raw": "//shaturanik.ru/files/2020/11/swfF3g-FJF8-100x100.jpg",
+      "url": "https://shaturanik.ru/files/2020/11/swfF3g-FJF8-100x100.jpg",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "content_length": null,
+      "error": null,
+      "final_url": "https://shaturanik.ru/"
+    },
+    {
+      "row_idx": 7,
+      "raw": "https://mc.yandex.ru/watch/50807884",
+      "url": "https://mc.yandex.ru/watch/50807884",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/gif",
+      "content_length": "43",
+      "error": null,
+      "final_url": "https://mc.yandex.ru/watch/50807884/1?redirnss=1"
+    },
+    {
+      "row_idx": 7,
+      "raw": "https://mc.yandex.ru/watch/32042851",
+      "url": "https://mc.yandex.ru/watch/32042851",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/gif",
+      "content_length": "43",
+      "error": null,
+      "final_url": "https://mc.yandex.ru/watch/32042851/1?redirnss=1"
+    },
+    {
+      "row_idx": 7,
+      "raw": "https://ortox.ru/upload/iblock/589/47k5yvpoqd5nigccli94h88b2u2nfzdw/_p1b288nhqm1f0h1iikoiu1t4o18rc3.jpg",
+      "url": "https://ortox.ru/upload/iblock/589/47k5yvpoqd5nigccli94h88b2u2nfzdw/_p1b288nhqm1f0h1iikoiu1t4o18rc3.jpg",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "content_length": "40271",
+      "error": null,
+      "final_url": "https://ortox.ru/upload/iblock/589/47k5yvpoqd5nigccli94h88b2u2nfzdw/_p1b288nhqm1f0h1iikoiu1t4o18rc3.jpg"
+    },
+    {
+      "row_idx": 7,
+      "raw": "https://ortox.ru/upload/iblock/bac/o9i8zec0lxl32xz2t20k3iqb2nfgzpv2/_p1bkp0crc218921iiqeod1hpd115q3.JPG",
+      "url": "https://ortox.ru/upload/iblock/bac/o9i8zec0lxl32xz2t20k3iqb2nfgzpv2/_p1bkp0crc218921iiqeod1hpd115q3.JPG",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "content_length": "20418",
+      "error": null,
+      "final_url": "https://ortox.ru/upload/iblock/bac/o9i8zec0lxl32xz2t20k3iqb2nfgzpv2/_p1bkp0crc218921iiqeod1hpd115q3.JPG"
+    },
+    {
+      "row_idx": 7,
+      "raw": "https://ortox.ru/upload/iblock/175/fpsv5nq7be158y3x6pwmq4xosfxv0hyr/_p1b287khfc1quligmr1rl5e2c83.jpg",
+      "url": "https://ortox.ru/upload/iblock/175/fpsv5nq7be158y3x6pwmq4xosfxv0hyr/_p1b287khfc1quligmr1rl5e2c83.jpg",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "content_length": "27052",
+      "error": null,
+      "final_url": "https://ortox.ru/upload/iblock/175/fpsv5nq7be158y3x6pwmq4xosfxv0hyr/_p1b287khfc1quligmr1rl5e2c83.jpg"
+    },
+    {
+      "row_idx": 7,
+      "raw": "https://ortox.ru/upload/iblock/d56/fna6sidc2xf3fds38e84c6eolahnv325/_p1b2880lft1quj1lsd13k41sos1v8n3.jpg",
+      "url": "https://ortox.ru/upload/iblock/d56/fna6sidc2xf3fds38e84c6eolahnv325/_p1b2880lft1quj1lsd13k41sos1v8n3.jpg",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "content_length": "12311",
+      "error": null,
+      "final_url": "https://ortox.ru/upload/iblock/d56/fna6sidc2xf3fds38e84c6eolahnv325/_p1b2880lft1quj1lsd13k41sos1v8n3.jpg"
+    },
+    {
+      "row_idx": 7,
+      "raw": "https://ortox.ru/upload/iblock/2a0/o9fm2al78t6n33mxhi0xefur2utxx28p/_p1do6itou61lgl125ehiakv39tm3.jpg",
+      "url": "https://ortox.ru/upload/iblock/2a0/o9fm2al78t6n33mxhi0xefur2utxx28p/_p1do6itou61lgl125ehiakv39tm3.jpg",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "content_length": "27417",
+      "error": null,
+      "final_url": "https://ortox.ru/upload/iblock/2a0/o9fm2al78t6n33mxhi0xefur2utxx28p/_p1do6itou61lgl125ehiakv39tm3.jpg"
+    },
+    {
+      "row_idx": 7,
+      "raw": "https://ortox.ru/upload/iblock/6b8/ipr7z96xt24sjcv81243rjeh2i9c2o6a/_p1do6kpljmjjkdv44iif7rhk3.jpg",
+      "url": "https://ortox.ru/upload/iblock/6b8/ipr7z96xt24sjcv81243rjeh2i9c2o6a/_p1do6kpljmjjkdv44iif7rhk3.jpg",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "content_length": "36689",
+      "error": null,
+      "final_url": "https://ortox.ru/upload/iblock/6b8/ipr7z96xt24sjcv81243rjeh2i9c2o6a/_p1do6kpljmjjkdv44iif7rhk3.jpg"
+    },
+    {
+      "row_idx": 7,
+      "raw": "https://ortox.ru/upload/iblock/c1a/4fprn2mtcu4klz345mm5vrwbpfn6dcqi/_p1dnn96nglptlolfh4rl3l1qeg3.jpg",
+      "url": "https://ortox.ru/upload/iblock/c1a/4fprn2mtcu4klz345mm5vrwbpfn6dcqi/_p1dnn96nglptlolfh4rl3l1qeg3.jpg",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "content_length": "21986",
+      "error": null,
+      "final_url": "https://ortox.ru/upload/iblock/c1a/4fprn2mtcu4klz345mm5vrwbpfn6dcqi/_p1dnn96nglptlolfh4rl3l1qeg3.jpg"
+    },
+    {
+      "row_idx": 7,
+      "raw": "https://ortox.ru/upload/iblock/e61/zksahrnoueogkiyzunmm2xjuotndp7p5/_p1bkp0crc218921iiqeod1hpd115q3.JPG",
+      "url": "https://ortox.ru/upload/iblock/e61/zksahrnoueogkiyzunmm2xjuotndp7p5/_p1bkp0crc218921iiqeod1hpd115q3.JPG",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "content_length": "20418",
+      "error": null,
+      "final_url": "https://ortox.ru/upload/iblock/e61/zksahrnoueogkiyzunmm2xjuotndp7p5/_p1bkp0crc218921iiqeod1hpd115q3.JPG"
+    },
+    {
+      "row_idx": 8,
+      "raw": "https://top-fwz1.mail.ru/counter?id=60960;js=na",
+      "url": "https://top-fwz1.mail.ru/counter?id=60960;js=na",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/gif",
+      "content_length": "43",
+      "error": null,
+      "final_url": "https://top-fwz1.mail.ru/counter2?id=60960;js=na"
+    },
+    {
+      "row_idx": 8,
+      "raw": "https://top-fwz1.mail.ru/counter?id=60960;t=409;l=1",
+      "url": "https://top-fwz1.mail.ru/counter?id=60960;t=409;l=1",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/gif",
+      "content_length": "1515",
+      "error": null,
+      "final_url": "https://top-fwz1.mail.ru/counter2?id=60960;t=409;l=1"
+    },
+    {
+      "row_idx": 9,
+      "raw": "https://static.wixstatic.com/media/520cda_41686b0d9ee748d1bdef3d28d67772c5~mv2.png/v1/fill/w_342,h_99,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/%25E7%25A4%25BE%25E5%2590%258D_edited.png",
+      "url": "https://static.wixstatic.com/media/520cda_41686b0d9ee748d1bdef3d28d67772c5~mv2.png/v1/fill/w_342,h_99,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/%25E7%25A4%25BE%25E5%2590%258D_edited.png",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "32564",
+      "error": null,
+      "final_url": "https://static.wixstatic.com/media/520cda_41686b0d9ee748d1bdef3d28d67772c5~mv2.png/v1/fill/w_342,h_99,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/%25E7%25A4%25BE%25E5%2590%258D_edited.png"
+    },
+    {
+      "row_idx": 9,
+      "raw": "https://static.wixstatic.com/media/520cda_f0c9f48f50284d10acc11e8913002438~mv2.jpg/v1/fill/w_756,h_536,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/SALE_200207_edited.jpg",
+      "url": "https://static.wixstatic.com/media/520cda_f0c9f48f50284d10acc11e8913002438~mv2.jpg/v1/fill/w_756,h_536,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/SALE_200207_edited.jpg",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "content_length": "139677",
+      "error": null,
+      "final_url": "https://static.wixstatic.com/media/520cda_f0c9f48f50284d10acc11e8913002438~mv2.jpg/v1/fill/w_756,h_536,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/SALE_200207_edited.jpg"
+    },
+    {
+      "row_idx": 9,
+      "raw": "https://static.wixstatic.com/media/520cda_694a5587f8184152adc50b0a2c91b67a~mv2.jpg/v1/fill/w_756,h_546,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/Sale_Pick%2520Up_edited.jpg",
+      "url": "https://static.wixstatic.com/media/520cda_694a5587f8184152adc50b0a2c91b67a~mv2.jpg/v1/fill/w_756,h_546,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/Sale_Pick%2520Up_edited.jpg",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "content_length": "81071",
+      "error": null,
+      "final_url": "https://static.wixstatic.com/media/520cda_694a5587f8184152adc50b0a2c91b67a~mv2.jpg/v1/fill/w_756,h_546,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/Sale_Pick%2520Up_edited.jpg"
+    },
+    {
+      "row_idx": 9,
+      "raw": "https://static.wixstatic.com/media/520cda_4f3cf126883243b696c960d71b96cd61~mv2.jpg/v1/fill/w_747,h_516,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/JILL15%25OFF%E3%83%81%E3%83%A9%E3%82%B7.jpg",
+      "url": "https://static.wixstatic.com/media/520cda_4f3cf126883243b696c960d71b96cd61~mv2.jpg/v1/fill/w_747,h_516,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/JILL15%25OFF%E3%83%81%E3%83%A9%E3%82%B7.jpg",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "content_length": "40995",
+      "error": null,
+      "final_url": "https://static.wixstatic.com/media/520cda_4f3cf126883243b696c960d71b96cd61~mv2.jpg/v1/fill/w_747,h_516,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/JILL15%25OFF%E3%83%81%E3%83%A9%E3%82%B7.jpg"
+    },
+    {
+      "row_idx": 10,
+      "raw": "https://cms.podcastit.me/wp-content/uploads/2019/09/siltala-television-lapset-tunnus-1920x1080.jpg",
+      "url": "https://cms.podcastit.me/wp-content/uploads/2019/09/siltala-television-lapset-tunnus-1920x1080.jpg",
+      "ok": false,
+      "method": "GET",
+      "status": 403,
+      "content_type": "text/html",
+      "content_length": null,
+      "error": "HTTPError: 403"
+    },
+    {
+      "row_idx": 10,
+      "raw": "https://dts.podtrac.com/redirect.mp3/cdn.podcastit.me/wp-content/uploads/2019/12/Television-lapset-2-raakis.mp3?_=1",
+      "url": "https://dts.podtrac.com/redirect.mp3/cdn.podcastit.me/wp-content/uploads/2019/12/Television-lapset-2-raakis.mp3?_=1",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "content_length": null,
+      "error": null,
+      "final_url": "https://cdn.podcastit.me/wp-content/uploads/2019/12/Television-lapset-2-raakis.mp3?_=1"
+    },
+    {
+      "row_idx": 12,
+      "raw": "http://thepaneljumper.com/wp-content/uploads/2018/12/cropped-PanelJumper-Header-website2.jpg",
+      "url": "http://thepaneljumper.com/wp-content/uploads/2018/12/cropped-PanelJumper-Header-website2.jpg",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "content_length": "22152",
+      "error": null,
+      "final_url": "http://thepaneljumper.com/wp-content/uploads/2018/12/cropped-PanelJumper-Header-website2.jpg"
+    },
+    {
+      "row_idx": 12,
+      "raw": "http://thepaneljumper.com/wp-content/themes/mantra/resources/images/socials/Facebook.png",
+      "url": "http://thepaneljumper.com/wp-content/themes/mantra/resources/images/socials/Facebook.png",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "714",
+      "error": null,
+      "final_url": "http://thepaneljumper.com/wp-content/themes/mantra/resources/images/socials/Facebook.png"
+    },
+    {
+      "row_idx": 12,
+      "raw": "http://thepaneljumper.com/wp-content/themes/mantra/resources/images/socials/Twitter.png",
+      "url": "http://thepaneljumper.com/wp-content/themes/mantra/resources/images/socials/Twitter.png",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "3360",
+      "error": null,
+      "final_url": "http://thepaneljumper.com/wp-content/themes/mantra/resources/images/socials/Twitter.png"
+    },
+    {
+      "row_idx": 12,
+      "raw": "http://thepaneljumper.com/wp-content/themes/mantra/resources/images/socials/YouTube.png",
+      "url": "http://thepaneljumper.com/wp-content/themes/mantra/resources/images/socials/YouTube.png",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "3162",
+      "error": null,
+      "final_url": "http://thepaneljumper.com/wp-content/themes/mantra/resources/images/socials/YouTube.png"
+    },
+    {
+      "row_idx": 12,
+      "raw": "http://thepaneljumper.com/wp-content/uploads/2020/10/PBP269_thumb-229x150.jpg",
+      "url": "http://thepaneljumper.com/wp-content/uploads/2020/10/PBP269_thumb-229x150.jpg",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "content_length": "15520",
+      "error": null,
+      "final_url": "http://thepaneljumper.com/wp-content/uploads/2020/10/PBP269_thumb-229x150.jpg"
+    },
+    {
+      "row_idx": 12,
+      "raw": "http://thepaneljumper.com/wp-content/uploads/2020/09/04212020_thumb-1-250x141.jpg",
+      "url": "http://thepaneljumper.com/wp-content/uploads/2020/09/04212020_thumb-1-250x141.jpg",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "content_length": "11082",
+      "error": null,
+      "final_url": "http://thepaneljumper.com/wp-content/uploads/2020/09/04212020_thumb-1-250x141.jpg"
+    },
+    {
+      "row_idx": 13,
+      "raw": "https://i0.wp.com/2of.ca/wp-content/uploads/2021/08/191311751_86650f672d_b.jpg?resize=700%2C465&amp;ssl=1",
+      "url": "https://i0.wp.com/2of.ca/wp-content/uploads/2021/08/191311751_86650f672d_b.jpg?resize=700%2C465&amp;ssl=1",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "content_length": "114414",
+      "error": null,
+      "final_url": "https://i0.wp.com/2of.ca/wp-content/uploads/2021/08/191311751_86650f672d_b.jpg?resize=700%2C465&amp;ssl=1"
+    },
+    {
+      "row_idx": 13,
+      "raw": "https://2of.ca/wp-content/uploads/2021/08/2of_S01_E11_Shrinkage_pt2.mp3",
+      "url": "https://2of.ca/wp-content/uploads/2021/08/2of_S01_E11_Shrinkage_pt2.mp3",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "audio/mpeg",
+      "content_length": "33780111",
+      "error": null,
+      "final_url": "https://2of.ca/wp-content/uploads/2021/08/2of_S01_E11_Shrinkage_pt2.mp3"
+    },
+    {
+      "row_idx": 13,
+      "raw": "https://i0.wp.com/2of.ca/wp-content/uploads/2021/08/14392019778_cf3877f0f1_b.jpg?resize=700%2C516&amp;ssl=1",
+      "url": "https://i0.wp.com/2of.ca/wp-content/uploads/2021/08/14392019778_cf3877f0f1_b.jpg?resize=700%2C516&amp;ssl=1",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "content_length": "48218",
+      "error": null,
+      "final_url": "https://i0.wp.com/2of.ca/wp-content/uploads/2021/08/14392019778_cf3877f0f1_b.jpg?resize=700%2C516&amp;ssl=1"
+    },
+    {
+      "row_idx": 13,
+      "raw": "https://i0.wp.com/2of.ca/wp-content/uploads/2021/08/36169288_f58a33cc20_b.jpg?resize=700%2C525&amp;ssl=1",
+      "url": "https://i0.wp.com/2of.ca/wp-content/uploads/2021/08/36169288_f58a33cc20_b.jpg?resize=700%2C525&amp;ssl=1",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "content_length": "34502",
+      "error": null,
+      "final_url": "https://i0.wp.com/2of.ca/wp-content/uploads/2021/08/36169288_f58a33cc20_b.jpg?resize=700%2C525&amp;ssl=1"
+    },
+    {
+      "row_idx": 14,
+      "raw": "https://mc.yandex.ru/watch/45923424?ut=noindex",
+      "url": "https://mc.yandex.ru/watch/45923424?ut=noindex",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/gif",
+      "content_length": "43",
+      "error": null,
+      "final_url": "https://mc.yandex.ru/watch/45923424/1?ut=noindex&redirnss=1"
+    },
+    {
+      "row_idx": 15,
+      "raw": "https://heightsbymarstonlakeapts.com/wp-content/themes/Divi/images/logo.png",
+      "url": "https://heightsbymarstonlakeapts.com/wp-content/themes/Divi/images/logo.png",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "1740",
+      "error": null,
+      "final_url": "https://heightsbymarstonlakeapts.com/wp-content/themes/Divi/images/logo.png"
+    },
+    {
+      "row_idx": 15,
+      "raw": "https://heightsbymarstonlakeapts.com/wp-content/uploads/2017/02/swimming-pool-5-199335_1024x675.jpg",
+      "url": "https://heightsbymarstonlakeapts.com/wp-content/uploads/2017/02/swimming-pool-5-199335_1024x675.jpg",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "content_length": "149542",
+      "error": null,
+      "final_url": "https://heightsbymarstonlakeapts.com/wp-content/uploads/2017/02/swimming-pool-5-199335_1024x675.jpg"
+    },
+    {
+      "row_idx": 15,
+      "raw": "https://heightsbymarstonlakeapts.com/wp-content/uploads/2017/02/swimming-pool-5-300x225.jpg",
+      "url": "https://heightsbymarstonlakeapts.com/wp-content/uploads/2017/02/swimming-pool-5-300x225.jpg",
+      "ok": false,
+      "method": "HEAD",
+      "status": 404,
+      "content_type": "text/html",
+      "content_length": "808",
+      "error": "HTTPError: 404"
+    },
+    {
+      "row_idx": 16,
+      "raw": "https://www.golfiv.fr:443/styles/subsilver2/theme/images/banniere-giv.jpg",
+      "url": "https://www.golfiv.fr:443/styles/subsilver2/theme/images/banniere-giv.jpg",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "content_length": "135352",
+      "error": null,
+      "final_url": "https://www.golfiv.fr:443/styles/subsilver2/theme/images/banniere-giv.jpg"
+    },
+    {
+      "row_idx": 16,
+      "raw": "https://www.golfiv.fr:443/images/phpbb-seo.png",
+      "url": "https://www.golfiv.fr:443/images/phpbb-seo.png",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "299",
+      "error": null,
+      "final_url": "https://www.golfiv.fr:443/images/phpbb-seo.png"
+    },
+    {
+      "row_idx": 16,
+      "raw": "//matomo.golfiv.fr/matomo.php?idsite=1&amp;rec=1",
+      "url": "https://matomo.golfiv.fr/matomo.php?idsite=1&amp;rec=1",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/gif",
+      "content_length": null,
+      "error": null,
+      "final_url": "https://matomo.golfiv.fr/matomo.php?idsite=1&amp;rec=1"
+    },
+    {
+      "row_idx": 17,
+      "raw": "https://i0.wp.com/moyommoja.org/wp-content/uploads/2011/10/MoyoMmoja_Outside21-300x273.jpg?resize=273%2C248",
+      "url": "https://i0.wp.com/moyommoja.org/wp-content/uploads/2011/10/MoyoMmoja_Outside21-300x273.jpg?resize=273%2C248",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "content_length": "20496",
+      "error": null,
+      "final_url": "https://i0.wp.com/moyommoja.org/wp-content/uploads/2011/10/MoyoMmoja_Outside21-300x273.jpg?resize=273%2C248"
+    },
+    {
+      "row_idx": 17,
+      "raw": "https://i0.wp.com/moyommoja.org/wp-content/uploads/2011/10/MoyoMmoja_LivingRoom-300x289.jpg?resize=274%2C264",
+      "url": "https://i0.wp.com/moyommoja.org/wp-content/uploads/2011/10/MoyoMmoja_LivingRoom-300x289.jpg?resize=274%2C264",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "content_length": "18906",
+      "error": null,
+      "final_url": "https://i0.wp.com/moyommoja.org/wp-content/uploads/2011/10/MoyoMmoja_LivingRoom-300x289.jpg?resize=274%2C264"
+    },
+    {
+      "row_idx": 17,
+      "raw": "https://i0.wp.com/moyommoja.org/wp-content/uploads/2011/10/MoyoMmoja_Room_BigHouse-300x293.jpg?resize=265%2C258",
+      "url": "https://i0.wp.com/moyommoja.org/wp-content/uploads/2011/10/MoyoMmoja_Room_BigHouse-300x293.jpg?resize=265%2C258",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "content_length": "19003",
+      "error": null,
+      "final_url": "https://i0.wp.com/moyommoja.org/wp-content/uploads/2011/10/MoyoMmoja_Room_BigHouse-300x293.jpg?resize=265%2C258"
+    },
+    {
+      "row_idx": 17,
+      "raw": "http://moyommoja.org/wp-content/uploads/2012/02/Hippo_hut_3-Welcome1-164x300.png",
+      "url": "http://moyommoja.org/wp-content/uploads/2012/02/Hippo_hut_3-Welcome1-164x300.png",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "79595",
+      "error": null,
+      "final_url": "http://moyommoja.org/wp-content/uploads/2012/02/Hippo_hut_3-Welcome1-164x300.png"
+    },
+    {
+      "row_idx": 18,
+      "raw": "https://antikhandlare.se/wp-content/uploads/2023/09/atp-logotyp.png",
+      "url": "https://antikhandlare.se/wp-content/uploads/2023/09/atp-logotyp.png",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "51294",
+      "error": null,
+      "final_url": "https://antikhandlare.se/wp-content/uploads/2023/09/atp-logotyp.png"
+    },
+    {
+      "row_idx": 18,
+      "raw": "https://antikhandlare.se/wp-content/uploads/2023/10/lampor-3-copy-144009.jpg",
+      "url": "https://antikhandlare.se/wp-content/uploads/2023/10/lampor-3-copy-144009.jpg",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "content_length": "130556",
+      "error": null,
+      "final_url": "https://antikhandlare.se/wp-content/uploads/2023/10/lampor-3-copy-144009.jpg"
+    },
+    {
+      "row_idx": 20,
+      "raw": "https://www.syr.se/wp-content/uploads/2016/12/cropped-icon_huvud.jpg",
+      "url": "https://www.syr.se/wp-content/uploads/2016/12/cropped-icon_huvud.jpg",
+      "ok": false,
+      "method": "GET",
+      "status": null,
+      "content_type": null,
+      "content_length": null,
+      "error": "URLError: <urlopen error [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1028)>"
+    },
+    {
+      "row_idx": 20,
+      "raw": "https://www.syr.se/wp-content/uploads/2016/12/cropped-icon_huvud-270x270.jpg",
+      "url": "https://www.syr.se/wp-content/uploads/2016/12/cropped-icon_huvud-270x270.jpg",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "content_length": "20482",
+      "error": null,
+      "final_url": "https://www.syr.se/wp-content/uploads/2016/12/cropped-icon_huvud-270x270.jpg"
+    },
+    {
+      "row_idx": 20,
+      "raw": "https://www.syr.se/wp-content/uploads/2021/03/fb.png",
+      "url": "https://www.syr.se/wp-content/uploads/2021/03/fb.png",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "13090",
+      "error": null,
+      "final_url": "https://www.syr.se/wp-content/uploads/2021/03/fb.png"
+    },
+    {
+      "row_idx": 21,
+      "raw": "https://freemp4movie.org/wp-content/uploads/2019/03/Captain-Marvel-2019-220x175.jpg",
+      "url": "https://freemp4movie.org/wp-content/uploads/2019/03/Captain-Marvel-2019-220x175.jpg",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "content_length": "14740",
+      "error": null,
+      "final_url": "https://freemp4movie.org/wp-content/uploads/2019/03/Captain-Marvel-2019-220x175.jpg"
+    },
+    {
+      "row_idx": 21,
+      "raw": "http://freemp4movie.org/wp-content/uploads/2019/12/play-now-20.png",
+      "url": "http://freemp4movie.org/wp-content/uploads/2019/12/play-now-20.png",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "5664",
+      "error": null,
+      "final_url": "https://freemp4movie.org/wp-content/uploads/2019/12/play-now-20.png"
+    },
+    {
+      "row_idx": 22,
+      "raw": "https://www.retter-radio.de/radioforum/images/xmaslogo.jpg",
+      "url": "https://www.retter-radio.de/radioforum/images/xmaslogo.jpg",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "content_length": "67816",
+      "error": null,
+      "final_url": "https://www.retter-radio.de/radioforum/images/xmaslogo.jpg"
+    },
+    {
+      "row_idx": 22,
+      "raw": "https://www.retter-radio.de/radioforum/radiostats/hier_klicken2.png",
+      "url": "https://www.retter-radio.de/radioforum/radiostats/hier_klicken2.png",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "64542",
+      "error": null,
+      "final_url": "https://www.retter-radio.de/radioforum/radiostats/hier_klicken2.png"
+    },
+    {
+      "row_idx": 22,
+      "raw": "https://phonepublisher.com/banner.do?uk=b280bd34e00d46dae0df9ce34d427684280d50ad",
+      "url": "https://phonepublisher.com/banner.do?uk=b280bd34e00d46dae0df9ce34d427684280d50ad",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/GIF",
+      "content_length": "26257",
+      "error": null,
+      "final_url": "https://phonepublisher.com/banner.do?uk=b280bd34e00d46dae0df9ce34d427684280d50ad"
+    },
+    {
+      "row_idx": 22,
+      "raw": "https://www.retter-radio.de/images/sponsor/radiou.gif",
+      "url": "https://www.retter-radio.de/images/sponsor/radiou.gif",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/gif",
+      "content_length": "32334",
+      "error": null,
+      "final_url": "https://www.retter-radio.de/images/sponsor/radiou.gif"
+    },
+    {
+      "row_idx": 22,
+      "raw": "https://www.retter-radio.de/images/sponsor/web_logo88a.gif",
+      "url": "https://www.retter-radio.de/images/sponsor/web_logo88a.gif",
+      "ok": false,
+      "method": "HEAD",
+      "status": 404,
+      "content_type": "text/html; charset=iso-8859-1",
+      "content_length": null,
+      "error": "HTTPError: 404"
+    },
+    {
+      "row_idx": 22,
+      "raw": "https://www.retter-radio.de/images/sponsor/radiodienste_32.png",
+      "url": "https://www.retter-radio.de/images/sponsor/radiodienste_32.png",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "866",
+      "error": null,
+      "final_url": "https://www.retter-radio.de/images/sponsor/radiodienste_32.png"
+    },
+    {
+      "row_idx": 22,
+      "raw": "https://www.retter-radio.de/images/sponsor/spampoison.gif",
+      "url": "https://www.retter-radio.de/images/sponsor/spampoison.gif",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/gif",
+      "content_length": "254",
+      "error": null,
+      "final_url": "https://www.retter-radio.de/images/sponsor/spampoison.gif"
+    },
+    {
+      "row_idx": 23,
+      "raw": "//html5-player.libsyn.com/embed/episode/id/26631729/height/45/theme/standard/thumbnail/yes/direction/forward/tdest_id/334559/",
+      "url": "https://html5-player.libsyn.com/embed/episode/id/26631729/height/45/theme/standard/thumbnail/yes/direction/forward/tdest_id/334559/",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "content_length": null,
+      "error": null,
+      "final_url": "https://html5-player.libsyn.com/embed/episode/id/26631729/height/45/theme/standard/thumbnail/yes/direction/forward/tdest_id/334559/"
+    },
+    {
+      "row_idx": 23,
+      "raw": "//html5-player.libsyn.com/embed/episode/id/26558190/height/45/theme/standard/thumbnail/yes/direction/forward/tdest_id/334559/",
+      "url": "https://html5-player.libsyn.com/embed/episode/id/26558190/height/45/theme/standard/thumbnail/yes/direction/forward/tdest_id/334559/",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "content_length": null,
+      "error": null,
+      "final_url": "https://html5-player.libsyn.com/embed/episode/id/26558190/height/45/theme/standard/thumbnail/yes/direction/forward/tdest_id/334559/"
+    },
+    {
+      "row_idx": 23,
+      "raw": "//html5-player.libsyn.com/embed/episode/id/26489190/height/45/theme/standard/thumbnail/yes/direction/forward/tdest_id/334559/",
+      "url": "https://html5-player.libsyn.com/embed/episode/id/26489190/height/45/theme/standard/thumbnail/yes/direction/forward/tdest_id/334559/",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "content_length": null,
+      "error": null,
+      "final_url": "https://html5-player.libsyn.com/embed/episode/id/26489190/height/45/theme/standard/thumbnail/yes/direction/forward/tdest_id/334559/"
+    },
+    {
+      "row_idx": 23,
+      "raw": "//html5-player.libsyn.com/embed/episode/id/26424582/height/45/theme/standard/thumbnail/yes/direction/forward/tdest_id/334559/",
+      "url": "https://html5-player.libsyn.com/embed/episode/id/26424582/height/45/theme/standard/thumbnail/yes/direction/forward/tdest_id/334559/",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "content_length": null,
+      "error": null,
+      "final_url": "https://html5-player.libsyn.com/embed/episode/id/26424582/height/45/theme/standard/thumbnail/yes/direction/forward/tdest_id/334559/"
+    },
+    {
+      "row_idx": 24,
+      "raw": "https://fotografschaft.com/wordpress/wp-content/uploads/2016/10/FGS16_Logo_RGB_copper2.jpg",
+      "url": "https://fotografschaft.com/wordpress/wp-content/uploads/2016/10/FGS16_Logo_RGB_copper2.jpg",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "content_length": "85180",
+      "error": null,
+      "final_url": "https://fotografschaft.com/wordpress/wp-content/uploads/2016/10/FGS16_Logo_RGB_copper2.jpg"
+    },
+    {
+      "row_idx": 24,
+      "raw": "https://fotografschaft.com/wordpress/wp-content/uploads/2014/10/slider-bg3-440x320.jpg",
+      "url": "https://fotografschaft.com/wordpress/wp-content/uploads/2014/10/slider-bg3-440x320.jpg",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "content_length": "26285",
+      "error": null,
+      "final_url": "https://fotografschaft.com/wordpress/wp-content/uploads/2014/10/slider-bg3-440x320.jpg"
+    },
+    {
+      "row_idx": 26,
+      "raw": "http://www.L7.net/images/logo.gif",
+      "url": "http://www.L7.net/images/logo.gif",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/gif",
+      "content_length": "3566",
+      "error": null,
+      "final_url": "http://www.L7.net/images/logo.gif"
+    },
+    {
+      "row_idx": 27,
+      "raw": "//www.googletagmanager.com/ns.html?id=GTM-TMS57V",
+      "url": "https://www.googletagmanager.com/ns.html?id=GTM-TMS57V",
+      "ok": false,
+      "method": "HEAD",
+      "status": 404,
+      "content_type": "text/html; charset=UTF-8",
+      "content_length": "1582",
+      "error": "HTTPError: 404"
+    },
+    {
+      "row_idx": 28,
+      "raw": "https://www.otraparte.org/wp-content/uploads/t-logo-otraparte-mobile-180px.png",
+      "url": "https://www.otraparte.org/wp-content/uploads/t-logo-otraparte-mobile-180px.png",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "1926",
+      "error": null,
+      "final_url": "https://www.otraparte.org/wp-content/uploads/t-logo-otraparte-mobile-180px.png"
+    },
+    {
+      "row_idx": 28,
+      "raw": "https://www.otraparte.org/wp-content/uploads/t-logo-otraparte-azul-300px.png",
+      "url": "https://www.otraparte.org/wp-content/uploads/t-logo-otraparte-azul-300px.png",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "3161",
+      "error": null,
+      "final_url": "https://www.otraparte.org/wp-content/uploads/t-logo-otraparte-azul-300px.png"
+    },
+    {
+      "row_idx": 28,
+      "raw": "https://www.otraparte.org/wp-content/uploads/t-la-libreria-de-otraparte.png",
+      "url": "https://www.otraparte.org/wp-content/uploads/t-la-libreria-de-otraparte.png",
+      "ok": true,
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "23971",
+      "error": null,
+      "final_url": "https://www.otraparte.org/wp-content/uploads/t-la-libreria-de-otraparte.png"
+    }
+  ],
+  "relative_examples": [
+    {
+      "row_idx": 0,
+      "raw": "/static/img/stackage.png"
+    },
+    {
+      "row_idx": 3,
+      "raw": "/pub/images/vk-znak-group-blue.png"
+    },
+    {
+      "row_idx": 3,
+      "raw": "/pub/images/ok-znak-group-orange.png"
+    },
+    {
+      "row_idx": 3,
+      "raw": "/pub/images/vk-znak-group-blue.png"
+    },
+    {
+      "row_idx": 3,
+      "raw": "/pub/images/buttons/social-201404/rutube.png"
+    },
+    {
+      "row_idx": 3,
+      "raw": "/pub/images/buttons/social-201404/open-data.png"
+    },
+    {
+      "row_idx": 3,
+      "raw": "/pub/images/ok-znak-group-orange.png"
+    },
+    {
+      "row_idx": 3,
+      "raw": "/pub/images/pinfo/qr-footer.gif"
+    },
+    {
+      "row_idx": 4,
+      "raw": "/img/logo.png"
+    },
+    {
+      "row_idx": 4,
+      "raw": "/img/target.svg"
+    },
+    {
+      "row_idx": 4,
+      "raw": "/img/world.png"
+    },
+    {
+      "row_idx": 4,
+      "raw": "/img/target.svg"
+    },
+    {
+      "row_idx": 4,
+      "raw": "/img/chrome.svg"
+    },
+    {
+      "row_idx": 8,
+      "raw": "images/misc/vbulletin3_logo_white.gif"
+    },
+    {
+      "row_idx": 8,
+      "raw": "plus-switch18.png"
+    },
+    {
+      "row_idx": 8,
+      "raw": "images/misc/navbits_start.gif"
+    },
+    {
+      "row_idx": 8,
+      "raw": "images/misc/navbits_finallink_ltr.gif"
+    },
+    {
+      "row_idx": 8,
+      "raw": "images/buttons/reply.gif"
+    },
+    {
+      "row_idx": 8,
+      "raw": "images/statusicon/post_old.gif"
+    },
+    {
+      "row_idx": 8,
+      "raw": "images/icons/icon1.gif"
+    },
+    {
+      "row_idx": 8,
+      "raw": "images/statusicon/user_offline.gif"
+    },
+    {
+      "row_idx": 8,
+      "raw": "images/buttons/quote.gif"
+    },
+    {
+      "row_idx": 8,
+      "raw": "clear.gif"
+    },
+    {
+      "row_idx": 8,
+      "raw": "images/statusicon/post_old.gif"
+    },
+    {
+      "row_idx": 8,
+      "raw": "customavatars/avatar117933_1.gif"
+    },
+    {
+      "row_idx": 8,
+      "raw": "images/icons/icon1.gif"
+    },
+    {
+      "row_idx": 8,
+      "raw": "images/statusicon/user_offline.gif"
+    },
+    {
+      "row_idx": 8,
+      "raw": "images/buttons/quote.gif"
+    },
+    {
+      "row_idx": 8,
+      "raw": "images/buttons/reply.gif"
+    },
+    {
+      "row_idx": 8,
+      "raw": "images/buttons/printer.gif"
+    },
+    {
+      "row_idx": 8,
+      "raw": "images/buttons/sendtofriend.gif"
+    },
+    {
+      "row_idx": 8,
+      "raw": "images/buttons/mode_linear.gif"
+    },
+    {
+      "row_idx": 8,
+      "raw": "images/buttons/mode_hybrid.gif"
+    },
+    {
+      "row_idx": 8,
+      "raw": "images/buttons/mode_threaded.gif"
+    },
+    {
+      "row_idx": 8,
+      "raw": "images/buttons/collapse_thead.gif"
+    },
+    {
+      "row_idx": 14,
+      "raw": "/media/organizations/organization/64d/02b/406099767/siteparams_logo_406099767.png"
+    },
+    {
+      "row_idx": 14,
+      "raw": "/media//userprofile/generic.96.jpg"
+    },
+    {
+      "row_idx": 22,
+      "raw": "/radioforum/header1.php"
+    },
+    {
+      "row_idx": 22,
+      "raw": "jgs_graf/lupe.gif"
+    },
+    {
+      "row_idx": 22,
+      "raw": "images/MrryXmas/go.gif"
+    },
+    {
+      "row_idx": 22,
+      "raw": "images/MrryXmas/footer_bg.gif"
+    },
+    {
+      "row_idx": 26,
+      "raw": "/images/logo.2.jpg"
+    },
+    {
+      "row_idx": 26,
+      "raw": "/girls/Autumn.jpg"
+    },
+    {
+      "row_idx": 26,
+      "raw": "/images/cc.gif"
+    },
+    {
+      "row_idx": 27,
+      "raw": "jamk_uusi_tiedostot/logo.png"
+    },
+    {
+      "row_idx": 27,
+      "raw": "jamk_uusi_tiedostot/header_1600x425_lyhytkurssin_kuva_abstrakti.jpg"
+    },
+    {
+      "row_idx": 27,
+      "raw": "images/fla_uk.gif"
+    },
+    {
+      "row_idx": 27,
+      "raw": "images/fla_uk.gif"
+    },
+    {
+      "row_idx": 27,
+      "raw": "images/fla_uk.gif"
+    },
+    {
+      "row_idx": 27,
+      "raw": "images/fla_uk.gif"
+    },
+    {
+      "row_idx": 27,
+      "raw": "images/fla_uk.gif"
+    },
+    {
+      "row_idx": 27,
+      "raw": "images/fla_uk.gif"
+    },
+    {
+      "row_idx": 27,
+      "raw": "images/fla_uk.gif"
+    },
+    {
+      "row_idx": 27,
+      "raw": "images/fla_uk.gif"
+    },
+    {
+      "row_idx": 27,
+      "raw": "images/fla_uk.gif"
+    },
+    {
+      "row_idx": 27,
+      "raw": "images/fla_uk.gif"
+    },
+    {
+      "row_idx": 27,
+      "raw": "images/fla_uk.gif"
+    },
+    {
+      "row_idx": 27,
+      "raw": "images/fla_uk.gif"
+    },
+    {
+      "row_idx": 27,
+      "raw": "images/fla_uk.gif"
+    },
+    {
+      "row_idx": 27,
+      "raw": "images/fla_uk.gif"
+    },
+    {
+      "row_idx": 27,
+      "raw": "images/fla_uk.gif"
+    },
+    {
+      "row_idx": 27,
+      "raw": "images/fla_uk.gif"
+    },
+    {
+      "row_idx": 27,
+      "raw": "images/fla_uk.gif"
+    },
+    {
+      "row_idx": 27,
+      "raw": "images/fla_uk.gif"
+    },
+    {
+      "row_idx": 27,
+      "raw": "images/fla_uk.gif"
+    },
+    {
+      "row_idx": 27,
+      "raw": "images/fla_uk.gif"
+    },
+    {
+      "row_idx": 27,
+      "raw": "images/fla_uk.gif"
+    },
+    {
+      "row_idx": 27,
+      "raw": "images/fla_uk.gif"
+    },
+    {
+      "row_idx": 27,
+      "raw": "images/fla_uk.gif"
+    },
+    {
+      "row_idx": 27,
+      "raw": "images/fla_uk.gif"
+    },
+    {
+      "row_idx": 27,
+      "raw": "images/fla_uk.gif"
+    },
+    {
+      "row_idx": 27,
+      "raw": "images/fla_uk.gif"
+    },
+    {
+      "row_idx": 27,
+      "raw": "jamk_uusi_tiedostot/logo-footer.png"
+    },
+    {
+      "row_idx": 29,
+      "raw": "/forms/form-215.html"
+    },
+    {
+      "row_idx": 31,
+      "raw": "/images/vx.png"
+    },
+    {
+      "row_idx": 31,
+      "raw": "/images/header.jpg"
+    },
+    {
+      "row_idx": 31,
+      "raw": "/images/logo.png"
+    },
+    {
+      "row_idx": 31,
+      "raw": "/images/dw.png"
+    },
+    {
+      "row_idx": 35,
+      "raw": "/mixter-files/images/new.png"
+    },
+    {
+      "row_idx": 35,
+      "raw": "/mixter-files/images/ccmixter_logo_88x31.jpg"
+    }
+  ]
+}

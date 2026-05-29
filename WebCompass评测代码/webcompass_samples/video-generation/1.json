@@ -1,0 +1,100 @@
+{
+  "repo": "claude/webcoding",
+  "instance_id": "1",
+  "base_commit": "main",
+  "problem_statement": [
+    {
+      "task": "Does the page load correctly and run without errors?",
+      "category": "Runnability",
+      "operation_sequence": "1. Open the browser developer tools Console panel 2. Load the page and wait for complete rendering 3. Check if the Console has any red error messages (JavaScript errors) 4. Check if the Network panel has any failed resource requests (404/500)",
+      "expected_result": "Page loads completely, Console has no red errors, Network panel has no failed requests (404/500), all static resources (CSS/JS/images/fonts) load successfully",
+      "criteria": "Full score 10 points; JavaScript runtime errors deduct 5 points; Resource 404 errors deduct 3 points; White screen or crash results in 0 points; Warnings only do not deduct points",
+      "max_score": 10
+    },
+    {
+      "task": "Verify initial state elements and idle animations",
+      "category": "Spec Implementation",
+      "operation_sequence": "1. Load the page and observe the main elements 2. Check for the title 'Fortune Cookie' 3. Verify the presence of the cookie element in the center 4. Observe background elements for 'pulsing' stars or bouncing dots animation without user interaction",
+      "expected_result": "Title is visible in Serif font, Cookie is centered, and background elements (stars/dots) exhibit subtle motion (pulsing/bouncing)",
+      "criteria": "Full score 8 points; Missing pulsing/idle animation deduct 4 points; Layout misalignment deduct 4 points",
+      "max_score": 8
+    },
+    {
+      "task": "Verify the 'Cracking' interaction and animation sequence",
+      "category": "Spec Implementation",
+      "operation_sequence": "1. Click/Tap the center Fortune Cookie 2. Observe the animation of the cookie graphic closely 3. Verify if the cookie splits into two halves and moves outward 4. Check if a 'paper' element visually emerges from the center",
+      "expected_result": "Cookie splits into left and right halves, halves fade out/move away, and a paper slip animates out from the center",
+      "criteria": "Full score 10 points; No splitting animation (just instant switch) deduct 6 points; Missing 'paper emerging' detail deduct 3 points",
+      "max_score": 10
+    },
+    {
+      "task": "Verify loading state indicators during API fetch",
+      "category": "Spec Implementation",
+      "operation_sequence": "1. Click the cookie to trigger the request 2. Immediately observe the text below the cookie area before the result appears 3. Verify the presence of specific text 'Cracking open your fortune...' 4. Check for a moving/sliding loading bar animation",
+      "expected_result": "Interface shows 'Cracking open your fortune...' text and a rhythmic loading bar while waiting for data",
+      "criteria": "Full score 8 points; Missing loading text deduct 4 points; Missing visual loading bar deduct 4 points",
+      "max_score": 8
+    },
+    {
+      "task": "Verify Result Card content and Lucky Numbers",
+      "category": "Spec Implementation",
+      "operation_sequence": "1. Wait for the loading sequence to complete and the card to appear 2. Check if the card contains a coherent fortune message (not placeholder 'Lorem Ipsum') 3. Count the 'Lucky Numbers' displayed at the bottom of the card 4. Verify there are exactly 6 numbers",
+      "expected_result": "A white card appears containing a meaningful English fortune sentence and exactly 6 lucky numbers in amber circles",
+      "criteria": "Full score 10 points; Placeholder text/Undefined result deduct 5 points; Incorrect count of lucky numbers deduct 5 points",
+      "max_score": 10
+    },
+    {
+      "task": "Verify the Reset functionality and Loop",
+      "category": "Spec Implementation",
+      "operation_sequence": "1. After viewing the fortune, find and click the 'Get Another Fortune' button 2. Observe the transition (should return to start screen) 3. Click the cookie again to generate a second fortune 4. Verify that the second fortune/numbers are different from the first",
+      "expected_result": "Button resets the UI to the initial state; Subsequent interaction successfully fetches new, different data",
+      "criteria": "Full score 10 points; Button does not reset state deduct 10 points; Same content returned (static data) deduct 5 points",
+      "max_score": 10
+    },
+    {
+      "task": "Verify micro-interactions (Hover and Active states)",
+      "category": "Spec Implementation",
+      "operation_sequence": "1. Hover the mouse cursor over the main Cookie (initial state) or the Lucky Numbers (result state) 2. Observe scale/size changes 3. Click/Hold the element to check for 'scale-down' effect 4. Release to verify return to normal/hover state",
+      "expected_result": "Interactive elements scale up on hover and scale down on click/active state (tactile feedback)",
+      "criteria": "Full score 6 points; Missing hover effects deduct 3 points; Missing click/active feedback deduct 3 points",
+      "max_score": 6
+    },
+    {
+      "task": "Evaluate the 'Celestial' Color Palette and Theme",
+      "category": "Design Quality",
+      "operation_sequence": "1. Inspect the page background color (should be off-white/cream to warm amber gradient) 2. Check the accent colors of the Cookie and Buttons (should be Deep Amber/Gold) 3. Verify there are no clashing cool colors (e.g., standard blue links, bright green)",
+      "expected_result": "Color scheme is strictly 'Warm/Celestial' (Cream, Amber #b45309, Gold), creating a cohesive elegant atmosphere",
+      "criteria": "Full score 10 points; Use of standard white (#FFF) background instead of off-white deduct 3 points; Clashing colors deduct 5 points",
+      "max_score": 10
+    },
+    {
+      "task": "Evaluate Typography and Card Design compliance",
+      "category": "Design Quality",
+      "operation_sequence": "1. Visually check the Main Header and Fortune Text font (should be Serif/Playfair Display) 2. Check UI elements/numbers font (should be Sans/Inter) 3. Inspect the Fortune Card border radius (should be very rounded, ~2xl/24px) 4. Check for high-elevation shadow on the card",
+      "expected_result": "Typography correctly mixes Serif (Headings) and Sans-Serif (UI); Card features distinct rounded corners and a floating shadow effect",
+      "criteria": "Full score 8 points; Wrong font usage deduct 4 points; Sharp/Square card corners deduct 4 points",
+      "max_score": 8
+    },
+    {
+      "task": "Verify visual polish of Lucky Number badges",
+      "category": "Design Quality",
+      "operation_sequence": "1. Zoom in on the Lucky Numbers in the result card 2. Check if numbers are centered within their circles 3. Verify the circles have a vibrant amber fill that contrasts well with the white card 4. Check for consistent spacing between the bubbles",
+      "expected_result": "Numbers are perfectly centered, legible against amber background, and evenly spaced",
+      "criteria": "Full score 10 points; Off-center text deduct 4 points; Poor contrast/readability deduct 4 points",
+      "max_score": 10
+    },
+    {
+      "task": "Evaluate whether the interface visual design meets professional design standards",
+      "category": "Design Quality",
+      "operation_sequence": "1. View the webpage screenshot to assess whether the overall color scheme is harmonious 2. Check if the layout spacing is reasonable (whether element spacing follows the 8px multiple principle) 3. Check if the typography system is professional (body font size ≥14px, line height exceeds 1.5x)",
+      "expected_result": "The interface follows modern design principles: harmonious and unified color scheme, reasonable and standardized layout spacing, professional and clear typography system",
+      "criteria": "Deduct 5 points for each instance of crowded visual elements, deduct 6 points for jarring color combinations, deduct 5 points for chaotic text and image layout",
+      "max_score": 10
+    }
+  ],
+  "meta": {
+    "class": "Web Development",
+    "difficulty": "N/A"
+  },
+  "working_dir": "/testbed"
+}

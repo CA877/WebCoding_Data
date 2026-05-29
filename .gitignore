@@ -12,6 +12,7 @@ __pycache__/
 .mypy_cache/
 .venv/
 venv/
+**/.deps/
 
 # Generated data and large artifacts
 data_pipeline/output/
@@ -19,6 +20,11 @@ outputs/
 remote_results/
 results/
 logs/
+eval_output/
+test_output/
+output_text/
+data_preview/
+generation/evaluation/agents/claude_code_web_coding/packages/
 useless/*
 !useless/
 !useless/README.md
@@ -37,3 +43,14 @@ useless/*
 .idea/
 .vscode/
 *.swp
+
+# Frontend/local dependency folders
+node_modules/
+dist/
+build/
+
+# Nested repositories copied in for reference should not bring their Git object DB.
+**/.git/
+
+# Environment files with non-standard names, e.g. `.task.env`.
+*.env
