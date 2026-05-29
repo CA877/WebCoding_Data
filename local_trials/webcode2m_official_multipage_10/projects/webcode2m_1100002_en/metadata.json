@@ -1,0 +1,702 @@
+{
+  "project_name": "webcode2m_1100002_en",
+  "row_idx": 1100002,
+  "hash": "91a27402565bf02d5141f76c5338138cae21bfd7",
+  "lang": "en",
+  "score": 0,
+  "image": {},
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    },
+    {
+      "path": "page_1.html",
+      "source": "https://www.debian.org/",
+      "official_clean": {
+        "enabled": true,
+        "source": "third_party/naturalcc/examples/webcode2m/scripts/data_cc_pipeline/format_utils.py",
+        "html_chars_before": 14045,
+        "html_chars_after": 7858,
+        "css_chars_before": 0,
+        "css_chars_after": 0
+      }
+    },
+    {
+      "path": "people.html",
+      "source": "https://www.debian.org/intro/people",
+      "official_clean": {
+        "enabled": true,
+        "source": "third_party/naturalcc/examples/webcode2m/scripts/data_cc_pipeline/format_utils.py",
+        "html_chars_before": 8749,
+        "html_chars_after": 5271,
+        "css_chars_before": 0,
+        "css_chars_after": 0
+      }
+    }
+  ],
+  "multipage_status": "ok",
+  "reason_if_single_page": "",
+  "stats": {
+    "relative_fallback": 17,
+    "removed_noise_link": 4,
+    "official_webcode2m_purified": 1,
+    "child_page_downloaded": 2,
+    "child_downloaded": 28,
+    "child_removed_noise_link": 4,
+    "child_official_webcode2m_purified": 2,
+    "child_fallback_asset": 1
+  },
+  "official_clean": {
+    "enabled": true,
+    "source": "third_party/naturalcc/examples/webcode2m/scripts/data_cc_pipeline/format_utils.py",
+    "html_chars_before": 13958,
+    "html_chars_after": 7816,
+    "css_chars_before": 0,
+    "css_chars_after": 0
+  },
+  "resource_actions": [
+    {
+      "url": "./Pics/openlogo-50.png",
+      "kind": "icon",
+      "action": "relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "Pics/debconf25_group_photo.jpg",
+      "kind": "image",
+      "action": "relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "Pics/mini-dc26-hamburg.jpg",
+      "kind": "image",
+      "action": "relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "Pics/mini-dc26-campinas.jpg",
+      "kind": "image",
+      "action": "relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "Pics/calamares-installer.png",
+      "kind": "image",
+      "action": "relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "Pics/debian-swiss-knife-hands-1024x576.jpg",
+      "kind": "image",
+      "action": "relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "Pics/debian-funny-people-1024x576.jpg",
+      "kind": "image",
+      "action": "relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "Pics/users.svg",
+      "kind": "icon",
+      "action": "relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "Pics/heartbeat.svg",
+      "kind": "icon",
+      "action": "relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "Pics/user-plus.svg",
+      "kind": "icon",
+      "action": "relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "Pics/list.svg",
+      "kind": "icon",
+      "action": "relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "Pics/debian-logo-1024x576.png",
+      "kind": "icon",
+      "action": "relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "Pics/trophy.svg",
+      "kind": "icon",
+      "action": "relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "Pics/life-ring.svg",
+      "kind": "icon",
+      "action": "relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "Pics/security.svg",
+      "kind": "icon",
+      "action": "relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "favicon.ico",
+      "kind": "icon",
+      "action": "relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "link.shortcut icon"
+    },
+    {
+      "url": "./search.en.xml",
+      "kind": "icon",
+      "action": "relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "link.search"
+    },
+    {
+      "url": "./Pics/openlogo-50.png",
+      "kind": "icon",
+      "action": "child_downloaded",
+      "local": "assets/icon_bf8b32d7fe6b.png",
+      "context": "child.img.src",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "Pics/debconf25_group_photo.jpg",
+      "kind": "image",
+      "action": "child_downloaded",
+      "local": "assets/image_3f80000409b1.jpg",
+      "context": "child.img.src",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "Pics/mini-dc26-hamburg.jpg",
+      "kind": "image",
+      "action": "child_downloaded",
+      "local": "assets/image_21e1c021ce31.jpg",
+      "context": "child.img.src",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "Pics/mini-dc26-campinas.jpg",
+      "kind": "image",
+      "action": "child_downloaded",
+      "local": "assets/image_f47df568a2fe.jpg",
+      "context": "child.img.src",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "Pics/calamares-installer.png",
+      "kind": "image",
+      "action": "child_downloaded",
+      "local": "assets/image_dc8edb43dcd0.png",
+      "context": "child.img.src",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "Pics/debian-swiss-knife-hands-1024x576.jpg",
+      "kind": "image",
+      "action": "child_downloaded",
+      "local": "assets/image_38e7b9e372db.jpg",
+      "context": "child.img.src",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "Pics/debian-funny-people-1024x576.jpg",
+      "kind": "image",
+      "action": "child_downloaded",
+      "local": "assets/image_862a698fe52f.jpg",
+      "context": "child.img.src",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "Pics/users.svg",
+      "kind": "icon",
+      "action": "child_downloaded",
+      "local": "assets/icon_243e610a19e3.svg",
+      "context": "child.img.src",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "Pics/heartbeat.svg",
+      "kind": "icon",
+      "action": "child_downloaded",
+      "local": "assets/icon_1b8a4a4c6d7f.svg",
+      "context": "child.img.src",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "Pics/user-plus.svg",
+      "kind": "icon",
+      "action": "child_downloaded",
+      "local": "assets/icon_1fa7a6c42fc2.svg",
+      "context": "child.img.src",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "Pics/list.svg",
+      "kind": "icon",
+      "action": "child_downloaded",
+      "local": "assets/icon_f305938f6e6a.svg",
+      "context": "child.img.src",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "Pics/debian-logo-1024x576.png",
+      "kind": "icon",
+      "action": "child_downloaded",
+      "local": "assets/icon_ea1bb0082c4c.png",
+      "context": "child.img.src",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "Pics/trophy.svg",
+      "kind": "icon",
+      "action": "child_downloaded",
+      "local": "assets/icon_b76b348b322d.svg",
+      "context": "child.img.src",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "Pics/life-ring.svg",
+      "kind": "icon",
+      "action": "child_downloaded",
+      "local": "assets/icon_1f6d4852c3e7.svg",
+      "context": "child.img.src",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "Pics/security.svg",
+      "kind": "icon",
+      "action": "child_downloaded",
+      "local": "assets/icon_7df9512e2131.svg",
+      "context": "child.img.src",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "./debhome.css",
+      "kind": "css",
+      "action": "child_downloaded",
+      "local": "assets/css_c1085ed981b0.css",
+      "context": "child.link.stylesheet",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "./startpage.css",
+      "kind": "css",
+      "action": "child_downloaded",
+      "local": "assets/css_8ab6691c84c2.css",
+      "context": "child.link.stylesheet",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "./5img-carousel-slider.css",
+      "kind": "css",
+      "action": "child_downloaded",
+      "local": "assets/css_c832ad4185b9.css",
+      "context": "child.link.stylesheet",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "./debian-en.css",
+      "kind": "css",
+      "action": "child_downloaded",
+      "local": "assets/css_108ae31c5272.css",
+      "context": "child.link.stylesheet",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "favicon.ico",
+      "kind": "icon",
+      "action": "child_downloaded",
+      "local": "assets/icon_ac2d57abb7e0.ico",
+      "context": "child.link.shortcut icon",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "./search.en.xml",
+      "kind": "icon",
+      "action": "child_downloaded",
+      "local": "assets/icon_b0a6427a4c0c.xml",
+      "context": "child.link.search",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "../Pics/openlogo-50.png",
+      "kind": "icon",
+      "action": "child_downloaded",
+      "local": "assets/icon_bf8b32d7fe6b.png",
+      "context": "child.img.src",
+      "source_page": "https://www.debian.org/intro/people"
+    },
+    {
+      "url": "../debhome.css",
+      "kind": "css",
+      "action": "child_downloaded",
+      "local": "assets/css_c1085ed981b0.css",
+      "context": "child.link.stylesheet",
+      "source_page": "https://www.debian.org/intro/people"
+    },
+    {
+      "url": "../startpage.css",
+      "kind": "css",
+      "action": "child_downloaded",
+      "local": "assets/css_8ab6691c84c2.css",
+      "context": "child.link.stylesheet",
+      "source_page": "https://www.debian.org/intro/people"
+    },
+    {
+      "url": "../5img-carousel-slider.css",
+      "kind": "css",
+      "action": "child_downloaded",
+      "local": "assets/css_c832ad4185b9.css",
+      "context": "child.link.stylesheet",
+      "source_page": "https://www.debian.org/intro/people"
+    },
+    {
+      "url": "../debian-en.css",
+      "kind": "css",
+      "action": "child_downloaded",
+      "local": "assets/css_108ae31c5272.css",
+      "context": "child.link.stylesheet",
+      "source_page": "https://www.debian.org/intro/people"
+    },
+    {
+      "url": "favicon.ico",
+      "kind": "icon",
+      "action": "child_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "child.link.shortcut icon",
+      "source_page": "https://www.debian.org/intro/people",
+      "error": "HTTP 404"
+    },
+    {
+      "url": "../search.en.xml",
+      "kind": "icon",
+      "action": "child_downloaded",
+      "local": "assets/icon_b0a6427a4c0c.xml",
+      "context": "child.link.search",
+      "source_page": "https://www.debian.org/intro/people"
+    },
+    {
+      "url": "../font-awesome.css",
+      "kind": "css",
+      "action": "child_downloaded",
+      "local": "assets/css_e921e1068686.css",
+      "context": "child.link.stylesheet",
+      "source_page": "https://www.debian.org/intro/people"
+    }
+  ],
+  "download_results": [
+    {
+      "url": "https://www.debian.org/Pics/openlogo-50.png",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_bf8b32d7fe6b.png",
+      "bytes": 2006,
+      "content_type": "image/png",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "https://www.debian.org/Pics/debconf25_group_photo.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_3f80000409b1.jpg",
+      "bytes": 519868,
+      "content_type": "image/jpeg",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "https://www.debian.org/Pics/mini-dc26-hamburg.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_21e1c021ce31.jpg",
+      "bytes": 188356,
+      "content_type": "image/jpeg",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "https://www.debian.org/Pics/mini-dc26-campinas.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_f47df568a2fe.jpg",
+      "bytes": 863551,
+      "content_type": "image/jpeg",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "https://www.debian.org/Pics/calamares-installer.png",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_dc8edb43dcd0.png",
+      "bytes": 282142,
+      "content_type": "image/png",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "https://www.debian.org/Pics/debian-swiss-knife-hands-1024x576.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_38e7b9e372db.jpg",
+      "bytes": 121238,
+      "content_type": "image/jpeg",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "https://www.debian.org/Pics/debian-funny-people-1024x576.jpg",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_862a698fe52f.jpg",
+      "bytes": 219369,
+      "content_type": "image/jpeg",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "https://www.debian.org/Pics/users.svg",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_243e610a19e3.svg",
+      "bytes": 3444,
+      "content_type": "image/svg+xml",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "https://www.debian.org/Pics/heartbeat.svg",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_1b8a4a4c6d7f.svg",
+      "bytes": 2338,
+      "content_type": "image/svg+xml",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "https://www.debian.org/Pics/user-plus.svg",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_1fa7a6c42fc2.svg",
+      "bytes": 2968,
+      "content_type": "image/svg+xml",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "https://www.debian.org/Pics/list.svg",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_f305938f6e6a.svg",
+      "bytes": 2601,
+      "content_type": "image/svg+xml",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "https://www.debian.org/Pics/debian-logo-1024x576.png",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_ea1bb0082c4c.png",
+      "bytes": 32752,
+      "content_type": "image/png",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "https://www.debian.org/Pics/trophy.svg",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_b76b348b322d.svg",
+      "bytes": 2864,
+      "content_type": "image/svg+xml",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "https://www.debian.org/Pics/life-ring.svg",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_1f6d4852c3e7.svg",
+      "bytes": 3147,
+      "content_type": "image/svg+xml",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "https://www.debian.org/Pics/security.svg",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_7df9512e2131.svg",
+      "bytes": 2108,
+      "content_type": "image/svg+xml",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "https://www.debian.org/debhome.css",
+      "kind": "css",
+      "ok": true,
+      "status": 200,
+      "path": "assets/css_c1085ed981b0.css",
+      "bytes": 3995,
+      "content_type": "text/css",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "https://www.debian.org/startpage.css",
+      "kind": "css",
+      "ok": true,
+      "status": 200,
+      "path": "assets/css_8ab6691c84c2.css",
+      "bytes": 8036,
+      "content_type": "text/css",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "https://www.debian.org/5img-carousel-slider.css",
+      "kind": "css",
+      "ok": true,
+      "status": 200,
+      "path": "assets/css_c832ad4185b9.css",
+      "bytes": 6997,
+      "content_type": "text/css",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "https://www.debian.org/debian-en.css",
+      "kind": "css",
+      "ok": true,
+      "status": 200,
+      "path": "assets/css_108ae31c5272.css",
+      "bytes": 1047,
+      "content_type": "text/css",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "https://www.debian.org/favicon.ico",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_ac2d57abb7e0.ico",
+      "bytes": 5942,
+      "content_type": "image/x-icon",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "https://www.debian.org/search.en.xml",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_b0a6427a4c0c.xml",
+      "bytes": 454,
+      "content_type": "application/xml",
+      "source_page": "https://www.debian.org/"
+    },
+    {
+      "url": "https://www.debian.org/Pics/openlogo-50.png",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_bf8b32d7fe6b.png",
+      "bytes": 2006,
+      "content_type": "image/png",
+      "source_page": "https://www.debian.org/intro/people"
+    },
+    {
+      "url": "https://www.debian.org/debhome.css",
+      "kind": "css",
+      "ok": true,
+      "status": 200,
+      "path": "assets/css_c1085ed981b0.css",
+      "bytes": 3995,
+      "content_type": "text/css",
+      "source_page": "https://www.debian.org/intro/people"
+    },
+    {
+      "url": "https://www.debian.org/startpage.css",
+      "kind": "css",
+      "ok": true,
+      "status": 200,
+      "path": "assets/css_8ab6691c84c2.css",
+      "bytes": 8036,
+      "content_type": "text/css",
+      "source_page": "https://www.debian.org/intro/people"
+    },
+    {
+      "url": "https://www.debian.org/5img-carousel-slider.css",
+      "kind": "css",
+      "ok": true,
+      "status": 200,
+      "path": "assets/css_c832ad4185b9.css",
+      "bytes": 6997,
+      "content_type": "text/css",
+      "source_page": "https://www.debian.org/intro/people"
+    },
+    {
+      "url": "https://www.debian.org/debian-en.css",
+      "kind": "css",
+      "ok": true,
+      "status": 200,
+      "path": "assets/css_108ae31c5272.css",
+      "bytes": 1047,
+      "content_type": "text/css",
+      "source_page": "https://www.debian.org/intro/people"
+    },
+    {
+      "url": "https://www.debian.org/intro/favicon.ico",
+      "kind": "icon",
+      "ok": false,
+      "status": 404,
+      "error": "HTTP 404",
+      "source_page": "https://www.debian.org/intro/people"
+    },
+    {
+      "url": "https://www.debian.org/search.en.xml",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_b0a6427a4c0c.xml",
+      "bytes": 454,
+      "content_type": "application/xml",
+      "source_page": "https://www.debian.org/intro/people"
+    },
+    {
+      "url": "https://www.debian.org/font-awesome.css",
+      "kind": "css",
+      "ok": true,
+      "status": 200,
+      "path": "assets/css_e921e1068686.css",
+      "bytes": 73571,
+      "content_type": "text/css",
+      "source_page": "https://www.debian.org/intro/people"
+    }
+  ]
+}

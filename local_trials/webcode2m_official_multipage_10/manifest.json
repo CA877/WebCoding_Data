@@ -1,0 +1,212 @@
+[
+  {
+    "project": "webcode2m_1100002_en",
+    "page_count": 3,
+    "metadata_pages": 3,
+    "child_page_downloaded": 2,
+    "root_official_clean": true,
+    "child_official_clean_count": 2,
+    "html_files": [
+      "index.html",
+      "page_1.html",
+      "people.html"
+    ],
+    "child_sources": [
+      "https://www.debian.org/",
+      "https://www.debian.org/intro/people"
+    ],
+    "raw_remote_html_files": [],
+    "remote_attr_hits": [],
+    "remote_text_files": [],
+    "banned_hit_files": []
+  },
+  {
+    "project": "webcode2m_1100005_en",
+    "page_count": 3,
+    "metadata_pages": 3,
+    "child_page_downloaded": 2,
+    "root_official_clean": true,
+    "child_official_clean_count": 2,
+    "html_files": [
+      "about.html",
+      "index.html",
+      "page_1.html"
+    ],
+    "child_sources": [
+      "https://www.sqlite.org/index.html",
+      "https://www.sqlite.org/about.html"
+    ],
+    "raw_remote_html_files": [],
+    "remote_attr_hits": [],
+    "remote_text_files": [],
+    "banned_hit_files": []
+  },
+  {
+    "project": "webcode2m_1100006_en",
+    "page_count": 3,
+    "metadata_pages": 3,
+    "child_page_downloaded": 2,
+    "root_official_clean": true,
+    "child_official_clean_count": 2,
+    "html_files": [
+      "about.html",
+      "index.html",
+      "page_1.html"
+    ],
+    "child_sources": [
+      "https://www.postgresql.org/",
+      "https://www.postgresql.org/about/"
+    ],
+    "raw_remote_html_files": [],
+    "remote_attr_hits": [],
+    "remote_text_files": [],
+    "banned_hit_files": []
+  },
+  {
+    "project": "webcode2m_1100007_en",
+    "page_count": 3,
+    "metadata_pages": 3,
+    "child_page_downloaded": 2,
+    "root_official_clean": true,
+    "child_official_clean_count": 2,
+    "html_files": [
+      "about.html",
+      "index.html",
+      "page_1.html"
+    ],
+    "child_sources": [
+      "https://www.r-project.org/",
+      "https://www.r-project.org/about.html"
+    ],
+    "raw_remote_html_files": [],
+    "remote_attr_hits": [],
+    "remote_text_files": [],
+    "banned_hit_files": []
+  },
+  {
+    "project": "webcode2m_1100009_en",
+    "page_count": 3,
+    "metadata_pages": 3,
+    "child_page_downloaded": 2,
+    "root_official_clean": true,
+    "child_official_clean_count": 2,
+    "html_files": [
+      "index.html",
+      "overview.html",
+      "page_1.html"
+    ],
+    "child_sources": [
+      "https://www.djangoproject.com/",
+      "https://www.djangoproject.com/start/overview/"
+    ],
+    "raw_remote_html_files": [],
+    "remote_attr_hits": [],
+    "remote_text_files": [],
+    "banned_hit_files": []
+  },
+  {
+    "project": "webcode2m_1100010_en",
+    "page_count": 3,
+    "metadata_pages": 3,
+    "child_page_downloaded": 2,
+    "root_official_clean": true,
+    "child_official_clean_count": 2,
+    "html_files": [
+      "genindex.html",
+      "index.html",
+      "py-modindex.html"
+    ],
+    "child_sources": [
+      "https://flask.palletsprojects.com/genindex/",
+      "https://flask.palletsprojects.com/py-modindex/"
+    ],
+    "raw_remote_html_files": [],
+    "remote_attr_hits": [],
+    "remote_text_files": [],
+    "banned_hit_files": []
+  },
+  {
+    "project": "webcode2m_1100012_en",
+    "page_count": 3,
+    "metadata_pages": 3,
+    "child_page_downloaded": 2,
+    "root_official_clean": true,
+    "child_official_clean_count": 2,
+    "html_files": [
+      "cookie-settings.html",
+      "en-US.html",
+      "index.html"
+    ],
+    "child_sources": [
+      "https://www.mozilla.org/en-US/privacy/websites/cookie-settings/",
+      "https://www.mozilla.org/en-US/"
+    ],
+    "raw_remote_html_files": [],
+    "remote_attr_hits": [],
+    "remote_text_files": [],
+    "banned_hit_files": []
+  },
+  {
+    "project": "webcode2m_1100013_en",
+    "page_count": 3,
+    "metadata_pages": 3,
+    "child_page_downloaded": 2,
+    "root_official_clean": true,
+    "child_official_clean_count": 2,
+    "html_files": [
+      "about.html",
+      "index.html",
+      "page_1.html"
+    ],
+    "child_sources": [
+      "https://www.freebsd.org/",
+      "https://www.freebsd.org/about"
+    ],
+    "raw_remote_html_files": [],
+    "remote_attr_hits": [],
+    "remote_text_files": [],
+    "banned_hit_files": []
+  },
+  {
+    "project": "webcode2m_1100014_en",
+    "page_count": 3,
+    "metadata_pages": 3,
+    "child_page_downloaded": 2,
+    "root_official_clean": true,
+    "child_official_clean_count": 2,
+    "html_files": [
+      "about.html",
+      "index.html",
+      "page_1.html"
+    ],
+    "child_sources": [
+      "https://www.perl.org/",
+      "https://www.perl.org/about.html"
+    ],
+    "raw_remote_html_files": [],
+    "remote_attr_hits": [],
+    "remote_text_files": [],
+    "banned_hit_files": []
+  },
+  {
+    "project": "webcode2m_1100015_en",
+    "page_count": 3,
+    "metadata_pages": 3,
+    "child_page_downloaded": 2,
+    "root_official_clean": true,
+    "child_official_clean_count": 2,
+    "html_files": [
+      "downloads.html",
+      "index.html",
+      "page_1.html"
+    ],
+    "child_sources": [
+      "https://www.php.net/",
+      "https://www.php.net/downloads.php"
+    ],
+    "raw_remote_html_files": [],
+    "remote_attr_hits": [],
+    "remote_text_files": [],
+    "banned_hit_files": []
+  }
+]

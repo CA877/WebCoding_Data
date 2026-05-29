@@ -372,9 +372,14 @@ def call_vlm(model: str, prompt: str, image_paths: list[Path] | None = None, max
     client = OpenAI(api_key=api_key, base_url=base_url, timeout=180.0)
     if image_paths:
         content: list[dict[str, Any]] = [{"type": "text", "text": prompt}]
+        use_qwen37_image = model.lower() == "qwen3.7-max"
         for image_path in image_paths:
             b64 = encode_image_for_api(image_path)
-            content.append({"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{b64}"}})
+            data_url = f"data:image/jpeg;base64,{b64}"
+            if use_qwen37_image:
+                content.append({"type": "image", "image": data_url})
+            else:
+                content.append({"type": "image_url", "image_url": {"url": data_url}})
         messages = [{"role": "user", "content": content}]
     else:
         messages = [{"role": "user", "content": prompt}]

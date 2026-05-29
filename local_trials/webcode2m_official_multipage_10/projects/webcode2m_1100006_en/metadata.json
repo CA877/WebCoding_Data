@@ -1,0 +1,299 @@
+{
+  "project_name": "webcode2m_1100006_en",
+  "row_idx": 1100006,
+  "hash": "2b3e66ce733d8b0896883e22242a71433e02c0d4",
+  "lang": "en",
+  "score": 0,
+  "image": {},
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    },
+    {
+      "path": "page_1.html",
+      "source": "https://www.postgresql.org/",
+      "official_clean": {
+        "enabled": true,
+        "source": "third_party/naturalcc/examples/webcode2m/scripts/data_cc_pipeline/format_utils.py",
+        "html_chars_before": 20381,
+        "html_chars_after": 14154,
+        "css_chars_before": 0,
+        "css_chars_after": 0
+      }
+    },
+    {
+      "path": "about.html",
+      "source": "https://www.postgresql.org/about/",
+      "official_clean": {
+        "enabled": true,
+        "source": "third_party/naturalcc/examples/webcode2m/scripts/data_cc_pipeline/format_utils.py",
+        "html_chars_before": 14249,
+        "html_chars_after": 11350,
+        "css_chars_before": 0,
+        "css_chars_after": 0
+      }
+    }
+  ],
+  "multipage_status": "ok",
+  "reason_if_single_page": "",
+  "stats": {
+    "removed_script": 2,
+    "root_relative_fallback": 3,
+    "root_relative_removed": 3,
+    "official_webcode2m_purified": 1,
+    "child_page_downloaded": 2,
+    "child_removed_script": 4,
+    "child_downloaded": 11,
+    "child_official_webcode2m_purified": 2
+  },
+  "official_clean": {
+    "enabled": true,
+    "source": "third_party/naturalcc/examples/webcode2m/scripts/data_cc_pipeline/format_utils.py",
+    "html_chars_before": 20160,
+    "html_chars_after": 14129,
+    "css_chars_before": 0,
+    "css_chars_after": 0
+  },
+  "resource_actions": [
+    {
+      "url": "/media/img/about/press/elephant.png",
+      "kind": "image",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/media/img/PostgreSQL_Badge1.svg",
+      "kind": "icon",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/media/css/fontawesome.css?b2582a00",
+      "kind": "css",
+      "action": "root_relative_removed",
+      "context": "link.stylesheet"
+    },
+    {
+      "url": "/media/css/bootstrap-4.4.1.min.css",
+      "kind": "css",
+      "action": "root_relative_removed",
+      "context": "link.stylesheet"
+    },
+    {
+      "url": "/favicon.ico",
+      "kind": "icon",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "link.shortcut icon"
+    },
+    {
+      "url": "/dyncss/base.css?b2582a00",
+      "kind": "css",
+      "action": "root_relative_removed",
+      "context": "link.stylesheet"
+    },
+    {
+      "url": "/media/img/about/press/elephant.png",
+      "kind": "image",
+      "action": "child_downloaded",
+      "local": "assets/image_486f58e3b5e7.png",
+      "context": "child.img.src",
+      "source_page": "https://www.postgresql.org/"
+    },
+    {
+      "url": "/media/img/PostgreSQL_Badge1.svg",
+      "kind": "icon",
+      "action": "child_downloaded",
+      "local": "assets/icon_b243f7e41719.svg",
+      "context": "child.img.src",
+      "source_page": "https://www.postgresql.org/"
+    },
+    {
+      "url": "/media/css/fontawesome.css?b2582a00",
+      "kind": "css",
+      "action": "child_downloaded",
+      "local": "assets/css_b93a421a216f.css",
+      "context": "child.link.stylesheet",
+      "source_page": "https://www.postgresql.org/"
+    },
+    {
+      "url": "/media/css/bootstrap-4.4.1.min.css",
+      "kind": "css",
+      "action": "child_downloaded",
+      "local": "assets/css_3d5324d3fa0a.css",
+      "context": "child.link.stylesheet",
+      "source_page": "https://www.postgresql.org/"
+    },
+    {
+      "url": "/favicon.ico",
+      "kind": "icon",
+      "action": "child_downloaded",
+      "local": "assets/icon_47fb9c1f92a3.ico",
+      "context": "child.link.shortcut icon",
+      "source_page": "https://www.postgresql.org/"
+    },
+    {
+      "url": "/dyncss/base.css?b2582a00",
+      "kind": "css",
+      "action": "child_downloaded",
+      "local": "assets/css_7c0cc8640786.css",
+      "context": "child.link.stylesheet",
+      "source_page": "https://www.postgresql.org/"
+    },
+    {
+      "url": "/media/img/about/press/elephant.png",
+      "kind": "image",
+      "action": "child_downloaded",
+      "local": "assets/image_486f58e3b5e7.png",
+      "context": "child.img.src",
+      "source_page": "https://www.postgresql.org/about/"
+    },
+    {
+      "url": "/media/css/fontawesome.css?b2582a00",
+      "kind": "css",
+      "action": "child_downloaded",
+      "local": "assets/css_b93a421a216f.css",
+      "context": "child.link.stylesheet",
+      "source_page": "https://www.postgresql.org/about/"
+    },
+    {
+      "url": "/media/css/bootstrap-4.4.1.min.css",
+      "kind": "css",
+      "action": "child_downloaded",
+      "local": "assets/css_3d5324d3fa0a.css",
+      "context": "child.link.stylesheet",
+      "source_page": "https://www.postgresql.org/about/"
+    },
+    {
+      "url": "/favicon.ico",
+      "kind": "icon",
+      "action": "child_downloaded",
+      "local": "assets/icon_47fb9c1f92a3.ico",
+      "context": "child.link.shortcut icon",
+      "source_page": "https://www.postgresql.org/about/"
+    },
+    {
+      "url": "/dyncss/base.css?b2582a00",
+      "kind": "css",
+      "action": "child_downloaded",
+      "local": "assets/css_7c0cc8640786.css",
+      "context": "child.link.stylesheet",
+      "source_page": "https://www.postgresql.org/about/"
+    }
+  ],
+  "download_results": [
+    {
+      "url": "https://www.postgresql.org/media/img/about/press/elephant.png",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_486f58e3b5e7.png",
+      "bytes": 50279,
+      "content_type": "image/png",
+      "source_page": "https://www.postgresql.org/"
+    },
+    {
+      "url": "https://www.postgresql.org/media/img/PostgreSQL_Badge1.svg",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_b243f7e41719.svg",
+      "bytes": 6504,
+      "content_type": "image/svg+xml",
+      "source_page": "https://www.postgresql.org/"
+    },
+    {
+      "url": "https://www.postgresql.org/media/css/fontawesome.css?b2582a00",
+      "kind": "css",
+      "ok": true,
+      "status": 200,
+      "path": "assets/css_b93a421a216f.css",
+      "bytes": 34734,
+      "content_type": "text/css",
+      "source_page": "https://www.postgresql.org/"
+    },
+    {
+      "url": "https://www.postgresql.org/media/css/bootstrap-4.4.1.min.css",
+      "kind": "css",
+      "ok": true,
+      "status": 200,
+      "path": "assets/css_3d5324d3fa0a.css",
+      "bytes": 159515,
+      "content_type": "text/css",
+      "source_page": "https://www.postgresql.org/"
+    },
+    {
+      "url": "https://www.postgresql.org/favicon.ico",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_47fb9c1f92a3.ico",
+      "bytes": 4846,
+      "content_type": "image/x-icon",
+      "source_page": "https://www.postgresql.org/"
+    },
+    {
+      "url": "https://www.postgresql.org/dyncss/base.css?b2582a00",
+      "kind": "css",
+      "ok": true,
+      "status": 200,
+      "path": "assets/css_7c0cc8640786.css",
+      "bytes": 51745,
+      "content_type": "text/css",
+      "source_page": "https://www.postgresql.org/"
+    },
+    {
+      "url": "https://www.postgresql.org/media/img/about/press/elephant.png",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_486f58e3b5e7.png",
+      "bytes": 50279,
+      "content_type": "image/png",
+      "source_page": "https://www.postgresql.org/about/"
+    },
+    {
+      "url": "https://www.postgresql.org/media/css/fontawesome.css?b2582a00",
+      "kind": "css",
+      "ok": true,
+      "status": 200,
+      "path": "assets/css_b93a421a216f.css",
+      "bytes": 34734,
+      "content_type": "text/css",
+      "source_page": "https://www.postgresql.org/about/"
+    },
+    {
+      "url": "https://www.postgresql.org/media/css/bootstrap-4.4.1.min.css",
+      "kind": "css",
+      "ok": true,
+      "status": 200,
+      "path": "assets/css_3d5324d3fa0a.css",
+      "bytes": 159515,
+      "content_type": "text/css",
+      "source_page": "https://www.postgresql.org/about/"
+    },
+    {
+      "url": "https://www.postgresql.org/favicon.ico",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_47fb9c1f92a3.ico",
+      "bytes": 4846,
+      "content_type": "image/x-icon",
+      "source_page": "https://www.postgresql.org/about/"
+    },
+    {
+      "url": "https://www.postgresql.org/dyncss/base.css?b2582a00",
+      "kind": "css",
+      "ok": true,
+      "status": 200,
+      "path": "assets/css_7c0cc8640786.css",
+      "bytes": 51745,
+      "content_type": "text/css",
+      "source_page": "https://www.postgresql.org/about/"
+    }
+  ]
+}

@@ -5,8 +5,10 @@
 1. 旧 prototype 方案废弃。
 2. 当前正式入口是 `construct_webcode2m_dataset.py`。
 3. 七类任务必须拆分脚本，不写进一个大文件。
-4. LLM/VLM 统一使用 `qwen-latest-series-invite-beta-v23`。
-5. 输出保留在 `local_trials/webcode2m_formal_7x10_ppapi_smoke`。
+4. 文本 LLM 使用 `qwen3.7-max`。
+5. 视觉/PRD 使用 `qwen3-vl-235b-a22b-instruct`，图片输入走 OpenAI 标准 `image_url`。
+6. `qwen3.7-max` 的图片探针格式可通过但读图不可靠，不用于 VLM。
+7. 输出保留在 `local_trials/webcode2m_formal_7x10_ppapi_smoke`。
 
 ## 已做事项
 

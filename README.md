@@ -1,118 +1,112 @@
 # WebCoding Data
 
-这个仓库只放 WebCoding / WebCompass generate 任务的数据合成代码。
+这个目录存放 WebCoding / WebCompass 风格训练数据的构造脚本和方案文档。
 
-代码来源包括两部分：
+当前主线不是“补齐七套脚本”，而是按决策价值整理为 5 条底层构造线：
 
-- 从 `CA877/WebCodingSft` 拆出来的原始 `data_pipeline` 构造脚本。
-- 针对 WebRenderBench 重新实现的全项目逆向构造 pipeline。
+1. `text-generation`
+2. `image-generation`
+3. `video-generation`
+4. editing pair，派生 `text-editing` / `image-editing`
+5. repair pair，派生 `text-repair` / `image-repair`
+
+详细方案见：
+
+- `TRAINSET_REVERSE_CONSTRUCTION_GUIDE.md`
 
 ## 目录说明
 
-- `data_pipeline/batch_generate.py`：原始批量逆向构造入口。
-- `data_pipeline/image_reverse.py`：截图逆向构造相关工具。
-- `data_pipeline/video_generate.py`：视频和帧序列逆向构造相关工具。
-- `data_pipeline/validate_render.py`：基于 Playwright 的页面渲染检查工具。
-- `data_pipeline/prepare_webrender_pools.py`：合并 WebRenderBench train/test，并划分 text/image/video 三个互不重合的数据池。
-- `data_pipeline/generate_webrender_full.py`：最新 WebRenderBench 全项目构造脚本，用于生成 text、image、video 三类 generate 任务。
-- `docs/0506.md`：任务理解、构造策略和阶段性记录。
+```text
+WebCoding_Data/
+  README.md
+  TRAINSET_REVERSE_CONSTRUCTION_GUIDE.md
+  .env.example
+  prepare_webrender_pools.py
+  human_like_playwright_record.py
+  validate_render.py
+  validate_render_relaxed.js
+  preprocess/
+    generate_webrender_full.py
+    rescue_inline_assets.py
+```
+
+主要文件：
+
+- `prepare_webrender_pools.py`：合并 WebRenderBench train/test，并为 `text`、`image`、`video` generation 划分互不重合的 clean project 池。
+- `preprocess/generate_webrender_full.py`：当前 text/image/video generation 的主参考脚本；会输出 JSONL manifest 和截图/视频 assets。
+- `human_like_playwright_record.py`：更接近人类浏览路径的视频录制参考，可用于复杂交互样本增强。
+- `validate_render.py` / `validate_render_relaxed.js`：页面渲染检查工具。
+- `preprocess/rescue_inline_assets.py`：资源修复辅助脚本。
 
 ## 凭据和数据
 
-不要把 API key、云盘密码、`.env`、生成结果、截图、视频或日志提交到仓库。
+不要提交 API key、云盘密码、`.env`、生成结果、截图、视频或日志。
 
-运行时凭据放在本地 `.env` 中，可以从 `.env.example` 复制一份再填写：
+运行时凭据放在本地 `.env` 中，可以从示例复制：
 
 ```bash
-cp .env.example .env
+cp WebCoding_Data/.env.example WebCoding_Data/.env
 ```
 
-生成结果默认写到 `data_pipeline/output/`，该目录已经被 `.gitignore` 忽略。
+如需使用 HuggingFace、npm、Playwright 等外部资源，优先配置中国镜像。
 
-## 最新构造策略
+## Generation 快速 smoke
 
-目标是生成三类 generate 任务，每类 10k，总计 30k：
-
-- `text`：用 Playwright 截取一个原始项目的全部 HTML 页面，覆盖 desktop/tablet/mobile 三种视口；再用可读图模型生成 WebCompass 风格的完整 PRD / instruction。
-- `image`：用 Playwright 截取一个原始项目的全部 HTML 页面，保留完整截图作为视觉任务输入，不转文字。
-- `video`：用 Playwright 对每个 HTML 页面滚动录屏，尽量覆盖完整页面。
-
-三类任务使用互不重合的原始项目。候选池同时使用 WebRenderBench 的 train 和 test 两部分。
-
-## 准备 30k 数据池
-
-先把 train/test 合并并划分为三个互不重合的池：
+先准备互不重合的数据池：
 
 ```bash
-python -m data_pipeline.prepare_webrender_pools \
+python WebCoding_Data/prepare_webrender_pools.py \
   --train-dir /path/to/train_webpages \
   --test-dir /path/to/test_webpages \
-  --output data_pipeline/output/generate_30k_v2/selected_pools.json \
-  --link-root data_pipeline/output/generate_30k_v2/pools \
+  --output WebCoding_Data/output/trainset_v1/selected_pools.json \
+  --link-root WebCoding_Data/output/trainset_v1/pools \
   --target-per-task 10000 \
   --seed 506
 ```
 
-执行后会得到：
-
-```text
-data_pipeline/output/generate_30k_v2/pools/text
-data_pipeline/output/generate_30k_v2/pools/image
-data_pipeline/output/generate_30k_v2/pools/video
-```
-
-这三个目录是 symlink pool，可以分别作为后续构造脚本的输入。
-
-## 运行构造
-
-text-based：
+每类先跑 10 条，不要直接扩到 10k：
 
 ```bash
-python -m data_pipeline.generate_webrender_full \
-  --page_dirs data_pipeline/output/generate_30k_v2/pools/text \
-  --output_dir data_pipeline/output/generate_30k_v2/text \
-  --task text
-```
-
-vision/image-based：
-
-```bash
-python -m data_pipeline.generate_webrender_full \
-  --page_dirs data_pipeline/output/generate_30k_v2/pools/image \
-  --output_dir data_pipeline/output/generate_30k_v2/image \
-  --task image
-```
-
-video-based：
-
-```bash
-python -m data_pipeline.generate_webrender_full \
-  --page_dirs data_pipeline/output/generate_30k_v2/pools/video \
-  --output_dir data_pipeline/output/generate_30k_v2/video \
-  --task video
-```
-
-小规模测试时可以加 `--limit`：
-
-```bash
-python -m data_pipeline.generate_webrender_full \
-  --page_dirs data_pipeline/output/generate_30k_v2/pools/text \
-  --output_dir data_pipeline/output/generate_30k_v2/text_smoke \
+python WebCoding_Data/preprocess/generate_webrender_full.py \
+  --page_dirs WebCoding_Data/output/trainset_v1/pools/text \
+  --output_dir WebCoding_Data/output/trainset_v1/generation/text_smoke \
   --task text \
-  --limit 5
+  --limit 10
 ```
 
-## 输出
+```bash
+python WebCoding_Data/preprocess/generate_webrender_full.py \
+  --page_dirs WebCoding_Data/output/trainset_v1/pools/image \
+  --output_dir WebCoding_Data/output/trainset_v1/generation/image_smoke \
+  --task image \
+  --limit 10
+```
 
-每类任务会生成对应 JSONL 和 manifest：
+```bash
+python WebCoding_Data/preprocess/generate_webrender_full.py \
+  --page_dirs WebCoding_Data/output/trainset_v1/pools/video \
+  --output_dir WebCoding_Data/output/trainset_v1/generation/video_smoke \
+  --task video \
+  --limit 10
+```
+
+输出仍是中间格式：
 
 ```text
-text/text_generation.jsonl
-text/manifest_text.jsonl
-image/image_generation.jsonl
-image/manifest_image.jsonl
-video/video_generation.jsonl
-video/manifest_video.jsonl
+text_generation.jsonl
+image_generation.jsonl
+video_generation.jsonl
+manifest_text.jsonl
+manifest_image.jsonl
+manifest_video.jsonl
+assets/
 ```
 
-截图和视频会保存在对应输出目录的 `assets/` 下。所有这些生成产物都不进入 git。
+正式 SFT 数据建议再转换为 `info.json + src/dst + input_screenshots/input_videos` 的目录结构，具体 schema 见 `TRAINSET_REVERSE_CONSTRUCTION_GUIDE.md`。
+
+## 当前缺口
+
+1. generation 需要补 JSONL/assets 到最终目录格式的转换器，或直接改脚本落目录。
+2. editing 需要把 `web_coding_demo/synthetic/edit.py` 的 description 生成升级为“生成并应用 search/replace patch”。
+3. repair 需要把 `web_coding_demo/synthetic/repair.py` 接入 WebRenderBench clean project，并统一输出 schema。
+4. 所有构造都要先 10 条人工抽检，再扩 1k，最后才考虑 10k。

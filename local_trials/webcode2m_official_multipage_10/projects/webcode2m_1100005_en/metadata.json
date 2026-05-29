@@ -1,0 +1,139 @@
+{
+  "project_name": "webcode2m_1100005_en",
+  "row_idx": 1100005,
+  "hash": "645f29115042c0ac17ba417f24a478c2228de645",
+  "lang": "en",
+  "score": 0,
+  "image": {},
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    },
+    {
+      "path": "page_1.html",
+      "source": "https://www.sqlite.org/index.html",
+      "official_clean": {
+        "enabled": true,
+        "source": "third_party/naturalcc/examples/webcode2m/scripts/data_cc_pipeline/format_utils.py",
+        "html_chars_before": 6102,
+        "html_chars_after": 3805,
+        "css_chars_before": 114,
+        "css_chars_after": 50
+      }
+    },
+    {
+      "path": "about.html",
+      "source": "https://www.sqlite.org/about.html",
+      "official_clean": {
+        "enabled": true,
+        "source": "third_party/naturalcc/examples/webcode2m/scripts/data_cc_pipeline/format_utils.py",
+        "html_chars_before": 7673,
+        "html_chars_after": 5809,
+        "css_chars_before": 0,
+        "css_chars_after": 0
+      }
+    }
+  ],
+  "multipage_status": "ok",
+  "reason_if_single_page": "",
+  "stats": {
+    "relative_fallback": 1,
+    "official_webcode2m_purified": 1,
+    "child_page_downloaded": 2,
+    "child_removed_script": 3,
+    "child_downloaded": 4,
+    "child_official_webcode2m_purified": 2
+  },
+  "official_clean": {
+    "enabled": true,
+    "source": "third_party/naturalcc/examples/webcode2m/scripts/data_cc_pipeline/format_utils.py",
+    "html_chars_before": 9095,
+    "html_chars_after": 3802,
+    "css_chars_before": 114,
+    "css_chars_after": 50
+  },
+  "resource_actions": [
+    {
+      "url": "images/sqlite370_banner.svg",
+      "kind": "icon",
+      "action": "relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "images/sqlite370_banner.svg",
+      "kind": "icon",
+      "action": "child_downloaded",
+      "local": "assets/icon_bb511c1c0030.svg",
+      "context": "child.img.src",
+      "source_page": "https://www.sqlite.org/index.html"
+    },
+    {
+      "url": "sqlite.css",
+      "kind": "css",
+      "action": "child_downloaded",
+      "local": "assets/css_3b7d586f0004.css",
+      "context": "child.link.stylesheet",
+      "source_page": "https://www.sqlite.org/index.html"
+    },
+    {
+      "url": "images/sqlite370_banner.svg",
+      "kind": "icon",
+      "action": "child_downloaded",
+      "local": "assets/icon_bb511c1c0030.svg",
+      "context": "child.img.src",
+      "source_page": "https://www.sqlite.org/about.html"
+    },
+    {
+      "url": "sqlite.css",
+      "kind": "css",
+      "action": "child_downloaded",
+      "local": "assets/css_3b7d586f0004.css",
+      "context": "child.link.stylesheet",
+      "source_page": "https://www.sqlite.org/about.html"
+    }
+  ],
+  "download_results": [
+    {
+      "url": "https://www.sqlite.org/images/sqlite370_banner.svg",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_bb511c1c0030.svg",
+      "bytes": 12707,
+      "content_type": "image/svg+xml; charset=utf-8",
+      "source_page": "https://www.sqlite.org/index.html"
+    },
+    {
+      "url": "https://www.sqlite.org/sqlite.css",
+      "kind": "css",
+      "ok": true,
+      "status": 200,
+      "path": "assets/css_3b7d586f0004.css",
+      "bytes": 6868,
+      "content_type": "text/css; charset=utf-8",
+      "source_page": "https://www.sqlite.org/index.html"
+    },
+    {
+      "url": "https://www.sqlite.org/images/sqlite370_banner.svg",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_bb511c1c0030.svg",
+      "bytes": 12707,
+      "content_type": "image/svg+xml; charset=utf-8",
+      "source_page": "https://www.sqlite.org/about.html"
+    },
+    {
+      "url": "https://www.sqlite.org/sqlite.css",
+      "kind": "css",
+      "ok": true,
+      "status": 200,
+      "path": "assets/css_3b7d586f0004.css",
+      "bytes": 6868,
+      "content_type": "text/css; charset=utf-8",
+      "source_page": "https://www.sqlite.org/about.html"
+    }
+  ]
+}

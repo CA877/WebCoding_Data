@@ -1,0 +1,281 @@
+{
+  "project_name": "webcode2m_1100010_en",
+  "row_idx": 1100010,
+  "hash": "d292f09ab7206fcad748965cd509337cb9c7466f",
+  "lang": "en",
+  "score": 0,
+  "image": {},
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    },
+    {
+      "path": "genindex.html",
+      "source": "https://flask.palletsprojects.com/genindex/",
+      "official_clean": {
+        "enabled": true,
+        "source": "third_party/naturalcc/examples/webcode2m/scripts/data_cc_pipeline/format_utils.py",
+        "html_chars_before": 62913,
+        "html_chars_after": 37944,
+        "css_chars_before": 0,
+        "css_chars_after": 0
+      }
+    },
+    {
+      "path": "py-modindex.html",
+      "source": "https://flask.palletsprojects.com/py-modindex/",
+      "official_clean": {
+        "enabled": true,
+        "source": "third_party/naturalcc/examples/webcode2m/scripts/data_cc_pipeline/format_utils.py",
+        "html_chars_before": 3262,
+        "html_chars_after": 1972,
+        "css_chars_before": 0,
+        "css_chars_after": 0
+      }
+    }
+  ],
+  "multipage_status": "ok",
+  "reason_if_single_page": "",
+  "stats": {
+    "removed_script": 4,
+    "relative_fallback": 3,
+    "removed_noise_link": 1,
+    "official_webcode2m_purified": 1,
+    "child_page_downloaded": 2,
+    "child_removed_script": 10,
+    "child_downloaded": 9,
+    "child_removed_noise_link": 2,
+    "child_fallback_asset": 2,
+    "child_official_webcode2m_purified": 2
+  },
+  "official_clean": {
+    "enabled": true,
+    "source": "third_party/naturalcc/examples/webcode2m/scripts/data_cc_pipeline/format_utils.py",
+    "html_chars_before": 38954,
+    "html_chars_after": 27685,
+    "css_chars_before": 0,
+    "css_chars_after": 0
+  },
+  "resource_actions": [
+    {
+      "url": "_images/flask-name.svg",
+      "kind": "icon",
+      "action": "relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "_static/flask-icon.svg",
+      "kind": "icon",
+      "action": "relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "link.icon"
+    },
+    {
+      "url": "search/",
+      "kind": "icon",
+      "action": "relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "link.search"
+    },
+    {
+      "url": "../_static/flask-logo.svg",
+      "kind": "icon",
+      "action": "child_downloaded",
+      "local": "assets/icon_5e202dea7e88.svg",
+      "context": "child.img.src",
+      "source_page": "https://flask.palletsprojects.com/genindex/"
+    },
+    {
+      "url": "../_static/pygments.css?v=6625fa76",
+      "kind": "css",
+      "action": "child_downloaded",
+      "local": "assets/css_bf04631adf7b.css",
+      "context": "child.link.stylesheet",
+      "source_page": "https://flask.palletsprojects.com/genindex/"
+    },
+    {
+      "url": "../_static/flask.css?v=b87c8d14",
+      "kind": "css",
+      "action": "child_downloaded",
+      "local": "assets/css_e8139c6efc30.css",
+      "context": "child.link.stylesheet",
+      "source_page": "https://flask.palletsprojects.com/genindex/"
+    },
+    {
+      "url": "../_static/flask-icon.svg",
+      "kind": "icon",
+      "action": "child_downloaded",
+      "local": "assets/icon_a19c39497122.svg",
+      "context": "child.link.icon",
+      "source_page": "https://flask.palletsprojects.com/genindex/"
+    },
+    {
+      "url": "../search/",
+      "kind": "icon",
+      "action": "child_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "child.link.search",
+      "source_page": "https://flask.palletsprojects.com/genindex/",
+      "error": "html_embed_not_localized"
+    },
+    {
+      "url": "../_static/minus.png",
+      "kind": "image",
+      "action": "child_downloaded",
+      "local": "assets/image_58ba7d3fb467.png",
+      "context": "child.img.src",
+      "source_page": "https://flask.palletsprojects.com/py-modindex/"
+    },
+    {
+      "url": "../_static/flask-logo.svg",
+      "kind": "icon",
+      "action": "child_downloaded",
+      "local": "assets/icon_5e202dea7e88.svg",
+      "context": "child.img.src",
+      "source_page": "https://flask.palletsprojects.com/py-modindex/"
+    },
+    {
+      "url": "../_static/pygments.css?v=6625fa76",
+      "kind": "css",
+      "action": "child_downloaded",
+      "local": "assets/css_bf04631adf7b.css",
+      "context": "child.link.stylesheet",
+      "source_page": "https://flask.palletsprojects.com/py-modindex/"
+    },
+    {
+      "url": "../_static/flask.css?v=b87c8d14",
+      "kind": "css",
+      "action": "child_downloaded",
+      "local": "assets/css_e8139c6efc30.css",
+      "context": "child.link.stylesheet",
+      "source_page": "https://flask.palletsprojects.com/py-modindex/"
+    },
+    {
+      "url": "../_static/flask-icon.svg",
+      "kind": "icon",
+      "action": "child_downloaded",
+      "local": "assets/icon_a19c39497122.svg",
+      "context": "child.link.icon",
+      "source_page": "https://flask.palletsprojects.com/py-modindex/"
+    },
+    {
+      "url": "../search/",
+      "kind": "icon",
+      "action": "child_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "child.link.search",
+      "source_page": "https://flask.palletsprojects.com/py-modindex/",
+      "error": "html_embed_not_localized"
+    }
+  ],
+  "download_results": [
+    {
+      "url": "https://flask.palletsprojects.com/_static/flask-logo.svg",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_5e202dea7e88.svg",
+      "bytes": 3455,
+      "content_type": "image/svg+xml",
+      "source_page": "https://flask.palletsprojects.com/genindex/"
+    },
+    {
+      "url": "https://flask.palletsprojects.com/_static/pygments.css?v=6625fa76",
+      "kind": "css",
+      "ok": true,
+      "status": 200,
+      "path": "assets/css_bf04631adf7b.css",
+      "bytes": 5291,
+      "content_type": "text/css; charset=utf-8",
+      "source_page": "https://flask.palletsprojects.com/genindex/"
+    },
+    {
+      "url": "https://flask.palletsprojects.com/_static/flask.css?v=b87c8d14",
+      "kind": "css",
+      "ok": true,
+      "status": 200,
+      "path": "assets/css_e8139c6efc30.css",
+      "bytes": 237,
+      "content_type": "text/css; charset=utf-8",
+      "source_page": "https://flask.palletsprojects.com/genindex/"
+    },
+    {
+      "url": "https://flask.palletsprojects.com/_static/flask-icon.svg",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_a19c39497122.svg",
+      "bytes": 1999,
+      "content_type": "image/svg+xml",
+      "source_page": "https://flask.palletsprojects.com/genindex/"
+    },
+    {
+      "url": "https://flask.palletsprojects.com/search/",
+      "kind": "icon",
+      "ok": false,
+      "status": 200,
+      "error": "html_embed_not_localized",
+      "source_page": "https://flask.palletsprojects.com/genindex/"
+    },
+    {
+      "url": "https://flask.palletsprojects.com/_static/minus.png",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_58ba7d3fb467.png",
+      "bytes": 90,
+      "content_type": "image/png",
+      "source_page": "https://flask.palletsprojects.com/py-modindex/"
+    },
+    {
+      "url": "https://flask.palletsprojects.com/_static/flask-logo.svg",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_5e202dea7e88.svg",
+      "bytes": 3455,
+      "content_type": "image/svg+xml",
+      "source_page": "https://flask.palletsprojects.com/py-modindex/"
+    },
+    {
+      "url": "https://flask.palletsprojects.com/_static/pygments.css?v=6625fa76",
+      "kind": "css",
+      "ok": true,
+      "status": 200,
+      "path": "assets/css_bf04631adf7b.css",
+      "bytes": 5291,
+      "content_type": "text/css; charset=utf-8",
+      "source_page": "https://flask.palletsprojects.com/py-modindex/"
+    },
+    {
+      "url": "https://flask.palletsprojects.com/_static/flask.css?v=b87c8d14",
+      "kind": "css",
+      "ok": true,
+      "status": 200,
+      "path": "assets/css_e8139c6efc30.css",
+      "bytes": 237,
+      "content_type": "text/css; charset=utf-8",
+      "source_page": "https://flask.palletsprojects.com/py-modindex/"
+    },
+    {
+      "url": "https://flask.palletsprojects.com/_static/flask-icon.svg",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_a19c39497122.svg",
+      "bytes": 1999,
+      "content_type": "image/svg+xml",
+      "source_page": "https://flask.palletsprojects.com/py-modindex/"
+    },
+    {
+      "url": "https://flask.palletsprojects.com/search/",
+      "kind": "icon",
+      "ok": false,
+      "status": 200,
+      "error": "html_embed_not_localized",
+      "source_page": "https://flask.palletsprojects.com/py-modindex/"
+    }
+  ]
+}

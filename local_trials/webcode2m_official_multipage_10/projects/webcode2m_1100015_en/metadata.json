@@ -1,0 +1,737 @@
+{
+  "project_name": "webcode2m_1100015_en",
+  "row_idx": 1100015,
+  "hash": "cd6c2fc982b1ef05ba91641217e2791911c49e6c",
+  "lang": "en",
+  "score": 0,
+  "image": {},
+  "pages": [
+    {
+      "path": "index.html",
+      "source": "webcode2m_text"
+    },
+    {
+      "path": "page_1.html",
+      "source": "https://www.php.net/",
+      "official_clean": {
+        "enabled": true,
+        "source": "third_party/naturalcc/examples/webcode2m/scripts/data_cc_pipeline/format_utils.py",
+        "html_chars_before": 43652,
+        "html_chars_after": 26413,
+        "css_chars_before": 0,
+        "css_chars_after": 0
+      }
+    },
+    {
+      "path": "downloads.html",
+      "source": "https://www.php.net/downloads.php",
+      "official_clean": {
+        "enabled": true,
+        "source": "third_party/naturalcc/examples/webcode2m/scripts/data_cc_pipeline/format_utils.py",
+        "html_chars_before": 19356,
+        "html_chars_after": 9381,
+        "css_chars_before": 0,
+        "css_chars_after": 0
+      }
+    }
+  ],
+  "multipage_status": "ok",
+  "reason_if_single_page": "",
+  "stats": {
+    "removed_script": 8,
+    "root_relative_fallback": 8,
+    "downloaded": 5,
+    "fallback_asset": 1,
+    "removed_noise_link": 4,
+    "official_webcode2m_purified": 1,
+    "child_page_downloaded": 2,
+    "child_removed_script": 18,
+    "child_downloaded": 27,
+    "child_fallback_asset": 2,
+    "child_removed_noise_link": 8,
+    "child_official_webcode2m_purified": 2
+  },
+  "official_clean": {
+    "enabled": true,
+    "source": "third_party/naturalcc/examples/webcode2m/scripts/data_cc_pipeline/format_utils.py",
+    "html_chars_before": 43621,
+    "html_chars_after": 26402,
+    "css_chars_before": 0,
+    "css_chars_after": 0
+  },
+  "resource_actions": [
+    {
+      "url": "/images/logos/php-logo-white.svg",
+      "kind": "icon",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/images/php8/logo_php8_5.svg",
+      "kind": "icon",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/images/to-top@2x.png",
+      "kind": "image",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "img.src"
+    },
+    {
+      "url": "/cached.php?t=1756715876&f=/fonts/Fira/fira.css",
+      "kind": "asset",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "link.stylesheet"
+    },
+    {
+      "url": "/cached.php?t=1756715876&f=/fonts/Font-Awesome/css/fontello.css",
+      "kind": "asset",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "link.stylesheet"
+    },
+    {
+      "url": "/cached.php?t=1763585401&f=/styles/theme-base.css",
+      "kind": "asset",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "link.stylesheet"
+    },
+    {
+      "url": "/cached.php?t=1763575802&f=/styles/theme-medium.css",
+      "kind": "asset",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "link.stylesheet"
+    },
+    {
+      "url": "/cached.php?t=1756715876&f=/styles/home.css",
+      "kind": "asset",
+      "action": "root_relative_fallback",
+      "local": "assets/generated-visual.svg",
+      "context": "link.stylesheet"
+    },
+    {
+      "url": "https://www.php.net/favicon.svg?v=2",
+      "kind": "icon",
+      "action": "downloaded",
+      "local": "assets/icon_1be7615ca2ff.svg",
+      "context": "link.icon"
+    },
+    {
+      "url": "https://www.php.net/favicon-196x196.png?v=2",
+      "kind": "icon",
+      "action": "downloaded",
+      "local": "assets/icon_69b1d20aa061.png",
+      "context": "link.icon"
+    },
+    {
+      "url": "https://www.php.net/favicon-32x32.png?v=2",
+      "kind": "icon",
+      "action": "downloaded",
+      "local": "assets/icon_d5e54e91a514.png",
+      "context": "link.icon"
+    },
+    {
+      "url": "https://www.php.net/favicon-16x16.png?v=2",
+      "kind": "icon",
+      "action": "downloaded",
+      "local": "assets/icon_a98c136fc166.png",
+      "context": "link.icon"
+    },
+    {
+      "url": "https://www.php.net/favicon.ico?v=2",
+      "kind": "icon",
+      "action": "downloaded",
+      "local": "assets/icon_9173296b46f5.ico",
+      "context": "link.shortcut icon"
+    },
+    {
+      "url": "https://www.php.net/phpnetimprovedsearch.src",
+      "kind": "icon",
+      "action": "fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "link.search",
+      "error": "html_embed_not_localized"
+    },
+    {
+      "url": "/images/logos/php-logo-white.svg",
+      "kind": "icon",
+      "action": "child_downloaded",
+      "local": "assets/icon_c43e5b5b9b69.svg",
+      "context": "child.img.src",
+      "source_page": "https://www.php.net/"
+    },
+    {
+      "url": "/images/php8/logo_php8_5.svg",
+      "kind": "icon",
+      "action": "child_downloaded",
+      "local": "assets/icon_2161564f9221.svg",
+      "context": "child.img.src",
+      "source_page": "https://www.php.net/"
+    },
+    {
+      "url": "/images/to-top@2x.png",
+      "kind": "image",
+      "action": "child_downloaded",
+      "local": "assets/image_b3f63c445467.png",
+      "context": "child.img.src",
+      "source_page": "https://www.php.net/"
+    },
+    {
+      "url": "/cached.php?t=1756715876&f=/fonts/Fira/fira.css",
+      "kind": "asset",
+      "action": "child_downloaded",
+      "local": "assets/asset_6b04f9c3241a.php",
+      "context": "child.link.stylesheet",
+      "source_page": "https://www.php.net/"
+    },
+    {
+      "url": "/cached.php?t=1756715876&f=/fonts/Font-Awesome/css/fontello.css",
+      "kind": "asset",
+      "action": "child_downloaded",
+      "local": "assets/asset_a6d727e9c05f.php",
+      "context": "child.link.stylesheet",
+      "source_page": "https://www.php.net/"
+    },
+    {
+      "url": "/cached.php?t=1763585401&f=/styles/theme-base.css",
+      "kind": "asset",
+      "action": "child_downloaded",
+      "local": "assets/asset_93159f012bbb.php",
+      "context": "child.link.stylesheet",
+      "source_page": "https://www.php.net/"
+    },
+    {
+      "url": "/cached.php?t=1763575802&f=/styles/theme-medium.css",
+      "kind": "asset",
+      "action": "child_downloaded",
+      "local": "assets/asset_3316cb22684e.php",
+      "context": "child.link.stylesheet",
+      "source_page": "https://www.php.net/"
+    },
+    {
+      "url": "/cached.php?t=1756715876&f=/styles/home.css",
+      "kind": "asset",
+      "action": "child_downloaded",
+      "local": "assets/asset_5c7d91875b12.php",
+      "context": "child.link.stylesheet",
+      "source_page": "https://www.php.net/"
+    },
+    {
+      "url": "https://www.php.net/favicon.svg?v=2",
+      "kind": "icon",
+      "action": "child_downloaded",
+      "local": "assets/icon_1be7615ca2ff.svg",
+      "context": "child.link.icon",
+      "source_page": "https://www.php.net/"
+    },
+    {
+      "url": "https://www.php.net/favicon-196x196.png?v=2",
+      "kind": "icon",
+      "action": "child_downloaded",
+      "local": "assets/icon_69b1d20aa061.png",
+      "context": "child.link.icon",
+      "source_page": "https://www.php.net/"
+    },
+    {
+      "url": "https://www.php.net/favicon-32x32.png?v=2",
+      "kind": "icon",
+      "action": "child_downloaded",
+      "local": "assets/icon_d5e54e91a514.png",
+      "context": "child.link.icon",
+      "source_page": "https://www.php.net/"
+    },
+    {
+      "url": "https://www.php.net/favicon-16x16.png?v=2",
+      "kind": "icon",
+      "action": "child_downloaded",
+      "local": "assets/icon_a98c136fc166.png",
+      "context": "child.link.icon",
+      "source_page": "https://www.php.net/"
+    },
+    {
+      "url": "https://www.php.net/favicon.ico?v=2",
+      "kind": "icon",
+      "action": "child_downloaded",
+      "local": "assets/icon_9173296b46f5.ico",
+      "context": "child.link.shortcut icon",
+      "source_page": "https://www.php.net/"
+    },
+    {
+      "url": "https://www.php.net/phpnetimprovedsearch.src",
+      "kind": "icon",
+      "action": "child_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "child.link.search",
+      "source_page": "https://www.php.net/",
+      "error": "html_embed_not_localized"
+    },
+    {
+      "url": "/images/logos/php-logo-white.svg",
+      "kind": "icon",
+      "action": "child_downloaded",
+      "local": "assets/icon_c43e5b5b9b69.svg",
+      "context": "child.img.src",
+      "source_page": "https://www.php.net/downloads.php"
+    },
+    {
+      "url": "/images/php8/logo_php8_5.svg",
+      "kind": "icon",
+      "action": "child_downloaded",
+      "local": "assets/icon_2161564f9221.svg",
+      "context": "child.img.src",
+      "source_page": "https://www.php.net/downloads.php"
+    },
+    {
+      "url": "/images/to-top@2x.png",
+      "kind": "image",
+      "action": "child_downloaded",
+      "local": "assets/image_b3f63c445467.png",
+      "context": "child.img.src",
+      "source_page": "https://www.php.net/downloads.php"
+    },
+    {
+      "url": "/cached.php?t=1756715876&f=/fonts/Fira/fira.css",
+      "kind": "asset",
+      "action": "child_downloaded",
+      "local": "assets/asset_6b04f9c3241a.php",
+      "context": "child.link.stylesheet",
+      "source_page": "https://www.php.net/downloads.php"
+    },
+    {
+      "url": "/cached.php?t=1756715876&f=/fonts/Font-Awesome/css/fontello.css",
+      "kind": "asset",
+      "action": "child_downloaded",
+      "local": "assets/asset_a6d727e9c05f.php",
+      "context": "child.link.stylesheet",
+      "source_page": "https://www.php.net/downloads.php"
+    },
+    {
+      "url": "/cached.php?t=1763585401&f=/styles/theme-base.css",
+      "kind": "asset",
+      "action": "child_downloaded",
+      "local": "assets/asset_93159f012bbb.php",
+      "context": "child.link.stylesheet",
+      "source_page": "https://www.php.net/downloads.php"
+    },
+    {
+      "url": "/cached.php?t=1763575802&f=/styles/theme-medium.css",
+      "kind": "asset",
+      "action": "child_downloaded",
+      "local": "assets/asset_3316cb22684e.php",
+      "context": "child.link.stylesheet",
+      "source_page": "https://www.php.net/downloads.php"
+    },
+    {
+      "url": "/cached.php?t=1763563802&f=/styles/prism.css",
+      "kind": "asset",
+      "action": "child_downloaded",
+      "local": "assets/asset_f172ef8c558b.php",
+      "context": "child.link.stylesheet",
+      "source_page": "https://www.php.net/downloads.php"
+    },
+    {
+      "url": "/cached.php?t=1772550002&f=/styles/code-syntax.css",
+      "kind": "asset",
+      "action": "child_downloaded",
+      "local": "assets/asset_d739b3330d6d.php",
+      "context": "child.link.stylesheet",
+      "source_page": "https://www.php.net/downloads.php"
+    },
+    {
+      "url": "https://www.php.net/favicon.svg?v=2",
+      "kind": "icon",
+      "action": "child_downloaded",
+      "local": "assets/icon_1be7615ca2ff.svg",
+      "context": "child.link.icon",
+      "source_page": "https://www.php.net/downloads.php"
+    },
+    {
+      "url": "https://www.php.net/favicon-196x196.png?v=2",
+      "kind": "icon",
+      "action": "child_downloaded",
+      "local": "assets/icon_69b1d20aa061.png",
+      "context": "child.link.icon",
+      "source_page": "https://www.php.net/downloads.php"
+    },
+    {
+      "url": "https://www.php.net/favicon-32x32.png?v=2",
+      "kind": "icon",
+      "action": "child_downloaded",
+      "local": "assets/icon_d5e54e91a514.png",
+      "context": "child.link.icon",
+      "source_page": "https://www.php.net/downloads.php"
+    },
+    {
+      "url": "https://www.php.net/favicon-16x16.png?v=2",
+      "kind": "icon",
+      "action": "child_downloaded",
+      "local": "assets/icon_a98c136fc166.png",
+      "context": "child.link.icon",
+      "source_page": "https://www.php.net/downloads.php"
+    },
+    {
+      "url": "https://www.php.net/favicon.ico?v=2",
+      "kind": "icon",
+      "action": "child_downloaded",
+      "local": "assets/icon_9173296b46f5.ico",
+      "context": "child.link.shortcut icon",
+      "source_page": "https://www.php.net/downloads.php"
+    },
+    {
+      "url": "https://www.php.net/phpnetimprovedsearch.src",
+      "kind": "icon",
+      "action": "child_fallback",
+      "local": "assets/generated-icon.svg",
+      "context": "child.link.search",
+      "source_page": "https://www.php.net/downloads.php",
+      "error": "html_embed_not_localized"
+    }
+  ],
+  "download_results": [
+    {
+      "url": "https://www.php.net/favicon.svg?v=2",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_1be7615ca2ff.svg",
+      "bytes": 1129,
+      "content_type": "image/svg+xml"
+    },
+    {
+      "url": "https://www.php.net/favicon-196x196.png?v=2",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_69b1d20aa061.png",
+      "bytes": 2112,
+      "content_type": "image/png"
+    },
+    {
+      "url": "https://www.php.net/favicon-32x32.png?v=2",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_d5e54e91a514.png",
+      "bytes": 535,
+      "content_type": "image/png"
+    },
+    {
+      "url": "https://www.php.net/favicon-16x16.png?v=2",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_a98c136fc166.png",
+      "bytes": 302,
+      "content_type": "image/png"
+    },
+    {
+      "url": "https://www.php.net/favicon.ico?v=2",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_9173296b46f5.ico",
+      "bytes": 5430,
+      "content_type": "image/vnd.microsoft.icon"
+    },
+    {
+      "url": "https://www.php.net/phpnetimprovedsearch.src",
+      "kind": "icon",
+      "ok": false,
+      "status": 200,
+      "error": "html_embed_not_localized"
+    },
+    {
+      "url": "https://www.php.net/images/logos/php-logo-white.svg",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_c43e5b5b9b69.svg",
+      "bytes": 1528,
+      "content_type": "image/svg+xml",
+      "source_page": "https://www.php.net/"
+    },
+    {
+      "url": "https://www.php.net/images/php8/logo_php8_5.svg",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_2161564f9221.svg",
+      "bytes": 3665,
+      "content_type": "image/svg+xml",
+      "source_page": "https://www.php.net/"
+    },
+    {
+      "url": "https://www.php.net/images/to-top@2x.png",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_b3f63c445467.png",
+      "bytes": 1060,
+      "content_type": "image/png",
+      "source_page": "https://www.php.net/"
+    },
+    {
+      "url": "https://www.php.net/cached.php?t=1756715876&f=/fonts/Fira/fira.css",
+      "kind": "asset",
+      "ok": true,
+      "status": 200,
+      "path": "assets/asset_6b04f9c3241a.php",
+      "bytes": 3252,
+      "content_type": "text/css;charset=UTF-8",
+      "source_page": "https://www.php.net/"
+    },
+    {
+      "url": "https://www.php.net/cached.php?t=1756715876&f=/fonts/Font-Awesome/css/fontello.css",
+      "kind": "asset",
+      "ok": true,
+      "status": 200,
+      "path": "assets/asset_a6d727e9c05f.php",
+      "bytes": 2000,
+      "content_type": "text/css;charset=UTF-8",
+      "source_page": "https://www.php.net/"
+    },
+    {
+      "url": "https://www.php.net/cached.php?t=1763585401&f=/styles/theme-base.css",
+      "kind": "asset",
+      "ok": true,
+      "status": 200,
+      "path": "assets/asset_93159f012bbb.php",
+      "bytes": 24930,
+      "content_type": "text/css;charset=UTF-8",
+      "source_page": "https://www.php.net/"
+    },
+    {
+      "url": "https://www.php.net/cached.php?t=1763575802&f=/styles/theme-medium.css",
+      "kind": "asset",
+      "ok": true,
+      "status": 200,
+      "path": "assets/asset_3316cb22684e.php",
+      "bytes": 19711,
+      "content_type": "text/css;charset=UTF-8",
+      "source_page": "https://www.php.net/"
+    },
+    {
+      "url": "https://www.php.net/cached.php?t=1756715876&f=/styles/home.css",
+      "kind": "asset",
+      "ok": true,
+      "status": 200,
+      "path": "assets/asset_5c7d91875b12.php",
+      "bytes": 3492,
+      "content_type": "text/css;charset=UTF-8",
+      "source_page": "https://www.php.net/"
+    },
+    {
+      "url": "https://www.php.net/favicon.svg?v=2",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_1be7615ca2ff.svg",
+      "bytes": 1129,
+      "content_type": "image/svg+xml",
+      "source_page": "https://www.php.net/"
+    },
+    {
+      "url": "https://www.php.net/favicon-196x196.png?v=2",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_69b1d20aa061.png",
+      "bytes": 2112,
+      "content_type": "image/png",
+      "source_page": "https://www.php.net/"
+    },
+    {
+      "url": "https://www.php.net/favicon-32x32.png?v=2",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_d5e54e91a514.png",
+      "bytes": 535,
+      "content_type": "image/png",
+      "source_page": "https://www.php.net/"
+    },
+    {
+      "url": "https://www.php.net/favicon-16x16.png?v=2",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_a98c136fc166.png",
+      "bytes": 302,
+      "content_type": "image/png",
+      "source_page": "https://www.php.net/"
+    },
+    {
+      "url": "https://www.php.net/favicon.ico?v=2",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_9173296b46f5.ico",
+      "bytes": 5430,
+      "content_type": "image/vnd.microsoft.icon",
+      "source_page": "https://www.php.net/"
+    },
+    {
+      "url": "https://www.php.net/phpnetimprovedsearch.src",
+      "kind": "icon",
+      "ok": false,
+      "status": 200,
+      "error": "html_embed_not_localized",
+      "source_page": "https://www.php.net/"
+    },
+    {
+      "url": "https://www.php.net/images/logos/php-logo-white.svg",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_c43e5b5b9b69.svg",
+      "bytes": 1528,
+      "content_type": "image/svg+xml",
+      "source_page": "https://www.php.net/downloads.php"
+    },
+    {
+      "url": "https://www.php.net/images/php8/logo_php8_5.svg",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_2161564f9221.svg",
+      "bytes": 3665,
+      "content_type": "image/svg+xml",
+      "source_page": "https://www.php.net/downloads.php"
+    },
+    {
+      "url": "https://www.php.net/images/to-top@2x.png",
+      "kind": "image",
+      "ok": true,
+      "status": 200,
+      "path": "assets/image_b3f63c445467.png",
+      "bytes": 1060,
+      "content_type": "image/png",
+      "source_page": "https://www.php.net/downloads.php"
+    },
+    {
+      "url": "https://www.php.net/cached.php?t=1756715876&f=/fonts/Fira/fira.css",
+      "kind": "asset",
+      "ok": true,
+      "status": 200,
+      "path": "assets/asset_6b04f9c3241a.php",
+      "bytes": 3252,
+      "content_type": "text/css;charset=UTF-8",
+      "source_page": "https://www.php.net/downloads.php"
+    },
+    {
+      "url": "https://www.php.net/cached.php?t=1756715876&f=/fonts/Font-Awesome/css/fontello.css",
+      "kind": "asset",
+      "ok": true,
+      "status": 200,
+      "path": "assets/asset_a6d727e9c05f.php",
+      "bytes": 2000,
+      "content_type": "text/css;charset=UTF-8",
+      "source_page": "https://www.php.net/downloads.php"
+    },
+    {
+      "url": "https://www.php.net/cached.php?t=1763585401&f=/styles/theme-base.css",
+      "kind": "asset",
+      "ok": true,
+      "status": 200,
+      "path": "assets/asset_93159f012bbb.php",
+      "bytes": 24930,
+      "content_type": "text/css;charset=UTF-8",
+      "source_page": "https://www.php.net/downloads.php"
+    },
+    {
+      "url": "https://www.php.net/cached.php?t=1763575802&f=/styles/theme-medium.css",
+      "kind": "asset",
+      "ok": true,
+      "status": 200,
+      "path": "assets/asset_3316cb22684e.php",
+      "bytes": 19711,
+      "content_type": "text/css;charset=UTF-8",
+      "source_page": "https://www.php.net/downloads.php"
+    },
+    {
+      "url": "https://www.php.net/cached.php?t=1763563802&f=/styles/prism.css",
+      "kind": "asset",
+      "ok": true,
+      "status": 200,
+      "path": "assets/asset_f172ef8c558b.php",
+      "bytes": 3801,
+      "content_type": "text/css;charset=UTF-8",
+      "source_page": "https://www.php.net/downloads.php"
+    },
+    {
+      "url": "https://www.php.net/cached.php?t=1772550002&f=/styles/code-syntax.css",
+      "kind": "asset",
+      "ok": true,
+      "status": 200,
+      "path": "assets/asset_d739b3330d6d.php",
+      "bytes": 2162,
+      "content_type": "text/css;charset=UTF-8",
+      "source_page": "https://www.php.net/downloads.php"
+    },
+    {
+      "url": "https://www.php.net/favicon.svg?v=2",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_1be7615ca2ff.svg",
+      "bytes": 1129,
+      "content_type": "image/svg+xml",
+      "source_page": "https://www.php.net/downloads.php"
+    },
+    {
+      "url": "https://www.php.net/favicon-196x196.png?v=2",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_69b1d20aa061.png",
+      "bytes": 2112,
+      "content_type": "image/png",
+      "source_page": "https://www.php.net/downloads.php"
+    },
+    {
+      "url": "https://www.php.net/favicon-32x32.png?v=2",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_d5e54e91a514.png",
+      "bytes": 535,
+      "content_type": "image/png",
+      "source_page": "https://www.php.net/downloads.php"
+    },
+    {
+      "url": "https://www.php.net/favicon-16x16.png?v=2",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_a98c136fc166.png",
+      "bytes": 302,
+      "content_type": "image/png",
+      "source_page": "https://www.php.net/downloads.php"
+    },
+    {
+      "url": "https://www.php.net/favicon.ico?v=2",
+      "kind": "icon",
+      "ok": true,
+      "status": 200,
+      "path": "assets/icon_9173296b46f5.ico",
+      "bytes": 5430,
+      "content_type": "image/vnd.microsoft.icon",
+      "source_page": "https://www.php.net/downloads.php"
+    },
+    {
+      "url": "https://www.php.net/phpnetimprovedsearch.src",
+      "kind": "icon",
+      "ok": false,
+      "status": 200,
+      "error": "html_embed_not_localized",
+      "source_page": "https://www.php.net/downloads.php"
+    }
+  ]
+}

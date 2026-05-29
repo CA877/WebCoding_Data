@@ -19,6 +19,9 @@ outputs/
 remote_results/
 results/
 logs/
+useless/*
+!useless/
+!useless/README.md
 *.log
 *.jsonl.tmp
 *.webm

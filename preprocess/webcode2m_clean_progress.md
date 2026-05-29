@@ -5,8 +5,9 @@
 - 清洗脚本：`WebCoding_Data/preprocess/webcode2m_clean_pipeline.py`
 - 七类构造入口：`WebCoding_Data/construct/construct_webcode2m_dataset.py`
 - 验证器：`WebCoding_Data/construct/validate_webcode2m_task_dirs.py`
-- LLM 模型：`qwen-latest-series-invite-beta-v23`
-- VLM/PRD 模型：`qwen-latest-series-invite-beta-v23`
+- LLM 模型：`qwen3.7-max`
+- VLM/PRD 模型：`qwen3-vl-235b-a22b-instruct`
+- 图片入参：VL 模型使用 OpenAI 标准 `image_url`
 - 正式 smoke：`WebCoding_Data/local_trials/webcode2m_formal_7x10_ppapi_smoke`
 
 ## 已完成
@@ -46,6 +47,6 @@
 ## 当前问题
 
 1. `text-editing` 对 LLM search/replace 精确性敏感，失败样本必须丢弃或换样本补齐。
-2. 批量扩展前需要先用新模型 `qwen-latest-series-invite-beta-v23` 重跑小批次确认质量。
+2. 批量扩展前需要先用文本 `qwen3.7-max` + 视觉 `qwen3-vl-235b-a22b-instruct` 重跑小批次确认质量。
 3. `local_trials` 里历史试验目录较多，建议只保留正式结果和必要复现输入。
-4. 当前 ppapi 能列出 `qwen-latest-series-invite-beta-v23`，但 chat/responses 探针不可调用，需要确认模型权限或接口路由。
+4. `qwen3.7-max` 文本探针可用；图片格式虽可用 `type=image` 通过，但蓝色纯色图探针读成红色，因此不用于 PRD/VLM。
