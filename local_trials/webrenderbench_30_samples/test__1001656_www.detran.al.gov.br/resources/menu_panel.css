@@ -1,0 +1,48 @@
+.btn-pref .btn {
+    -webkit-border-radius:0 !important;
+}
+.well-sem-color-border {
+   background-color: #FFFFFF;
+   border: 0;
+}
+
+ 
+ 
+ 
+
+/*CSS DA PLACA ESPECIAL */
+.numero-placa {
+  width: 9%;
+  display: inline !important;
+  overflow-y: hidden;
+}
+
+.letra-placa {
+  width: 9%;
+  display: inline !important;
+  overflow-y: hidden;
+}
+
+/* DESATIVA ROLL DO INPUT NUMBER */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type=number] {
+    -moz-appearance:textfield;
+}
+
+@media (max-width: 400px){
+	.numero-placa {
+		width: 100%;
+		display: block;
+	}	
+}
+
+@media (max-width: 400px){
+	.letra-placa {
+		width: 100%;
+		display: block;
+	}	
+}

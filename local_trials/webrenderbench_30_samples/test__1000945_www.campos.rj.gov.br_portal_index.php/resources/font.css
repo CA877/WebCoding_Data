@@ -1,0 +1,86 @@
+@font-face {
+	font-family: 'Conv_Gotham-Black';
+	src: url('../fonts/Gotham-Black.eot');
+	src: local('âº'), url('../fonts/Gotham-Black.woff') format('woff'), url('../fonts/Gotham-Black.ttf') format('truetype'), url('../fonts/Gotham-Black.svg') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'Conv_Gotham-Bold';
+	src: url('../fonts/Gotham-Bold.eot');
+	src: local('âº'), url('../fonts/Gotham-Bold.woff') format('woff'), url('../fonts/Gotham-Bold.ttf') format('truetype'), url('../fonts/Gotham-Bold.svg') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'Conv_Gotham-Light';
+	src: url('../fonts/Gotham-Light.eot');
+	src: local('âº'), url('../fonts/Gotham-Light.woff') format('woff'), url('../fonts/Gotham-Light.ttf') format('truetype'), url('../fonts/Gotham-Light.svg') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+@font-face {
+	font-family: 'Conv_Gotham-Book';
+	src: url('../fonts/Gotham-Book.eot');
+	src: local('âº'), url('../fonts/Gotham-Book.woff') format('woff'), url('../fonts/Gotham-Book.ttf') format('truetype'), url('../fonts/Gotham-Book.svg') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'Conv_Gotham-Medium';
+	src: url('../fonts/Gotham-Medium.eot');
+	src: local('âº'), url('../fonts/Gotham-Medium.woff') format('woff'), url('../fonts/Gotham-Medium.ttf') format('truetype'), url('../fonts/Gotham-Medium.svg') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+@font-face {
+	font-family: 'Conv_Gotham-Ultra';
+	src: url('../fonts/Gotham-Ultra.eot');
+	src: local('âº'), url('../fonts/Gotham-Ultra.woff') format('woff'), url('../fonts/Gotham-Ultra.ttf') format('truetype'), url('../fonts/Gotham-Ultra.svg') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+@font-face {
+	font-family: 'Conv_homizio-regular';
+	src: url('../fonts/homizio-regular.eot');
+	src: local('âº'), url('../fonts/homizio-regular.woff') format('woff'), url('../fonts/homizio-regular.ttf') format('truetype'), url('../fonts/homizio-regular.svg') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+@font-face {
+	font-family: 'Conv_Avant Garde Medium BT';
+	src: url('../fonts/Avant Garde Medium BT.eot');
+	src: local('âº'), url('../fonts/Avant Garde Medium BT.woff') format('woff'), url('../fonts/Avant Garde Medium BT.ttf') format('truetype'), url('../fonts/Avant Garde Medium BT.svg') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+
+
+
+
+@font-face {
+    font-family: 'avantgarde_md_btmedium';
+    src: url('../fonts/avant_garde_medium_bt-webfont.eot');
+    src: url('../fonts/avant_garde_medium_bt-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../fonts/avant_garde_medium_bt-webfont.woff') format('woff'),
+         url('../fonts/avant_garde_medium_bt-webfont.ttf') format('truetype'),
+         url('../fonts/avant_garde_medium_bt-webfont.svg#avantgarde_md_btmedium') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+@font-face {
+    font-family: 'bebasregular';
+    src: url('../fonts/bebas__-webfont.eot');
+    src: url('../fonts/bebas__-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../fonts/bebas__-webfont.woff') format('woff'),
+         url('../fonts/bebas__-webfont.ttf') format('truetype'),
+         url('../fonts/bebas__-webfont.svg#bebasregular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+

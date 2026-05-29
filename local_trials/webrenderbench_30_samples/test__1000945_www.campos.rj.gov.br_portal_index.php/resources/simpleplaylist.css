@@ -1,0 +1,85 @@
+/*
+ul.playlist li {
+  list-style: none;
+  padding: 5px;
+ background: #edeae0;
+  border: 1px solid #d9d3cf;
+  position: relative;
+  margin-bottom: 2px;
+}
+
+div.track span {
+  vertical-align: bottom;
+  display: inline-block;
+}
+
+.track_controls {
+  display:block;
+  width: 16px;
+  height: 16px;
+  background: url('../img/icon-play.png') no-repeat 0;
+  cursor: pointer;
+  position: absolute;
+  right: 2px;
+  top:5px;
+  z-index: 10000;
+  
+}
+
+.track_controls:hover {
+  background-image: url('../img/icon-play.png');
+}
+*/
+.playlist .playing {
+  background: url('../img/bt-radio.png')no-repeat 0px -34px !important;
+}
+
+.playlist .playing:hover {
+  background: url('../img/bt-radio.png')no-repeat 0px -34px !important;
+}
+/*
+span.title {
+  display: inline-block;
+  width: 85%;
+}
+*/
+.playlist span.minus {
+  display: none;
+  width: 5px;
+}
+
+span#timeleft {
+  display: inline-block;
+  width: 20px;
+}
+
+.playlist div.progressBar {
+  width: 80%;
+  margin: 3px 0;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  -ms-border-radius: 3px;
+  -o-border-radius: 3px;
+  border-radius: 3px;
+  background: #eee;
+  cursor: pointer;
+  position: absolute;
+  bottom: -2px;
+  left: 10%;
+  height: 5px;
+}
+
+.playlist div.progress {
+  width: 0%;
+  height: 5px;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  -ms-border-radius: 3px;
+  -o-border-radius: 3px;
+  border-radius: 3px;
+  background: #22ccff;
+  
+}
+
+
+/**CUSTOM PORTAL  - page RADIO */
