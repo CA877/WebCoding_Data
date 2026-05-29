@@ -1,71 +1,51 @@
-# WebCode2M Clean Prototype Progress
+# WebCode2M 当前进展
 
-## Benchmark Takeaways
+## 当前版本
 
-- WebCompass covers seven web-coding tasks across text/image/video generation, text/image editing, and text/image repair. Its evaluation stresses runnability, visual fidelity, interaction, responsiveness, and checklist/agent-based judging.
-- Design2Code is mainly screenshot-to-HTML/CSS: good for static visual fidelity, less focused on interaction or multi-page behavior.
-- Vision2Web raises the bar toward real websites: static responsive pages, interactive multi-page frontends, and full-stack tasks, judged by GUI workflow verification plus VLM visual scoring.
-- Flame-VLM-Code is more a UI-to-code model/data-synthesis line than a benchmark target, but it reinforces the same lesson: visual-to-code training benefits from clean aligned image/code pairs.
+- 清洗脚本：`WebCoding_Data/preprocess/webcode2m_clean_pipeline.py`
+- 七类构造入口：`WebCoding_Data/construct/construct_webcode2m_dataset.py`
+- 验证器：`WebCoding_Data/construct/validate_webcode2m_task_dirs.py`
+- LLM 模型：`qwen-latest-series-invite-beta-v23`
+- VLM/PRD 模型：`qwen-latest-series-invite-beta-v23`
+- 正式 smoke：`WebCoding_Data/local_trials/webcode2m_formal_7x10_ppapi_smoke`
 
-## Processing Decision
+## 已完成
 
-Use WebCode2M as a source pool, not as final SFT data directly.
+1. 官方 WebCode2M 清洗代码已接入。
+2. 多页扩展改为真实站内 HTML 子页，不再模板造页。
+3. 首页和子页都走官方清洗。
+4. 七类任务已拆分成独立构造脚本。
+5. `text-generation` 使用代码 + 截图生成 PRD。
+6. `edit` 使用 `web_coding_demo/synthetic/edit.py` 的 16 类任务逻辑。
+7. `repair` 使用 `web_coding_demo/synthetic/repair.py` 的 11 类缺陷逻辑和 reverse construction。
+8. 已生成 70 条正式 smoke 样本。
+9. 已通过 validator。
+10. 代码和结果已推送到 GitHub commit：`c635a6b`。
 
-For each row:
-
-1. Save `text` as a local `index.html`.
-2. Download reachable render resources into `assets/`.
-3. Delete tracking/counter/widget noise.
-4. Replace missing root-relative/failed images with local deterministic SVG visual assets.
-5. Replace missing icons/avatars with local SVG icon/avatar assets.
-6. Try multi-page crawling only when crawlable absolute internal links exist.
-7. Record all actions in `metadata.json`.
-
-This avoids teaching models to memorize external URLs while preserving page layout and most real assets.
-
-## Current Outputs
-
-- Clean 100 projects: `WebCoding_Data/local_trials/webcode2m_clean_100/projects`
-- Seven-task prototype cases: `WebCoding_Data/local_trials/webcode2m_cases_7x10`
-- Cleaning script: `WebCoding_Data/preprocess/webcode2m_clean_pipeline.py`
-- Case script: `WebCoding_Data/construct/construct_webcode2m_cases.py`
-
-Clean 100 summary:
+## 当前验证结果
 
 ```json
 {
-  "ok": 100,
-  "downloaded": 213,
-  "removed_noise_ref": 26,
-  "root_relative_fallback": 113,
-  "relative_fallback": 43,
-  "fallback_asset": 68
+  "ok": true,
+  "task_counts": {
+    "text-generation": 10,
+    "image-generation": 10,
+    "video-generation": 10,
+    "text-editing": 10,
+    "image-editing": 10,
+    "text-repair": 10,
+    "image-repair": 10
+  },
+  "info_json_count": 70,
+  "remote_hit_count": 0,
+  "provenance_hit_count": 0,
+  "small_video_count": 0
 }
 ```
 
-Case summary:
+## 当前问题
 
-- `text-generation`: 10
-- `image-generation`: 10
-- `video-generation`: 10
-- `text-editing`: 10
-- `image-editing`: 10
-- `text-repair`: 10
-- `image-repair`: 10
-
-All case HTML pages currently have zero remote render-resource attributes.
-
-## Multi-page Status
-
-The downloaded 100 WebCode2M rows expose no normal `href=` anchors in their purified HTML. Because WebCode2M also does not expose original page URLs/base URLs, these rows cannot be faithfully expanded into original child pages. The cleaner keeps this honest by marking such projects:
-
-```text
-multipage_status = "multipage_unavailable"
-reason_if_single_page = "no crawlable absolute internal hrefs in WebCode2M text"
-```
-
-If a larger WebCode2M slice contains absolute same-domain links, the script will try to crawl up to six child pages.
-
-## Next Best Step
-
-Run human review on the 70 generated cases, then replace the heuristic `text-generation` instructions with VLM-generated PRDs from the cleaned screenshots for higher leaderboard value.
+1. `text-editing` 对 LLM search/replace 精确性敏感，失败样本必须丢弃或换样本补齐。
+2. 批量扩展前需要先用新模型 `qwen-latest-series-invite-beta-v23` 重跑小批次确认质量。
+3. `local_trials` 里历史试验目录较多，建议只保留正式结果和必要复现输入。
+4. 当前 ppapi 能列出 `qwen-latest-series-invite-beta-v23`，但 chat/responses 探针不可调用，需要确认模型权限或接口路由。
