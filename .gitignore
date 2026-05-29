@@ -25,6 +25,7 @@ test_output/
 output_text/
 data_preview/
 generation/evaluation/agents/claude_code_web_coding/packages/
+**/generation/evaluation/agents/claude_code_web_coding/packages/
 useless/*
 !useless/
 !useless/README.md
