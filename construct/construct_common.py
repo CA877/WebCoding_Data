@@ -5,20 +5,13 @@ import os
 import random
 import re
 import shutil
-import sys
-import ast
 import time
 from collections import Counter
 from pathlib import Path
 from typing import Any
 
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
-WEB_CODING_DEMO_ROOT = REPO_ROOT / "web_coding_demo"
-if str(WEB_CODING_DEMO_ROOT) not in sys.path:
-    sys.path.insert(0, str(WEB_CODING_DEMO_ROOT))
+REPO_ROOT = Path(__file__).resolve().parents[1]
 
 CODE_EXTS = {".html", ".htm", ".css", ".js", ".jsx", ".ts", ".tsx", ".json", ".svg"}
 PROVENANCE_FILES = {"metadata.json", "original_webcode2m_screenshot.png"}
@@ -112,7 +105,7 @@ def maybe_load_env() -> None:
         from dotenv import load_dotenv
     except Exception:
         return
-    for candidate in (REPO_ROOT / "WebCoding_Data" / ".env", REPO_ROOT / ".env"):
+    for candidate in (REPO_ROOT / ".env",):
         if candidate.exists():
             load_dotenv(candidate)
 
@@ -551,19 +544,6 @@ def build_generation_data(project_dir: Path) -> dict[str, Any]:
     }
 
 
-def _load_literal_assignments(source_path: Path, names: set[str]) -> dict[str, Any]:
-    tree = ast.parse(source_path.read_text(encoding="utf-8"))
-    values: dict[str, Any] = {}
-    for node in tree.body:
-        if not isinstance(node, ast.Assign):
-            continue
-        for target in node.targets:
-            if isinstance(target, ast.Name) and target.id in names:
-                values[target.id] = ast.literal_eval(node.value)
-    missing = names - values.keys()
-    if missing:
-        raise ValueError(f"Missing literal assignments in {source_path}: {sorted(missing)}")
-    return values
 
 
 def strip_markdown_fence(response_text: str) -> str:
@@ -583,26 +563,79 @@ def strip_markdown_fence(response_text: str) -> str:
     return fenced
 
 
+_EDIT_TASKS: list[str] = [
+    "Data Table",
+    "Rich Text Editor",
+    "Drag & Drop Interface",
+    "Tree View",
+    "Real-time Dashboard",
+    "Infinite Scroll",
+    "Async Form Validation",
+    "File Upload with Progress",
+    "Parallax Scrolling",
+    "Page Transitions",
+    "Particle Effects",
+    "Skeleton Loading",
+    "Shopping Cart",
+    "User Authentication",
+    "Multi-step Wizard",
+    "Notification Center",
+]
+
+_EDIT_TASK_DESCRIPTIONS: dict[str, str] = {
+    "Data Table": "Implement an advanced data table component with rich functionality.\n    Requirements:\n    - Display tabular data with sortable columns (click header to sort asc/desc).\n    - Add pagination controls (previous/next, page numbers, items per page selector).\n    - Implement column filtering with dropdown or text input per column.\n    - Support row selection with checkboxes (single and select-all).\n    - Add inline editing capability for editable cells.\n    - Responsive design: horizontal scroll or card view on mobile.",
+    "Rich Text Editor": "Implement a WYSIWYG rich text editor component.\n    Requirements:\n    - Create a toolbar with formatting buttons (Bold, Italic, Underline, Strikethrough).\n    - Support heading levels (H1-H3), lists (ordered/unordered), and blockquotes.\n    - Implement link insertion with URL input dialog.\n    - Add image embedding via URL or placeholder.\n    - Use contenteditable div or textarea with preview mode.\n    - Sync formatted content to a hidden textarea for form submission.",
+    "Drag & Drop Interface": "Implement a drag-and-drop interface for reordering or organizing items.\n    Requirements:\n    - Create draggable items with visual drag handles.\n    - Implement drop zones with visual feedback (highlight on dragover).\n    - Support reordering within a single list (Kanban column style).\n    - Add cross-container drag support if multiple lists exist.\n    - Show placeholder/ghost element during drag operation.\n    - Persist order changes to data structure and optionally localStorage.",
+    "Tree View": "Implement a hierarchical tree view component for nested data.\n    Requirements:\n    - Display nested items with expand/collapse toggles (arrows or +/- icons).\n    - Support multiple levels of nesting (at least 3 levels deep).\n    - Implement lazy loading or virtual rendering for large trees.\n    - Add checkbox selection with parent-child cascade (select parent selects all children).\n    - Support keyboard navigation (arrow keys, Enter to toggle).\n    - Add search/filter functionality to highlight matching nodes.",
+    "Real-time Dashboard": "Implement a real-time dashboard with live-updating metrics.\n    Requirements:\n    - Create dashboard cards displaying key metrics (numbers, percentages).\n    - Simulate real-time data updates using setInterval or mock WebSocket.\n    - Add animated counters that smoothly transition between values.\n    - Implement mini charts/sparklines showing trend data (use CSS or canvas).\n    - Add status indicators (green/yellow/red) based on thresholds.\n    - Include a \"last updated\" timestamp that refreshes automatically.",
+    "Infinite Scroll": "Implement infinite scroll pagination for a content feed.\n    Requirements:\n    - Load initial batch of items (e.g., 10-20 items).\n    - Detect when user scrolls near bottom using Intersection Observer or scroll event.\n    - Fetch and append next batch of items seamlessly.\n    - Show loading spinner/skeleton during fetch.\n    - Handle end-of-content state with \"No more items\" message.\n    - Implement scroll position restoration on back navigation (optional).",
+    "Async Form Validation": "Implement comprehensive async form validation with server-side checks.\n    Requirements:\n    - Real-time validation on input blur and form submit.\n    - Simulate async validation (e.g., username availability check with delay).\n    - Show loading spinner next to field during async validation.\n    - Display inline error/success messages with appropriate icons.\n    - Debounce rapid input to avoid excessive validation calls.\n    - Disable submit button while any async validation is pending.",
+    "File Upload with Progress": "Implement a file upload component with progress tracking.\n    Requirements:\n    - Create a drag-and-drop zone with click-to-browse fallback.\n    - Show file preview (thumbnail for images, icon for others).\n    - Display upload progress bar with percentage for each file.\n    - Simulate upload progress using XMLHttpRequest or fetch with mock delay.\n    - Support multiple file selection and queue management.\n    - Add cancel upload and remove file functionality.",
+    "Parallax Scrolling": "Implement parallax scrolling effects for visual depth.\n    Requirements:\n    - Create multiple layers that move at different speeds on scroll.\n    - Apply parallax to background images, floating elements, or text.\n    - Use transform: translate3d for GPU-accelerated smooth performance.\n    - Implement both vertical and optional horizontal parallax.\n    - Add fade-in/scale effects for elements entering viewport.\n    - Ensure graceful degradation on mobile (reduce or disable effects).",
+    "Page Transitions": "Implement smooth page/view transitions for SPA-like experience.\n    Requirements:\n    - Create animated transitions between different content sections/pages.\n    - Implement multiple transition types (fade, slide, zoom, flip).\n    - Add enter/exit animations that coordinate timing.\n    - Use CSS transitions/animations or Web Animations API.\n    - Handle browser back/forward with appropriate reverse animations.\n    - Add loading state during content fetch if applicable.",
+    "Particle Effects": "Implement interactive particle effects for visual enhancement.\n    Requirements:\n    - Create a canvas-based particle system with configurable particle count.\n    - Implement particle physics (velocity, gravity, friction, bounce).\n    - Add mouse/touch interaction (particles follow cursor, explode on click).\n    - Support different particle shapes (circles, squares, custom images).\n    - Implement connection lines between nearby particles (constellation effect).\n    - Optimize performance with requestAnimationFrame and particle pooling.",
+    "Skeleton Loading": "Implement skeleton loading screens for improved perceived performance.\n    Requirements:\n    - Create skeleton placeholders matching the layout of actual content.\n    - Add shimmer/pulse animation effect on skeleton elements.\n    - Implement skeletons for various content types (text, images, cards, lists).\n    - Smooth transition from skeleton to actual content when loaded.\n    - Support different skeleton variants based on content type.\n    - Ensure skeletons are accessible (aria-busy, aria-label).",
+    "Shopping Cart": "Implement a fully functional shopping cart system.\n    Requirements:\n    - Add \"Add to Cart\" buttons on product items with quantity selector.\n    - Create cart sidebar/dropdown showing added items with thumbnails.\n    - Implement quantity adjustment (+/-) and remove item functionality.\n    - Calculate and display subtotal, tax, and total in real-time.\n    - Persist cart data in localStorage across page refreshes.\n    - Add cart badge showing item count on cart icon.",
+    "User Authentication": "Implement a complete user authentication UI flow.\n    Requirements:\n    - Create login form with email/username and password fields.\n    - Create registration form with password confirmation and terms checkbox.\n    - Implement \"Forgot Password\" flow with email input.\n    - Add form validation with appropriate error messages.\n    - Show/hide password toggle functionality.\n    - Simulate auth state with localStorage and update UI accordingly (logged in/out).",
+    "Multi-step Wizard": "Implement a multi-step form wizard with progress tracking.\n    Requirements:\n    - Create a step indicator showing current step and total steps.\n    - Implement step navigation (Next, Previous, Skip if allowed).\n    - Validate each step before allowing progression.\n    - Show step completion status (completed, current, upcoming).\n    - Persist form data across steps (don't lose data on back navigation).\n    - Add final review step showing all entered data before submission.",
+    "Notification Center": "Implement a notification center with real-time alerts.\n    Requirements:\n    - Create notification bell icon with unread count badge.\n    - Implement dropdown panel showing notification list.\n    - Support different notification types (info, success, warning, error).\n    - Add mark as read (individual and mark all) functionality.\n    - Implement notification grouping by date or type.\n    - Add simulated real-time notifications using setInterval or mock events.",
+}
+
+_DEFECT_TYPES: list[str] = [
+    "Occlusion",
+    "Crowding",
+    "Text Overlap",
+    "Alignment",
+    "Color Contrast",
+    "Overflow",
+    "Sizing Proportion",
+    "Loss of Interactivity",
+    "Semantic Error",
+    "Nesting Error",
+    "Missing Attributes",
+]
+
+_DEFECT_DESCRIPTIONS: dict[str, str] = {
+    "Occlusion": "Increase the z-index of element A so that it covers element B.\n    For example, make a modal overlay cover important content, or make a fixed header cover interactive elements.",
+    "Crowding": "Remove margin or padding between elements A and B, or shrink their parent container size.\n    For example, remove spacing between navigation items, or collapse the gap between form fields.",
+    "Text Overlap": "Reduce the width or line-height of a text container, or position two text containers at the same location.\n    For example, make text overflow its container and overlap with adjacent elements.",
+    "Alignment": "Adjust the left/top properties of element A so it's not aligned with the grid or sibling element B.\n    For example, misalign navigation items, or offset a button from its expected position.",
+    "Color Contrast": "Set text color to a value similar to the background color (e.g., light gray text on white background).\n    For example, make body text nearly invisible, or reduce contrast of important labels.",
+    "Overflow": "Add excessive content to a fixed height/width container and set overflow: visible or remove overflow handling.\n    For example, add too much text to a card component causing it to break layout.",
+    "Sizing Proportion": "Set an image to extreme dimensions (e.g., width: 10px, height: 200px), or make a container unnecessarily huge.\n    For example, distort an image aspect ratio, or make a small icon take up entire width.",
+    "Loss of Interactivity": "Disable a button element, or use CSS pointer-events: none to make a link unclickable.\n    For example, add disabled attribute to submit button, or block clicks on navigation links.",
+    "Semantic Error": "Replace heading <h1> element with <div> element styled the same way.\n    For example, convert semantic nav to div, or replace button with styled span.",
+    "Nesting Error": "Place an <a> tag inside another <a> tag, or put a <div> inside a <p> tag.\n    For example, nest block elements inside inline elements incorrectly.",
+    "Missing Attributes": "Remove alt attribute from <img> elements, or remove aria-label from form inputs.\n    For example, remove accessibility attributes, or remove required form attributes.",
+}
+
+
 def load_edit_catalog() -> tuple[list[str], dict[str, str]]:
-    values = _load_literal_assignments(
-        WEB_CODING_DEMO_ROOT / "synthetic" / "edit.py",
-        {"COMPLEX_COMPONENTS", "FRONTEND_BACKEND", "ADVANCED_ANIMATIONS", "BUSINESS_SCENARIOS", "TASK_DESCRIPTIONS"},
-    )
-    tasks = (
-        values["COMPLEX_COMPONENTS"]
-        + values["FRONTEND_BACKEND"]
-        + values["ADVANCED_ANIMATIONS"]
-        + values["BUSINESS_SCENARIOS"]
-    )
-    return list(tasks), dict(values["TASK_DESCRIPTIONS"])
+    return list(_EDIT_TASKS), dict(_EDIT_TASK_DESCRIPTIONS)
 
 
 def load_repair_catalog() -> tuple[list[str], dict[str, str]]:
-    values = _load_literal_assignments(
-        WEB_CODING_DEMO_ROOT / "synthetic" / "repair.py",
-        {"DEFECT_TYPES", "DEFECT_DESCRIPTIONS"},
-    )
-    return list(values["DEFECT_TYPES"]), dict(values["DEFECT_DESCRIPTIONS"])
+    return list(_DEFECT_TYPES), dict(_DEFECT_DESCRIPTIONS)
 
 
 def apply_search_replace_local(

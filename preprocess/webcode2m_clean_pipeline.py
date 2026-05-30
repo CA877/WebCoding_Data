@@ -113,9 +113,50 @@ def sha1(value: str | bytes) -> str:
     return hashlib.sha1(value).hexdigest()
 
 
-def build_session() -> requests.Session:
+# Deterministic pool of picsum photo IDs for diverse placeholder images.
+PICSUM_IDS = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+              20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+              30, 31, 32, 33, 34, 35, 36, 37, 38, 39]
+
+
+def download_placeholder(session: requests.Session, assets_dir: Path, index: int, width: int = 800, height: int = 600) -> str | None:
+    """Download a picsum photo as a diverse placeholder image."""
+    pid = PICSUM_IDS[index % len(PICSUM_IDS)]
+    width = max(100, min(width, 1920))
+    height = max(100, min(height, 1080))
+    url = f"https://picsum.photos/id/{pid}/{width}/{height}"
+    name = f"placeholder_{index:03d}.jpg"
+    target = assets_dir / name
+    try:
+        resp = session.get(url, timeout=15, allow_redirects=True)
+        if resp.status_code == 200 and len(resp.content) > 100:
+            target.write_bytes(resp.content)
+            return f"assets/{name}"
+    except Exception:  # noqa: BLE001
+        pass
+    return None
+
+
+def extract_img_dimensions(tag) -> tuple[int, int]:
+    """Extract width/height from an img tag, with sensible defaults."""
+    def parse_dim(val, default: int) -> int:
+        if not val:
+            return default
+        val = str(val).strip().rstrip("px%")
+        try:
+            return max(100, int(float(val)))
+        except (ValueError, TypeError):
+            return default
+    w = parse_dim(tag.get("width"), 800)
+    h = parse_dim(tag.get("height"), 600)
+    return w, h
+
+
+def build_session(proxy: str | None = None) -> requests.Session:
     session = requests.Session()
     session.trust_env = False
+    if proxy:
+        session.proxies = {"http": proxy, "https": proxy}
     retry = Retry(total=2, backoff_factor=0.5, status_forcelist=(429, 500, 502, 503, 504))
     adapter = HTTPAdapter(max_retries=retry, pool_connections=16, pool_maxsize=16)
     session.mount("http://", adapter)
@@ -359,8 +400,20 @@ def clean_row(row: dict[str, Any], output_dir: Path, session: requests.Session, 
     actions: list[dict[str, Any]] = []
     cache: dict[str, str | None] = {}
     download_infos: list[dict[str, Any]] = []
+    placeholder_counter = [0]  # mutable counter for closures
 
-    def localize(raw_url: str, context: str) -> str | None:
+    def _get_placeholder(kind: str, width: int = 800, height: int = 600) -> str | None:
+        """Get a diverse placeholder image for unresolvable paths."""
+        if kind in {"image", "icon", "avatar", "asset"}:
+            idx = placeholder_counter[0]
+            placeholder_counter[0] += 1
+            local = download_placeholder(session, assets_dir, idx, width, height)
+            if local:
+                return local
+        # Fallback to SVG if picsum download fails
+        return fallback_for(kind, shared)
+
+    def localize(raw_url: str, context: str, tag=None) -> str | None:
         url = (raw_url or "").strip().strip("\"'")
         if not url or is_data_or_safe(url):
             return url if url.startswith("data:") else None
@@ -381,7 +434,9 @@ def clean_row(row: dict[str, Any], output_dir: Path, session: requests.Session, 
                 actions.append({"url": url, "kind": kind, "action": "downloaded", "local": local, "context": context})
                 cache[url] = local
                 return local
-            fallback = fallback_for(kind, shared)
+            # Remote download failed — use placeholder
+            w, h = extract_img_dimensions(tag) if tag else (800, 600)
+            fallback = _get_placeholder(kind, w, h)
             if fallback:
                 stats["fallback_asset"] += 1
                 actions.append({"url": url, "kind": kind, "action": "fallback", "local": fallback, "context": context, "error": info.get("error")})
@@ -392,7 +447,8 @@ def clean_row(row: dict[str, Any], output_dir: Path, session: requests.Session, 
             return fallback
         if url.startswith("/"):
             kind = classify_url(url)
-            fallback = fallback_for(kind, shared)
+            w, h = extract_img_dimensions(tag) if tag else (800, 600)
+            fallback = _get_placeholder(kind, w, h)
             if fallback:
                 stats["root_relative_fallback"] += 1
                 actions.append({"url": url, "kind": kind, "action": "root_relative_fallback", "local": fallback, "context": context})
@@ -405,7 +461,8 @@ def clean_row(row: dict[str, Any], output_dir: Path, session: requests.Session, 
         # the original directory. Keep simple anchors/pages, replace asset-like refs.
         kind = classify_url(url)
         if kind in {"image", "icon", "avatar", "asset"}:
-            fallback = fallback_for(kind, shared)
+            w, h = extract_img_dimensions(tag) if tag else (800, 600)
+            fallback = _get_placeholder(kind, w, h)
             stats["relative_fallback"] += 1
             actions.append({"url": url, "kind": kind, "action": "relative_fallback", "local": fallback, "context": context})
             cache[url] = fallback
@@ -427,7 +484,7 @@ def clean_row(row: dict[str, Any], output_dir: Path, session: requests.Session, 
         for attr in MEDIA_ATTRS:
             if not tag.has_attr(attr):
                 continue
-            new = localize(str(tag.get(attr)), context=f"{tag.name}.{attr}")
+            new = localize(str(tag.get(attr)), context=f"{tag.name}.{attr}", tag=tag)
             if new:
                 tag[attr] = new
             else:
@@ -440,7 +497,7 @@ def clean_row(row: dict[str, Any], output_dir: Path, session: requests.Session, 
         if removed:
             continue
         if tag.has_attr("srcset"):
-            new_srcset = rewrite_srcset(str(tag["srcset"]), localize)
+            new_srcset = rewrite_srcset(str(tag["srcset"]), lambda url, ctx: localize(url, ctx, tag=tag))
             if new_srcset:
                 tag["srcset"] = new_srcset
             else:
@@ -458,7 +515,7 @@ def clean_row(row: dict[str, Any], output_dir: Path, session: requests.Session, 
             stats["removed_noise_link"] += 1
             continue
         if "stylesheet" in rel or "icon" in rel or classify_url(str(href)) in {"css", "icon"}:
-            new = localize(str(href), context=f"link.{rel or 'asset'}")
+            new = localize(str(href), context=f"link.{rel or 'asset'}", tag=tag)
             if new:
                 tag["href"] = new
             else:
@@ -720,6 +777,7 @@ def main() -> None:
     parser.add_argument("--max-child-pages", type=int, default=6)
     parser.add_argument("--max-child-attempts", type=int, default=30)
     parser.add_argument("--overwrite", action="store_true")
+    parser.add_argument("--proxy", default=None, help="SOCKS5 proxy, e.g. socks5h://127.0.0.1:13659")
     args = parser.parse_args()
 
     if args.output_dir.exists() and args.overwrite:
@@ -733,7 +791,7 @@ def main() -> None:
     if args.limit:
         rows = rows[: args.limit]
 
-    session = build_session()
+    session = build_session(proxy=args.proxy)
     manifest = []
     with ThreadPoolExecutor(max_workers=args.workers) as pool:
         futures = [pool.submit(clean_row, row, args.output_dir, session, args) for row in rows]

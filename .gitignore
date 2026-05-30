@@ -15,20 +15,11 @@ venv/
 **/.deps/
 
 # Generated data and large artifacts
-data_pipeline/output/
+output/
 outputs/
 remote_results/
 results/
 logs/
-eval_output/
-test_output/
-output_text/
-data_preview/
-generation/evaluation/agents/claude_code_web_coding/packages/
-**/generation/evaluation/agents/claude_code_web_coding/packages/
-useless/*
-!useless/
-!useless/README.md
 *.log
 *.jsonl.tmp
 *.webm
