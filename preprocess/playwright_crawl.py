@@ -56,31 +56,46 @@ from playwright.sync_api import sync_playwright, Browser, Page
 # Constants
 # ---------------------------------------------------------------------------
 
-# Fallback image URLs — reliable placeholder services.
+# Fallback image URLs — stable, real photos from picsum.photos.
 # Used when a remote image cannot be downloaded.
-# placehold.co is confirmed working through SOCKS5 proxy.
-# Different colors provide visual diversity.
+# URLs are kept as-is in the HTML (not downloaded) so the model learns to reference image URLs.
+# Each ID returns a consistent, real photograph (landscapes, architecture, nature, etc.)
 FALLBACK_IMAGE_URLS = [
-    "https://placehold.co/800x600/e8e8e8/666666?text=Image",
-    "https://placehold.co/800x600/d4e6f1/2c3e50?text=Photo",
-    "https://placehold.co/800x600/d5f5e3/1e8449?text=Image",
-    "https://placehold.co/800x600/fdebd0/e67e22?text=Photo",
-    "https://placehold.co/800x600/ebdef0/8e44ad?text=Image",
-    "https://placehold.co/800x600/fadbd8/c0392b?text=Photo",
-    "https://placehold.co/800x600/d6eaf8/2980b9?text=Image",
-    "https://placehold.co/800x600/e8daef/7d3c98?text=Photo",
-    "https://placehold.co/400x400/e8e8e8/666666?text=Icon",
-    "https://placehold.co/200x200/d4e6f1/2c3e50?text=Avatar",
-    "https://placehold.co/1200x400/fdebd0/e67e22?text=Banner",
-    "https://placehold.co/600x400/d5f5e3/1e8449?text=Thumb",
-    "https://placehold.co/300x200/fadbd8/c0392b?text=Card",
-    "https://placehold.co/800x600/aed6f1/1a5276?text=Image",
-    "https://placehold.co/800x600/a9dfbf/196f3d?text=Photo",
-    "https://placehold.co/800x600/f9e79f/7d6608?text=Image",
-    "https://placehold.co/800x600/f5b7b1/922b21?text=Photo",
-    "https://placehold.co/800x600/d2b4de/6c3483?text=Image",
-    "https://placehold.co/800x600/a3e4d7/0e6655?text=Photo",
-    "https://placehold.co/800x600/abebc6/1e8449?text=Image",
+    # Landscapes & nature (800x600)
+    "https://picsum.photos/id/10/800/600",    # forest & lake
+    "https://picsum.photos/id/15/800/600",    # hilltop path
+    "https://picsum.photos/id/28/800/600",    # tropical beach
+    "https://picsum.photos/id/29/800/600",    # mountain vista
+    "https://picsum.photos/id/37/800/600",    # cliff edge
+    "https://picsum.photos/id/47/800/600",    # pond & trees
+    "https://picsum.photos/id/100/800/600",   # misty mountains
+    "https://picsum.photos/id/119/800/600",   # foggy field
+    "https://picsum.photos/id/180/800/600",   # ocean cliff
+    "https://picsum.photos/id/429/800/600",   # river valley
+    # Architecture & urban (800x600)
+    "https://picsum.photos/id/42/800/600",    # modern building
+    "https://picsum.photos/id/164/800/600",   # city bridge
+    "https://picsum.photos/id/248/800/600",   # building facade
+    "https://picsum.photos/id/260/800/600",   # skyscraper
+    "https://picsum.photos/id/302/800/600",   # rooftop view
+    # Objects & lifestyle (800x600)
+    "https://picsum.photos/id/237/800/600",   # puppy
+    "https://picsum.photos/id/250/800/600",   # desk setup
+    "https://picsum.photos/id/312/800/600",   # coffee cup
+    "https://picsum.photos/id/380/800/600",   # bookshelf
+    "https://picsum.photos/id/403/800/600",   # light bulb
+    # Small icons/avatars (400x400)
+    "https://picsum.photos/id/64/400/400",    # greenery
+    "https://picsum.photos/id/91/400/400",    # workspace
+    "https://picsum.photos/id/177/400/400",   # laptop
+    "https://picsum.photos/id/200/400/400",   # abstract
+    "https://picsum.photos/id/219/400/400",   # plant
+    # Banners (1200x400)
+    "https://picsum.photos/id/110/1200/400",  # panoramic coast
+    "https://picsum.photos/id/134/1200/400",  # mountain road
+    "https://picsum.photos/id/160/1200/400",  # desert
+    "https://picsum.photos/id/190/1200/400",  # winter scene
+    "https://picsum.photos/id/366/1200/400",  # sunset clouds
 ]
 
 # JS to inject into page — inlines CSS, removes scripts and noise
@@ -159,18 +174,9 @@ def download_resource(session: requests.Session, url: str, resources_dir: Path,
     except Exception:
         pass
 
-    # Fallback: download a placeholder image
+    # Fallback: use a stable image URL directly (model learns to reference URLs)
     if fallback_index >= 0:
-        fb_url = FALLBACK_IMAGE_URLS[fallback_index % len(FALLBACK_IMAGE_URLS)]
-        try:
-            resp = session.get(fb_url, timeout=10, allow_redirects=True)
-            if resp.status_code == 200:
-                name = f"placeholder_{fallback_index:04d}.jpg"
-                target = resources_dir / name
-                target.write_bytes(resp.content)
-                return f"./resources/{name}"
-        except Exception:
-            pass
+        return FALLBACK_IMAGE_URLS[fallback_index % len(FALLBACK_IMAGE_URLS)]
 
     return None
 
@@ -224,7 +230,7 @@ def localize_resources(html: str, page_url: str, resources_dir: Path,
             continue
         for attr in ("src", "data-src", "data-lazy-src", "data-cke-saved-src"):
             val = tag.get(attr)
-            if not val or val.startswith("data:") or val.startswith("./resources/"):
+            if not val or val.startswith("data:") or val.startswith("./resources/") or "picsum.photos" in val:
                 continue
             abs_url = urljoin(page_url, val)
             if not abs_url.startswith("http"):
@@ -253,7 +259,7 @@ def localize_resources(html: str, page_url: str, resources_dir: Path,
     # Process data-src on any element (lazy-load divs, etc.)
     for tag in list(soup.find_all(attrs={"data-src": True})):
         val = tag["data-src"]
-        if val.startswith("data:") or val.startswith("./resources/"):
+        if val.startswith("data:") or val.startswith("./resources/") or "picsum.photos" in val:
             continue
         abs_url = urljoin(page_url, val)
         if not abs_url.startswith("http"):
@@ -296,7 +302,7 @@ def localize_resources(html: str, page_url: str, resources_dir: Path,
     def replace_bg_url(match):
         nonlocal fallback_idx, download_count
         img_url = match.group(1).strip("\"'")
-        if img_url.startswith("data:") or img_url.startswith("./resources/"):
+        if img_url.startswith("data:") or img_url.startswith("./resources/") or "picsum.photos" in img_url:
             return match.group(0)
         abs_url = urljoin(page_url, img_url)
         if not abs_url.startswith("http"):
@@ -840,8 +846,9 @@ def clean_project(project_dir: Path, session: requests.Session) -> dict:
         cleaned = str(soup)
         html_file.write_text(cleaned, encoding="utf-8")
 
-        # Count truly remote references (exclude data-*-src attributes)
-        remaining = len(re.findall(r'(?<![a-z-])src="https?://', cleaned))
+        # Count truly remote references (exclude data-*-src and picsum fallbacks)
+        all_remote = re.findall(r'(?<![a-z-])src="(https?://[^"]+)"', cleaned)
+        remaining = sum(1 for u in all_remote if "picsum.photos" not in u)
         total_remaining += remaining
 
     # Neutralize external links
