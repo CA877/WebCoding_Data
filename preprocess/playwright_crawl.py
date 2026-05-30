@@ -131,6 +131,9 @@ def build_requests_session(proxy: str) -> requests.Session:
     return session
 
 
+MAX_RESOURCES_PER_PAGE = 50  # Limit downloads to prevent hanging on heavy pages
+
+
 def download_resource(session: requests.Session, url: str, resources_dir: Path,
                       fallback_index: int = -1) -> str | None:
     """Download a resource to resources/ dir. Returns relative path or None.
@@ -138,7 +141,7 @@ def download_resource(session: requests.Session, url: str, resources_dir: Path,
     If download fails and fallback_index >= 0, downloads a fallback image instead.
     """
     try:
-        resp = session.get(url, timeout=10, allow_redirects=True)
+        resp = session.get(url, timeout=8, allow_redirects=True)
         if resp.status_code == 200 and len(resp.content) >= 100:
             h = hashlib.md5(url.encode()).hexdigest()[:8]
             name = Path(urlparse(url).path).name or "resource"
@@ -202,8 +205,9 @@ def localize_resources(html: str, page_url: str, resources_dir: Path,
     Failed image downloads get a fallback placeholder (not removed from DOM).
     Remote CSS that couldn't be inlined by Playwright gets downloaded and inlined here.
     """
-    # Remove IE conditional comments (contain scripts with remote src)
+    # Remove IE conditional comments and HTML comments containing scripts
     html = re.sub(r'<!--\[if[^\]]*\]>.*?<!\[endif\]-->', '', html, flags=re.DOTALL)
+    html = re.sub(r'<!--.*?-->', '', html, flags=re.DOTALL)
 
     soup = BeautifulSoup(html, "html.parser")
 
@@ -211,21 +215,27 @@ def localize_resources(html: str, page_url: str, resources_dir: Path,
     for script in list(soup.find_all("script")):
         script.decompose()
     fallback_idx = 0
+    download_count = 0
 
     # Process <img>, <source>, and <input type="image"> tags
     for tag in list(soup.find_all(["img", "source", "input"])):
         # Skip <input> that aren't type="image"
         if tag.name == "input" and (tag.get("type") or "").lower() != "image":
             continue
-        for attr in ("src", "data-src", "data-lazy-src"):
+        for attr in ("src", "data-src", "data-lazy-src", "data-cke-saved-src"):
             val = tag.get(attr)
             if not val or val.startswith("data:") or val.startswith("./resources/"):
                 continue
             abs_url = urljoin(page_url, val)
             if not abs_url.startswith("http"):
                 continue
+            if download_count >= MAX_RESOURCES_PER_PAGE:
+                # Hit limit — remove to avoid broken remote ref
+                tag.decompose()
+                break
             local = download_resource(session, abs_url, resources_dir,
                                       fallback_index=fallback_idx)
+            download_count += 1
             fallback_idx += 1
             if local:
                 tag[attr] = local
@@ -248,13 +258,26 @@ def localize_resources(html: str, page_url: str, resources_dir: Path,
         abs_url = urljoin(page_url, val)
         if not abs_url.startswith("http"):
             continue
+        if download_count >= MAX_RESOURCES_PER_PAGE:
+            del tag["data-src"]
+            continue
         local = download_resource(session, abs_url, resources_dir,
                                   fallback_index=fallback_idx)
+        download_count += 1
         fallback_idx += 1
         if local:
             tag["data-src"] = local
         else:
             del tag["data-src"]
+
+    # Remove CKEditor artifacts and other data-*-src/href with remote URLs
+    for tag in soup.find_all(True):
+        attrs_to_remove = [k for k in tag.attrs
+                          if k.startswith("data-cke-saved-") or
+                          (k.startswith("data-") and k.endswith(("-src", "-href"))
+                           and isinstance(tag[k], str) and tag[k].startswith("http"))]
+        for attr in attrs_to_remove:
+            del tag[attr]
 
     # Remove iframes (YouTube embeds, etc.) — not needed for training
     for iframe in list(soup.find_all("iframe")):
@@ -271,15 +294,18 @@ def localize_resources(html: str, page_url: str, resources_dir: Path,
 
     # Process CSS background-image url() in style attributes
     def replace_bg_url(match):
-        nonlocal fallback_idx
+        nonlocal fallback_idx, download_count
         img_url = match.group(1).strip("\"'")
         if img_url.startswith("data:") or img_url.startswith("./resources/"):
             return match.group(0)
         abs_url = urljoin(page_url, img_url)
         if not abs_url.startswith("http"):
             return match.group(0)
+        if download_count >= MAX_RESOURCES_PER_PAGE:
+            return match.group(0)  # Skip, leave as-is (will be a broken ref but layout preserved)
         local = download_resource(session, abs_url, resources_dir,
                                   fallback_index=fallback_idx)
+        download_count += 1
         fallback_idx += 1
         if local:
             return f"url({local})"
@@ -436,16 +462,43 @@ def relink_pages(project_dir: Path, url_to_file: dict[str, str]):
 
 
 def neutralize_external_links(project_dir: Path):
-    """Convert remaining external links to '#'."""
+    """Convert all remaining absolute URL links to '#' or local file references.
+
+    relink_pages() should be called BEFORE this to map known internal pages.
+    This function handles everything that's left.
+    """
+    local_files = {f.name for f in project_dir.glob("*.html")}
+
     for html_file in project_dir.glob("*.html"):
         html = html_file.read_text(encoding="utf-8", errors="replace")
         soup = BeautifulSoup(html, "html.parser")
         modified = False
-        for a in soup.find_all("a", href=True):
+
+        # Neutralize <a> and <area> href links
+        for a in soup.find_all(["a", "area"], href=True):
             href = a["href"]
-            if href.startswith("http") or href.startswith("//"):
+            if not (href.startswith("http") or href.startswith("//")):
+                continue
+
+            # Try to match basename to a local file
+            parsed = urlparse(href)
+            basename = Path(parsed.path).name if parsed.path else ""
+            if basename and basename in local_files:
+                a["href"] = basename
+            else:
                 a["href"] = "#"
-                modified = True
+            modified = True
+
+        # Remove <link> tags with remote hrefs (favicons, etc.) except stylesheets
+        # (stylesheets are already handled by localize_resources)
+        for link in list(soup.find_all("link")):
+            href = link.get("href", "")
+            if href.startswith("http") or href.startswith("//"):
+                rel = " ".join(link.get("rel") or []).lower()
+                if "stylesheet" not in rel:
+                    link.decompose()
+                    modified = True
+
         if modified:
             html_file.write_text(str(soup), encoding="utf-8")
 
@@ -787,7 +840,8 @@ def clean_project(project_dir: Path, session: requests.Session) -> dict:
         cleaned = str(soup)
         html_file.write_text(cleaned, encoding="utf-8")
 
-        remaining = len(re.findall(r'src="https?://', cleaned))
+        # Count truly remote references (exclude data-*-src attributes)
+        remaining = len(re.findall(r'(?<![a-z-])src="https?://', cleaned))
         total_remaining += remaining
 
     # Neutralize external links
