@@ -28,6 +28,27 @@ logs/
 *.png
 *.jpg
 *.jpeg
+*.gif
+*.svg
+*.webp
+*.ico
+*.eot
+*.ttf
+*.woff
+*.woff2
+*.cur
+*.css
+
+# Crawled/downloaded resources (large, reproducible)
+**/resources/
+local_trials/webrenderbench_30_samples/
+local_trials/webcode2m_raw_10/
+local_trials/webcode2m_clean_10/
+local_trials/merge_test/
+local_trials/snapshot_test/
+local_trials/webrenderbench_render/
+local_trials/webcode2m_formal_7x10_ppapi_smoke/
+local_trials/webcode2m_official_multipage_10/
 
 # Local OS/editor files
 .DS_Store
