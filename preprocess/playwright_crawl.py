@@ -98,8 +98,16 @@ INLINE_CSS_JS = """() => {
             // Cross-origin stylesheet, skip
         }
     }
-    // Remove <noscript> tags
-    document.querySelectorAll('noscript').forEach(s => s.remove());
+    // Unwrap <noscript> tags — preserve fallback images for lazy-loaded content
+    document.querySelectorAll('noscript').forEach(s => {
+        const content = s.textContent || s.innerHTML;
+        if (content.includes('<')) {
+            const temp = document.createElement('div');
+            temp.innerHTML = content;
+            while (temp.firstChild) s.parentNode.insertBefore(temp.firstChild, s);
+        }
+        s.remove();
+    });
     // Remove tracking/analytics scripts (both remote and inline)
     const trackingDomains = ['google-analytics.com', 'googletagmanager.com',
         'googlesyndication.com', 'facebook.net', 'connect.facebook.com',
@@ -280,7 +288,7 @@ def localize_resources(html: str, page_url: str, resources_dir: Path,
         # Skip <input> that aren't type="image"
         if tag.name == "input" and (tag.get("type") or "").lower() != "image":
             continue
-        for attr in ("src", "data-src", "data-lazy-src", "data-cke-saved-src", "nitro-lazy-src"):
+        for attr in ("src", "data-src", "data-lazy-src", "data-cke-saved-src", "nitro-lazy-src", "data-original", "data-lazy"):
             val = tag.get(attr)
             if not val or val.startswith("data:") or val.startswith("./resources/") or "picsum.photos" in val:
                 continue
@@ -313,41 +321,68 @@ def localize_resources(html: str, page_url: str, resources_dir: Path,
     for tag in list(soup.find_all(attrs={"data-src": True})):
         val = tag["data-src"]
         if val.startswith("data:") or val.startswith("./resources/") or "picsum.photos" in val:
-            continue
-        abs_url = urljoin(page_url, val)
-        if not abs_url.startswith("http"):
-            continue
-        if download_count >= MAX_RESOURCES_PER_PAGE:
-            tag["data-src"] = _fallback_url(fallback_idx)
-            fallback_idx += 1
-            continue
-        local = download_resource(session, abs_url, resources_dir,
-                                  fallback_index=fallback_idx)
-        download_count += 1
-        fallback_idx += 1
-        if local:
-            tag["data-src"] = local
+            local = val if val.startswith("./resources/") else None
         else:
-            del tag["data-src"]
+            abs_url = urljoin(page_url, val)
+            if not abs_url.startswith("http"):
+                continue
+            if download_count >= MAX_RESOURCES_PER_PAGE:
+                tag["data-src"] = _fallback_url(fallback_idx)
+                fallback_idx += 1
+                local = tag["data-src"]
+            else:
+                local = download_resource(session, abs_url, resources_dir,
+                                          fallback_index=fallback_idx)
+                download_count += 1
+                fallback_idx += 1
+                if local:
+                    tag["data-src"] = local
+                else:
+                    del tag["data-src"]
+                    continue
+        # For non-img elements: promote data-src to background-image if not set
+        if local and tag.name != "img":
+            style = tag.get("style", "")
+            if "background-image" not in style:
+                tag["style"] = style.rstrip("; ") + f"; background-image: url({local});" if style.strip() else f"background-image: url({local});"
 
-    # Promote lazy-load src to real src when src is a placeholder SVG
-    LAZY_ATTRS = ("data-lazy-src", "data-src", "nitro-lazy-src", "data-original")
+    # Promote lazy-load attrs to src and clean up lazy attributes
+    LAZY_ATTRS = ("data-lazy-src", "data-src", "nitro-lazy-src", "data-original", "data-lazy")
     for img in soup.find_all("img"):
         src = img.get("src", "")
-        if not (src.startswith("data:") and "svg" in src[:50]):
-            continue
-        # src is a blank SVG placeholder — look for real image in lazy attrs
-        promoted = False
+        if src.startswith("./resources/") or "picsum.photos" in src:
+            pass  # src already good
+        else:
+            # Try promote from lazy attrs
+            promoted = False
+            for lazy_attr in LAZY_ATTRS:
+                lazy_val = img.get(lazy_attr, "")
+                if lazy_val and (lazy_val.startswith("./resources/") or "picsum.photos" in lazy_val):
+                    img["src"] = lazy_val
+                    promoted = True
+                    break
+            if not promoted and (not src or src.startswith("data:")):
+                img["src"] = _fallback_url(fallback_idx)
+                fallback_idx += 1
+        # Clean up lazy attrs — no longer needed
         for lazy_attr in LAZY_ATTRS:
-            lazy_val = img.get(lazy_attr, "")
-            if lazy_val and (lazy_val.startswith("./resources/") or "picsum.photos" in lazy_val):
-                img["src"] = lazy_val
-                promoted = True
-                break
-        # If no lazy attr has a local path, replace with picsum
-        if not promoted:
-            img["src"] = _fallback_url(fallback_idx)
-            fallback_idx += 1
+            if img.get(lazy_attr):
+                del img[lazy_attr]
+        # Remove loading="lazy" — we want immediate rendering
+        if img.get("loading"):
+            del img["loading"]
+
+    # Deduplicate adjacent <img> tags with the same src (from noscript unwrap)
+    seen_srcs = set()
+    for img in list(soup.find_all("img")):
+        src = img.get("src", "")
+        if not src:
+            continue
+        # Normalize: strip hash prefix for comparison (e.g., "abc123_image.jpg" vs "image.jpg")
+        if src in seen_srcs:
+            img.decompose()
+        else:
+            seen_srcs.add(src)
 
     # Remove CKEditor artifacts and other data-*-src/href with remote URLs
     for tag in soup.find_all(True):
@@ -370,6 +405,21 @@ def localize_resources(html: str, page_url: str, resources_dir: Path,
         )
         if has_remote_source:
             tag.decompose()
+
+    # Remove height/min-height from empty containers (left after iframe/video removal)
+    for tag in soup.find_all(style=True):
+        style_str = tag.get("style", "")
+        if not style_str or "height" not in style_str:
+            continue
+        text = tag.get_text(strip=True)
+        has_visible_child = bool(tag.find(["img", "svg", "canvas", "video", "iframe",
+                                           "input", "select", "textarea", "button", "table"]))
+        if not text and not has_visible_child:
+            new_style = re.sub(r'(min-)?height\s*:\s*[^;]+;?\s*', '', style_str)
+            if new_style.strip():
+                tag["style"] = new_style
+            else:
+                del tag["style"]
 
     # Process CSS background-image url() in style attributes
     def replace_bg_url(match):
