@@ -268,21 +268,25 @@ def screenshot_project_to_dir(project_dir: Path, out_dir: Path) -> list[dict[str
     records: list[dict[str, str]] = []
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
-        for html in pages:
-            rel = html.relative_to(project_dir).as_posix()
-            page_key = safe_name(rel[:-5] if rel.lower().endswith(".html") else rel)
-            for vp_name, width, height in VIEWPORTS:
-                page = browser.new_page(viewport={"width": width, "height": height})
-                page.route("**/*", route_local_only)
-                try:
-                    page.goto("file://" + str(html.resolve()), wait_until="domcontentloaded", timeout=20000)
-                    page.wait_for_timeout(1000)
-                    dest = out_dir / f"{page_key}__{vp_name}.jpg"
-                    page.screenshot(path=str(dest), full_page=True, type="jpeg", quality=82, timeout=90000)
-                    records.append({"page": rel, "viewport": vp_name, "path": dest.relative_to(out_dir.parent).as_posix()})
-                finally:
-                    page.close()
-        browser.close()
+        try:
+            for html in pages:
+                rel = html.relative_to(project_dir).as_posix()
+                page_key = safe_name(rel[:-5] if rel.lower().endswith(".html") else rel)
+                for vp_name, width, height in VIEWPORTS:
+                    page = browser.new_page(viewport={"width": width, "height": height})
+                    page.route("**/*", route_local_only)
+                    try:
+                        page.goto("file://" + str(html.resolve()), wait_until="domcontentloaded", timeout=20000)
+                        page.wait_for_timeout(1000)
+                        dest = out_dir / f"{page_key}__{vp_name}.jpg"
+                        page.screenshot(path=str(dest), full_page=True, type="jpeg", quality=82, timeout=90000)
+                        records.append({"page": rel, "viewport": vp_name, "path": dest.relative_to(out_dir.parent).as_posix()})
+                    except Exception as exc:
+                        print(f"  screenshot failed for {rel} ({vp_name}): {exc}")
+                    finally:
+                        page.close()
+        finally:
+            browser.close()
     return records
 
 
@@ -299,46 +303,51 @@ def record_project_to_dir(project_dir: Path, out_dir: Path) -> list[dict[str, An
     records: list[dict[str, Any]] = []
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
-        for html in pages:
-            rel = html.relative_to(project_dir).as_posix()
-            page_key = safe_name(rel[:-5] if rel.lower().endswith(".html") else rel)
-            record_dir = out_dir / f"{page_key}_recording"
-            record_dir.mkdir(parents=True, exist_ok=True)
-            context = browser.new_context(
-                viewport={"width": 1280, "height": 720},
-                record_video_dir=str(record_dir),
-                record_video_size={"width": 1280, "height": 720},
-            )
-            page = context.new_page()
-            page.route("**/*", route_local_only)
-            try:
-                page.goto("file://" + str(html.resolve()), wait_until="domcontentloaded", timeout=30000)
-                page.wait_for_timeout(1500)
+        try:
+            for html in pages:
+                rel = html.relative_to(project_dir).as_posix()
+                page_key = safe_name(rel[:-5] if rel.lower().endswith(".html") else rel)
+                record_dir = out_dir / f"{page_key}_recording"
+                record_dir.mkdir(parents=True, exist_ok=True)
+                context = browser.new_context(
+                    viewport={"width": 1280, "height": 720},
+                    record_video_dir=str(record_dir),
+                    record_video_size={"width": 1280, "height": 720},
+                )
+                page = context.new_page()
+                page.route("**/*", route_local_only)
+                try:
+                    page.goto("file://" + str(html.resolve()), wait_until="domcontentloaded", timeout=30000)
+                    page.wait_for_timeout(1500)
 
-                # Use human-like interaction instead of mechanical scrolling
-                from WebCoding_Data.construct.human_like_playwright_record import HumanRecorder, run_story
+                    # Use human-like interaction instead of mechanical scrolling
+                    from WebCoding_Data.construct.human_like_playwright_record import HumanRecorder, run_story
 
-                recorder = HumanRecorder(page, record_dir, time.time())
-                run_story(page, recorder)
-                recorder.pause(800, 1200, "final_pause")
-            finally:
-                video = page.video
-                context.close()
-                if video:
-                    raw_video = Path(video.path())
-                    if raw_video.exists():
-                        final = out_dir / f"{page_key}.webm"
-                        if final.exists():
-                            final.unlink()
-                        shutil.move(str(raw_video), final)
-                        records.append({"page": rel, "path": final.relative_to(out_dir.parent).as_posix()})
-                shutil.rmtree(record_dir, ignore_errors=True)
-        browser.close()
+                    recorder = HumanRecorder(page, record_dir, time.time())
+                    run_story(page, recorder)
+                    recorder.pause(800, 1200, "final_pause")
+                except Exception as exc:
+                    print(f"  recording failed for {rel}: {exc}")
+                finally:
+                    video = page.video
+                    context.close()
+                    if video:
+                        raw_video = Path(video.path())
+                        if raw_video.exists():
+                            final = out_dir / f"{page_key}.webm"
+                            if final.exists():
+                                final.unlink()
+                            shutil.move(str(raw_video), final)
+                            records.append({"page": rel, "path": final.relative_to(out_dir.parent).as_posix()})
+                    shutil.rmtree(record_dir, ignore_errors=True)
+        finally:
+            browser.close()
     return records
 
 
 def encode_image_for_api(path: Path, max_width: int = 1200, max_bytes: int = 3_500_000) -> str:
     import base64
+    import tempfile
     from PIL import Image
 
     img = Image.open(path).convert("RGB")
@@ -346,18 +355,25 @@ def encode_image_for_api(path: Path, max_width: int = 1200, max_bytes: int = 3_5
         ratio = max_width / img.width
         img = img.resize((max_width, max(1, int(img.height * ratio))))
 
-    tmp = Path(str(path) + ".api.jpg")
     quality = 82
     while True:
-        img.save(tmp, "JPEG", quality=quality, optimize=True)
-        if tmp.stat().st_size <= max_bytes or quality <= 50:
-            data = tmp.read_bytes()
+        with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as tmp_f:
+            tmp = Path(tmp_f.name)
+        try:
+            img.save(tmp, "JPEG", quality=quality, optimize=True)
+            if tmp.stat().st_size <= max_bytes or quality <= 50:
+                data = tmp.read_bytes()
+                return base64.b64encode(data).decode("utf-8")
+        finally:
             tmp.unlink(missing_ok=True)
-            return base64.b64encode(data).decode("utf-8")
         quality -= 8
 
 
+_VLM_RETRY_DELAYS = [10, 30, 60]
+
+
 def call_vlm(model: str, prompt: str, image_paths: list[Path] | None = None, max_tokens: int = 4096) -> str:
+    """Call VLM with exponential-backoff retry on transient errors."""
     from openai import OpenAI
 
     maybe_load_env()
@@ -376,8 +392,22 @@ def call_vlm(model: str, prompt: str, image_paths: list[Path] | None = None, max
         messages = [{"role": "user", "content": content}]
     else:
         messages = [{"role": "user", "content": prompt}]
-    response = client.chat.completions.create(model=model, messages=messages, max_tokens=max_tokens)
-    return response.choices[0].message.content or ""
+
+    last_error: Exception | None = None
+    for attempt in range(1 + len(_VLM_RETRY_DELAYS)):
+        try:
+            response = client.chat.completions.create(model=model, messages=messages, max_tokens=max_tokens)
+            return response.choices[0].message.content or ""
+        except Exception as e:
+            last_error = e
+            err_lower = str(e).lower()
+            if any(kw in err_lower for kw in ["invalid api key", "authentication", "model not found"]):
+                raise  # non-retryable
+            if attempt < len(_VLM_RETRY_DELAYS):
+                delay = _VLM_RETRY_DELAYS[attempt]
+                print(f"  VLM error (attempt {attempt+1}): {e} — retrying in {delay}s")
+                time.sleep(delay)
+    raise last_error  # type: ignore[misc]
 
 
 def _truncate_text(value: str, limit: int) -> str:

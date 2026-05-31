@@ -42,6 +42,7 @@ import hashlib
 import json
 import re
 import shutil
+import threading
 import time
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -1002,6 +1003,16 @@ def cmd_crawl(args):
     results = []
     done_count = 0
 
+    # Incremental results file — append after each project
+    results_path = output_dir / "crawl_results.jsonl"
+    results_lock = threading.Lock()
+
+    def _append_result(result):
+        with results_lock:
+            results.append(result)
+            with open(results_path, "a", encoding="utf-8") as f:
+                f.write(json.dumps(result, ensure_ascii=False) + "\n")
+
     with sync_playwright() as p:
         browser = p.chromium.launch(
             proxy={"server": args.browser_proxy} if args.browser_proxy else None,
@@ -1021,6 +1032,9 @@ def cmd_crawl(args):
         if done_count:
             print(f"Skipped {done_count} already-done projects")
 
+        # Clear results file for this run
+        results_path.write_text("", encoding="utf-8")
+
         def _crawl_one(item):
             url, proj_name, proj_dir = item
             t0 = time.time()
@@ -1035,7 +1049,7 @@ def cmd_crawl(args):
         if concurrency <= 1:
             for i, item in enumerate(todo):
                 proj_name, result = _crawl_one(item)
-                results.append(result)
+                _append_result(result)
                 status = result["status"]
                 pages = result.get("pages", 0)
                 print(f"[{i+1}/{len(todo)}] {proj_name}: {status} ({pages} pages, {result['elapsed']:.1f}s)")
@@ -1043,19 +1057,17 @@ def cmd_crawl(args):
             with ThreadPoolExecutor(max_workers=concurrency) as executor:
                 futures = {executor.submit(_crawl_one, item): item for item in todo}
                 for i, future in enumerate(as_completed(futures), 1):
-                    proj_name, result = future.result()
-                    results.append(result)
+                    try:
+                        proj_name, result = future.result()
+                    except Exception as e:
+                        proj_name = str(futures[future][1])
+                        result = {"status": "error", "error": str(e)}
+                    _append_result(result)
                     status = result["status"]
                     pages = result.get("pages", 0)
-                    print(f"[{i}/{len(todo)}] {proj_name}: {status} ({pages} pages, {result['elapsed']:.1f}s)")
+                    print(f"[{i}/{len(todo)}] {proj_name}: {status} ({pages} pages, {result.get('elapsed', 0):.1f}s)")
 
         browser.close()
-
-    # Save results
-    results_path = output_dir / "crawl_results.jsonl"
-    with open(results_path, "w") as f:
-        for r in results:
-            f.write(json.dumps(r, ensure_ascii=False) + "\n")
 
     # Summary
     statuses = Counter(r["status"] for r in results)
@@ -1080,6 +1092,16 @@ def cmd_expand(args):
     session = build_requests_session(args.requests_proxy)
     results = []
 
+    # Incremental results file
+    results_path = output_dir / "expand_results.jsonl"
+    results_lock = threading.Lock()
+
+    def _append_result(result):
+        with results_lock:
+            results.append(result)
+            with open(results_path, "a", encoding="utf-8") as f:
+                f.write(json.dumps(result, ensure_ascii=False) + "\n")
+
     with sync_playwright() as p:
         browser = p.chromium.launch(
             proxy={"server": args.browser_proxy} if args.browser_proxy else None,
@@ -1098,6 +1120,9 @@ def cmd_expand(args):
         if skipped:
             print(f"Skipped {skipped} already-expanded projects")
 
+        # Clear results file for this run
+        results_path.write_text("", encoding="utf-8")
+
         def _expand_one(proj):
             t0 = time.time()
             try:
@@ -1111,7 +1136,7 @@ def cmd_expand(args):
         if concurrency <= 1:
             for i, proj in enumerate(todo):
                 name, result = _expand_one(proj)
-                results.append(result)
+                _append_result(result)
                 status = result["status"]
                 pages = result.get("pages_added", 0)
                 print(f"[{i+1}/{len(todo)}] {name}: {status} (+{pages} pages, {result['elapsed']:.1f}s)")
@@ -1119,19 +1144,17 @@ def cmd_expand(args):
             with ThreadPoolExecutor(max_workers=concurrency) as executor:
                 futures = {executor.submit(_expand_one, proj): proj for proj in todo}
                 for i, future in enumerate(as_completed(futures), 1):
-                    name, result = future.result()
-                    results.append(result)
+                    try:
+                        name, result = future.result()
+                    except Exception as e:
+                        name = str(futures[future].name)
+                        result = {"status": "error", "error": str(e)}
+                    _append_result(result)
                     status = result["status"]
                     pages = result.get("pages_added", 0)
-                    print(f"[{i}/{len(todo)}] {name}: {status} (+{pages} pages, {result['elapsed']:.1f}s)")
+                    print(f"[{i}/{len(todo)}] {name}: {status} (+{pages} pages, {result.get('elapsed', 0):.1f}s)")
 
         browser.close()
-
-    # Save results
-    results_path = output_dir / "expand_results.jsonl"
-    with open(results_path, "w") as f:
-        for r in results:
-            f.write(json.dumps(r, ensure_ascii=False) + "\n")
 
     statuses = Counter(r["status"] for r in results)
     total_pages = sum(r.get("pages_added", 0) for r in results)
@@ -1189,13 +1212,19 @@ def cmd_validate(args):
     from playwright.sync_api import sync_playwright
 
     results = []
+    results_path = input_dir / "validate_results.jsonl"
+    results_path.write_text("", encoding="utf-8")
+
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
 
         for i, proj in enumerate(projects):
             index_html = proj / "index.html"
             if not index_html.exists():
-                results.append({"project": proj.name, "status": "no_index"})
+                result = {"project": proj.name, "status": "no_index"}
+                results.append(result)
+                with open(results_path, "a", encoding="utf-8") as f:
+                    f.write(json.dumps(result, ensure_ascii=False) + "\n")
                 continue
 
             page = browser.new_page()
@@ -1225,21 +1254,18 @@ def cmd_validate(args):
             page.close()
 
             status = "ok" if not console_errors else f"errors({len(console_errors)})"
-            results.append({
+            result = {
                 "project": proj.name,
                 "status": status,
                 "console_errors": console_errors[:10],  # Cap at 10
-            })
+            }
+            results.append(result)
+            with open(results_path, "a", encoding="utf-8") as f:
+                f.write(json.dumps(result, ensure_ascii=False) + "\n")
             error_summary = f" — {console_errors[0][:80]}" if console_errors else ""
             print(f"[{i+1}/{len(projects)}] {proj.name}: {status}{error_summary}")
 
         browser.close()
-
-    # Save results
-    results_path = input_dir / "validate_results.jsonl"
-    with open(results_path, "w") as f:
-        for r in results:
-            f.write(json.dumps(r, ensure_ascii=False) + "\n")
 
     ok_count = sum(1 for r in results if r["status"] == "ok")
     print(f"\nDone: {ok_count}/{len(results)} passed (0 console errors)")

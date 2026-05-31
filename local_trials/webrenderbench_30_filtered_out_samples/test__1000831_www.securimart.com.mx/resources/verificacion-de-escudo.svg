@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="34.846" height="41.816" viewBox="0 0 34.846 41.816">
-  <defs>
-    <linearGradient id="linear-gradient" x1="0.5" y1="0.574" x2="1.238" y2="1.163" gradientUnits="objectBoundingBox">
-      <stop offset="0" stop-color="#fff"/>
-      <stop offset="1" stop-color="gray"/>
-    </linearGradient>
-  </defs>
-  <path id="verificacion-de-escudo" d="M30.889,3.729,19.974.089a1.742,1.742,0,0,0-1.1,0L7.957,3.729A8.7,8.7,0,0,0,2,11.993v8.915C2,34.085,18.029,41.363,18.716,41.666a1.742,1.742,0,0,0,1.415,0c.686-.3,16.716-7.581,16.716-20.758V11.993a8.7,8.7,0,0,0-5.957-8.264Zm-3.246,13.2L20.2,24.373a3.263,3.263,0,0,1-2.326.963h-.057a3.262,3.262,0,0,1-2.343-1.045L11.456,20.11A1.742,1.742,0,1,1,13.966,17.7l3.91,4.077,7.3-7.318a1.742,1.742,0,1,1,2.464,2.464Z" transform="translate(-2 0)" fill="url(#linear-gradient)"/>
-</svg>
