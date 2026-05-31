@@ -40,10 +40,10 @@ Dependencies:
 import argparse
 import hashlib
 import json
-import os
 import re
 import shutil
 import time
+from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from urllib.parse import urljoin, urlparse
@@ -56,47 +56,28 @@ from playwright.sync_api import sync_playwright, Browser, Page
 # Constants
 # ---------------------------------------------------------------------------
 
-# Fallback image URLs — stable, real photos from picsum.photos.
-# Used when a remote image cannot be downloaded.
-# URLs are kept as-is in the HTML (not downloaded) so the model learns to reference image URLs.
-# Each ID returns a consistent, real photograph (landscapes, architecture, nature, etc.)
-FALLBACK_IMAGE_URLS = [
-    # Landscapes & nature (800x600)
-    "https://picsum.photos/id/10/800/600",    # forest & lake
-    "https://picsum.photos/id/15/800/600",    # hilltop path
-    "https://picsum.photos/id/28/800/600",    # tropical beach
-    "https://picsum.photos/id/29/800/600",    # mountain vista
-    "https://picsum.photos/id/37/800/600",    # cliff edge
-    "https://picsum.photos/id/47/800/600",    # pond & trees
-    "https://picsum.photos/id/100/800/600",   # misty mountains
-    "https://picsum.photos/id/119/800/600",   # foggy field
-    "https://picsum.photos/id/180/800/600",   # ocean cliff
-    "https://picsum.photos/id/429/800/600",   # river valley
-    # Architecture & urban (800x600)
-    "https://picsum.photos/id/42/800/600",    # modern building
-    "https://picsum.photos/id/164/800/600",   # city bridge
-    "https://picsum.photos/id/248/800/600",   # building facade
-    "https://picsum.photos/id/260/800/600",   # skyscraper
-    "https://picsum.photos/id/302/800/600",   # rooftop view
-    # Objects & lifestyle (800x600)
-    "https://picsum.photos/id/237/800/600",   # puppy
-    "https://picsum.photos/id/250/800/600",   # desk setup
-    "https://picsum.photos/id/312/800/600",   # coffee cup
-    "https://picsum.photos/id/380/800/600",   # bookshelf
-    "https://picsum.photos/id/403/800/600",   # light bulb
-    # Small icons/avatars (400x400)
-    "https://picsum.photos/id/64/400/400",    # greenery
-    "https://picsum.photos/id/91/400/400",    # workspace
-    "https://picsum.photos/id/177/400/400",   # laptop
-    "https://picsum.photos/id/200/400/400",   # abstract
-    "https://picsum.photos/id/219/400/400",   # plant
-    # Banners (1200x400)
-    "https://picsum.photos/id/110/1200/400",  # panoramic coast
-    "https://picsum.photos/id/134/1200/400",  # mountain road
-    "https://picsum.photos/id/160/1200/400",  # desert
-    "https://picsum.photos/id/190/1200/400",  # winter scene
-    "https://picsum.photos/id/366/1200/400",  # sunset clouds
+# Fallback image IDs for picsum.photos.
+# When a remote image cannot be downloaded, we use https://picsum.photos/id/{ID}/800/600
+# directly in the HTML (not downloaded). The model learns to reference this URL pattern.
+# All IDs verified working — each returns a consistent, real photograph.
+PICSUM_IDS = [
+    10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+    20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+    30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
+    40, 41, 42, 43, 44, 45, 46, 47, 48, 49,
+    50, 51, 52, 53, 54, 55, 56, 57, 58, 59,
+    60, 61, 62, 63, 64, 65, 66, 67, 68, 69,
+    70, 71, 72, 73, 74, 75, 76, 77, 78, 79,
+    80, 81, 82, 83, 84, 85, 86, 87, 88, 89,
+    90, 91, 92, 93, 94, 95, 96, 97, 98, 99,
+    100, 101, 102, 103, 104, 106, 107, 108, 109, 110,
 ]
+
+
+def _fallback_url(index: int) -> str:
+    """Generate a picsum.photos fallback URL for a given index."""
+    pid = PICSUM_IDS[index % len(PICSUM_IDS)]
+    return f"https://picsum.photos/id/{pid}/800/600"
 
 # JS to inject into page — inlines CSS, removes scripts and noise
 INLINE_CSS_JS = """() => {
@@ -116,8 +97,24 @@ INLINE_CSS_JS = """() => {
             // Cross-origin stylesheet, skip
         }
     }
-    // Remove scripts
-    document.querySelectorAll('script, noscript').forEach(s => s.remove());
+    // Remove <noscript> tags
+    document.querySelectorAll('noscript').forEach(s => s.remove());
+    // Remove tracking/analytics scripts (both remote and inline)
+    const trackingDomains = ['google-analytics.com', 'googletagmanager.com',
+        'googlesyndication.com', 'facebook.net', 'connect.facebook.com',
+        'doubleclick.net', 'hotjar.com', 'mixpanel.com', 'segment.com',
+        'optimizely.com', 'tiktok.com', 'pinterest.com', 'linkedin.com', 'twitter.com'];
+    document.querySelectorAll('script[src]').forEach(s => {
+        const src = s.getAttribute('src') || '';
+        if (trackingDomains.some(d => src.includes(d))) s.remove();
+    });
+    const trackingKw = ['google-analytics', 'googletagmanager', 'gtag', 'fbq(',
+        'hotjar', 'adsbygoogle', '_gaq', 'ga(', 'mixpanel', 'segment',
+        'optimizely', 'googlesyndication'];
+    document.querySelectorAll('script:not([src])').forEach(s => {
+        const t = s.textContent.toLowerCase();
+        if (trackingKw.some(k => t.includes(k))) s.remove();
+    });
     // Remove noise links
     document.querySelectorAll('link[rel*="preconnect"], link[rel*="prefetch"], link[rel*="dns-prefetch"], link[rel*="canonical"], link[rel*="manifest"], link[rel*="alternate"]').forEach(l => l.remove());
     // Remove comments
@@ -149,6 +146,25 @@ def build_requests_session(proxy: str) -> requests.Session:
 MAX_RESOURCES_PER_PAGE = 50  # Limit downloads to prevent hanging on heavy pages
 
 
+def _download_js(session: requests.Session, url: str, resources_dir: Path) -> str | None:
+    """Download a remote JS file to resources/ dir. Returns relative path or None."""
+    try:
+        resp = session.get(url, timeout=10, allow_redirects=True)
+        if resp.status_code == 200 and len(resp.content) >= 10:
+            h = hashlib.md5(url.encode()).hexdigest()[:8]
+            name = Path(urlparse(url).path).name or "script.js"
+            name = f"{h}_{name}"
+            name = re.sub(r"[^A-Za-z0-9._-]", "_", name)[:80]
+            if not name.endswith(".js"):
+                name += ".js"
+            target = resources_dir / name
+            target.write_bytes(resp.content)
+            return f"./resources/{name}"
+    except Exception:
+        pass
+    return None
+
+
 def download_resource(session: requests.Session, url: str, resources_dir: Path,
                       fallback_index: int = -1) -> str | None:
     """Download a resource to resources/ dir. Returns relative path or None.
@@ -176,7 +192,7 @@ def download_resource(session: requests.Session, url: str, resources_dir: Path,
 
     # Fallback: use a stable image URL directly (model learns to reference URLs)
     if fallback_index >= 0:
-        return FALLBACK_IMAGE_URLS[fallback_index % len(FALLBACK_IMAGE_URLS)]
+        return _fallback_url(fallback_index)
 
     return None
 
@@ -217,9 +233,44 @@ def localize_resources(html: str, page_url: str, resources_dir: Path,
 
     soup = BeautifulSoup(html, "html.parser")
 
-    # Remove remaining scripts
+    # Download remote JS files to local; remove tracking/analytics scripts
+    TRACKING_KEYWORDS = (
+        "google-analytics", "googletagmanager", "gtag", "facebook", "fbq(",
+        "hotjar", "adsbygoogle", "_gaq", "ga(", "googlesyndication",
+        "mixpanel", "segment", "optimizely", "tiktok",
+        "pinterest", "twitter", "linkedin",
+    )
+    TRACKING_DOMAINS = (
+        "google-analytics.com", "googletagmanager.com", "googlesyndication.com",
+        "facebook.net", "connect.facebook.com", "doubleclick.net",
+        "hotjar.com", "mixpanel.com", "segment.com", "optimizely.com",
+        "tiktok.com", "pinterest.com", "linkedin.com", "twitter.com",
+    )
     for script in list(soup.find_all("script")):
-        script.decompose()
+        src = script.get("src", "")
+        if src:
+            abs_src = urljoin(page_url, src)
+            # Skip tracking/analytics scripts
+            if any(d in abs_src for d in TRACKING_DOMAINS):
+                script.decompose()
+                continue
+            # Remove broken MHTML cid: references (WebRenderBench artifacts)
+            if src.startswith("cid:"):
+                script.decompose()
+                continue
+            # Download remote JS file to local
+            if abs_src.startswith("http"):
+                local = _download_js(session, abs_src, resources_dir)
+                if local:
+                    script["src"] = local
+                else:
+                    # Download failed — remove (broken offline)
+                    script.decompose()
+        elif script.string:
+            # Inline script — remove only if it's tracking/analytics
+            text_lower = script.string.lower()
+            if any(kw in text_lower for kw in TRACKING_KEYWORDS):
+                script.decompose()
     fallback_idx = 0
     download_count = 0
 
@@ -228,7 +279,7 @@ def localize_resources(html: str, page_url: str, resources_dir: Path,
         # Skip <input> that aren't type="image"
         if tag.name == "input" and (tag.get("type") or "").lower() != "image":
             continue
-        for attr in ("src", "data-src", "data-lazy-src", "data-cke-saved-src"):
+        for attr in ("src", "data-src", "data-lazy-src", "data-cke-saved-src", "nitro-lazy-src"):
             val = tag.get(attr)
             if not val or val.startswith("data:") or val.startswith("./resources/") or "picsum.photos" in val:
                 continue
@@ -236,8 +287,9 @@ def localize_resources(html: str, page_url: str, resources_dir: Path,
             if not abs_url.startswith("http"):
                 continue
             if download_count >= MAX_RESOURCES_PER_PAGE:
-                # Hit limit — remove to avoid broken remote ref
-                tag.decompose()
+                # Hit limit — use picsum fallback URL (don't delete, preserves layout)
+                tag[attr] = _fallback_url(fallback_idx)
+                fallback_idx += 1
                 break
             local = download_resource(session, abs_url, resources_dir,
                                       fallback_index=fallback_idx)
@@ -246,8 +298,8 @@ def localize_resources(html: str, page_url: str, resources_dir: Path,
             if local:
                 tag[attr] = local
             else:
-                # Even fallback failed — remove broken tag
-                tag.decompose()
+                # Even fallback failed — use picsum URL (preserves layout)
+                tag[attr] = _fallback_url(fallback_idx - 1)
                 break
         # Remove srcset (too complex to handle)
         try:
@@ -265,7 +317,8 @@ def localize_resources(html: str, page_url: str, resources_dir: Path,
         if not abs_url.startswith("http"):
             continue
         if download_count >= MAX_RESOURCES_PER_PAGE:
-            del tag["data-src"]
+            tag["data-src"] = _fallback_url(fallback_idx)
+            fallback_idx += 1
             continue
         local = download_resource(session, abs_url, resources_dir,
                                   fallback_index=fallback_idx)
@@ -275,6 +328,25 @@ def localize_resources(html: str, page_url: str, resources_dir: Path,
             tag["data-src"] = local
         else:
             del tag["data-src"]
+
+    # Promote lazy-load src to real src when src is a placeholder SVG
+    LAZY_ATTRS = ("data-lazy-src", "data-src", "nitro-lazy-src", "data-original")
+    for img in soup.find_all("img"):
+        src = img.get("src", "")
+        if not (src.startswith("data:") and "svg" in src[:50]):
+            continue
+        # src is a blank SVG placeholder — look for real image in lazy attrs
+        promoted = False
+        for lazy_attr in LAZY_ATTRS:
+            lazy_val = img.get(lazy_attr, "")
+            if lazy_val and (lazy_val.startswith("./resources/") or "picsum.photos" in lazy_val):
+                img["src"] = lazy_val
+                promoted = True
+                break
+        # If no lazy attr has a local path, replace with picsum
+        if not promoted:
+            img["src"] = _fallback_url(fallback_idx)
+            fallback_idx += 1
 
     # Remove CKEditor artifacts and other data-*-src/href with remote URLs
     for tag in soup.find_all(True):
@@ -308,7 +380,9 @@ def localize_resources(html: str, page_url: str, resources_dir: Path,
         if not abs_url.startswith("http"):
             return match.group(0)
         if download_count >= MAX_RESOURCES_PER_PAGE:
-            return match.group(0)  # Skip, leave as-is (will be a broken ref but layout preserved)
+            fb = _fallback_url(fallback_idx)
+            fallback_idx += 1
+            return f"url('{fb}')"
         local = download_resource(session, abs_url, resources_dir,
                                   fallback_index=fallback_idx)
         download_count += 1
@@ -486,13 +560,35 @@ def neutralize_external_links(project_dir: Path):
             if not (href.startswith("http") or href.startswith("//")):
                 continue
 
-            # Try to match basename to a local file
+            # Try to match URL path to a local file
             parsed = urlparse(href)
-            basename = Path(parsed.path).name if parsed.path else ""
+            path = parsed.path.rstrip("/")
+            matched = None
+
+            # Strategy 1: exact basename match (e.g. "page.html")
+            basename = Path(path).name if path else ""
             if basename and basename in local_files:
-                a["href"] = basename
-            else:
-                a["href"] = "#"
+                matched = basename
+
+            # Strategy 2: path slug → slug.html (e.g. "/contact-us/" → "contact-us.html")
+            if not matched and path:
+                slug = path.rsplit("/", 1)[-1]
+                if slug:
+                    candidate = slug + ".html" if "." not in slug else slug
+                    if candidate in local_files:
+                        matched = candidate
+
+            # Strategy 3: safe_filename style match (e.g. "page_1.html")
+            if not matched and path:
+                slug = path.strip("/").replace("/", "_")
+                slug = re.sub(r"[^A-Za-z0-9_-]", "", slug)
+                if slug:
+                    for lf in local_files:
+                        if slug in lf:
+                            matched = lf
+                            break
+
+            a["href"] = matched if matched else "#"
             modified = True
 
         # Remove <link> tags with remote hrefs (favicons, etc.) except stylesheets
@@ -509,11 +605,39 @@ def neutralize_external_links(project_dir: Path):
             html_file.write_text(str(soup), encoding="utf-8")
 
 
-def validate_page(html: str, min_text_len: int = 50) -> bool:
-    """Check if page has enough visible content."""
+DEAD_PAGE_MARKERS = [
+    "account has been suspended",
+    "account suspended",
+    "this site can't be reached",
+    "domain is for sale",
+    "buy this domain",
+    "page not found",
+    "website is under construction",
+    "coming soon",
+    "under maintenance",
+    "parked domain",
+    "this domain is parked",
+    "web hosting default page",
+    "apache2 default page",
+    "welcome to nginx",
+    "index of /",
+    "403 forbidden",
+    "site not found",
+    "expired domain",
+]
+
+
+def validate_page(html: str, min_text_len: int = 200) -> bool:
+    """Check if page has enough visible content and isn't a dead/parked page."""
     soup = BeautifulSoup(html, "html.parser")
     text = soup.get_text(strip=True)
-    return len(text) >= min_text_len
+    if len(text) < min_text_len:
+        return False
+    text_lower = text.lower()
+    for marker in DEAD_PAGE_MARKERS:
+        if marker in text_lower:
+            return False
+    return True
 
 
 def detect_language(html: str) -> str:
@@ -694,7 +818,6 @@ def expand_project(project_dir: Path, output_dir: Path, browser: Browser,
         return {"status": "no_domain", "project": project_dir.name}
 
     # Most common real domain
-    from collections import Counter
     domain_counts = Counter(real_domains)
     main_domain = domain_counts.most_common(1)[0][0]
     base_url = f"https://{main_domain}/"
@@ -846,8 +969,8 @@ def clean_project(project_dir: Path, session: requests.Session) -> dict:
         cleaned = str(soup)
         html_file.write_text(cleaned, encoding="utf-8")
 
-        # Count truly remote references (exclude data-*-src and picsum fallbacks)
-        all_remote = re.findall(r'(?<![a-z-])src="(https?://[^"]+)"', cleaned)
+        # Count truly remote references (any *src= attribute, exclude picsum fallbacks)
+        all_remote = re.findall(r'[a-z-]*src="(https?://[^"]+)"', cleaned)
         remaining = sum(1 for u in all_remote if "picsum.photos" not in u)
         total_remaining += remaining
 
@@ -866,42 +989,65 @@ def clean_project(project_dir: Path, session: requests.Session) -> dict:
 # ---------------------------------------------------------------------------
 
 def cmd_crawl(args):
-    """Crawl sites from URL list."""
+    """Crawl sites from URL list (supports concurrency via multiple browser pages)."""
     url_file = Path(args.url_file)
     urls = [line.strip() for line in url_file.read_text().splitlines() if line.strip()]
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
+    concurrency = args.concurrency
 
-    print(f"Crawling {len(urls)} URLs with concurrency={args.concurrency}")
+    print(f"Crawling {len(urls)} URLs with concurrency={concurrency}")
 
     session = build_requests_session(args.requests_proxy)
     results = []
+    done_count = 0
 
     with sync_playwright() as p:
         browser = p.chromium.launch(
             proxy={"server": args.browser_proxy} if args.browser_proxy else None,
         )
 
-        for i, url in enumerate(urls):
-            # Skip if already done
+        # Filter out already-done URLs
+        todo = []
+        for url in urls:
             parsed = urlparse(url)
             proj_name = re.sub(r"[^A-Za-z0-9._-]", "_", parsed.netloc)[:60]
             proj_dir = output_dir / proj_name
-
             if proj_dir.exists() and (proj_dir / "index.html").exists():
-                print(f"[{i+1}/{len(urls)}] {proj_name}: SKIP (already exists)")
+                done_count += 1
                 continue
+            todo.append((url, proj_name, proj_dir))
 
+        if done_count:
+            print(f"Skipped {done_count} already-done projects")
+
+        def _crawl_one(item):
+            url, proj_name, proj_dir = item
             t0 = time.time()
-            result = crawl_site(url, proj_dir, browser, session,
-                               max_pages=args.max_pages, wait_ms=args.wait)
-            elapsed = time.time() - t0
-            result["elapsed"] = round(elapsed, 1)
-            results.append(result)
+            try:
+                result = crawl_site(url, proj_dir, browser, session,
+                                   max_pages=args.max_pages, wait_ms=args.wait)
+            except Exception as e:
+                result = {"status": "error", "url": url, "error": str(e)}
+            result["elapsed"] = round(time.time() - t0, 1)
+            return proj_name, result
 
-            status = result["status"]
-            pages = result.get("pages", 0)
-            print(f"[{i+1}/{len(urls)}] {proj_name}: {status} ({pages} pages, {elapsed:.1f}s)")
+        if concurrency <= 1:
+            for i, item in enumerate(todo):
+                proj_name, result = _crawl_one(item)
+                results.append(result)
+                status = result["status"]
+                pages = result.get("pages", 0)
+                print(f"[{i+1}/{len(todo)}] {proj_name}: {status} ({pages} pages, {result['elapsed']:.1f}s)")
+        else:
+            with ThreadPoolExecutor(max_workers=concurrency) as executor:
+                futures = {executor.submit(_crawl_one, item): item for item in todo}
+                for i, future in enumerate(as_completed(futures), 1):
+                    proj_name, result = future.result()
+                    results.append(result)
+                    status = result["status"]
+                    pages = result.get("pages", 0)
+                    print(f"[{i}/{len(todo)}] {proj_name}: {status} ({pages} pages, {result['elapsed']:.1f}s)")
 
         browser.close()
 
@@ -919,16 +1065,17 @@ def cmd_crawl(args):
 
 
 def cmd_expand(args):
-    """Expand existing projects to multi-page."""
+    """Expand existing projects to multi-page (supports concurrency)."""
     input_dir = Path(args.input_dir)
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
+    concurrency = args.concurrency
 
     projects = sorted(d for d in input_dir.iterdir() if d.is_dir())
     if args.limit:
         projects = projects[:args.limit]
 
-    print(f"Expanding {len(projects)} projects with concurrency={args.concurrency}")
+    print(f"Expanding {len(projects)} projects with concurrency={concurrency}")
 
     session = build_requests_session(args.requests_proxy)
     results = []
@@ -938,23 +1085,45 @@ def cmd_expand(args):
             proxy={"server": args.browser_proxy} if args.browser_proxy else None,
         )
 
-        for i, proj in enumerate(projects):
-            # Skip if already expanded
+        # Filter already-expanded
+        todo = []
+        skipped = 0
+        for proj in projects:
             out_proj = output_dir / proj.name
             if out_proj.exists() and len(list(out_proj.glob("*.html"))) > 1:
-                print(f"[{i+1}/{len(projects)}] {proj.name}: SKIP")
+                skipped += 1
                 continue
+            todo.append(proj)
 
+        if skipped:
+            print(f"Skipped {skipped} already-expanded projects")
+
+        def _expand_one(proj):
             t0 = time.time()
-            result = expand_project(proj, output_dir, browser, session,
-                                   max_pages=args.max_pages, wait_ms=args.wait)
-            elapsed = time.time() - t0
-            result["elapsed"] = round(elapsed, 1)
-            results.append(result)
+            try:
+                result = expand_project(proj, output_dir, browser, session,
+                                       max_pages=args.max_pages, wait_ms=args.wait)
+            except Exception as e:
+                result = {"status": "error", "project": proj.name, "error": str(e)}
+            result["elapsed"] = round(time.time() - t0, 1)
+            return proj.name, result
 
-            status = result["status"]
-            pages = result.get("pages_added", 0)
-            print(f"[{i+1}/{len(projects)}] {proj.name}: {status} (+{pages} pages, {elapsed:.1f}s)")
+        if concurrency <= 1:
+            for i, proj in enumerate(todo):
+                name, result = _expand_one(proj)
+                results.append(result)
+                status = result["status"]
+                pages = result.get("pages_added", 0)
+                print(f"[{i+1}/{len(todo)}] {name}: {status} (+{pages} pages, {result['elapsed']:.1f}s)")
+        else:
+            with ThreadPoolExecutor(max_workers=concurrency) as executor:
+                futures = {executor.submit(_expand_one, proj): proj for proj in todo}
+                for i, future in enumerate(as_completed(futures), 1):
+                    name, result = future.result()
+                    results.append(result)
+                    status = result["status"]
+                    pages = result.get("pages_added", 0)
+                    print(f"[{i}/{len(todo)}] {name}: {status} (+{pages} pages, {result['elapsed']:.1f}s)")
 
         browser.close()
 
@@ -964,33 +1133,116 @@ def cmd_expand(args):
         for r in results:
             f.write(json.dumps(r, ensure_ascii=False) + "\n")
 
-    from collections import Counter
     statuses = Counter(r["status"] for r in results)
     total_pages = sum(r.get("pages_added", 0) for r in results)
     print(f"\nDone! {statuses.get('expanded', 0)} expanded, {total_pages} pages added")
 
 
 def cmd_clean(args):
-    """Clean existing projects (download remote images)."""
+    """Clean existing projects (download remote images, supports concurrency)."""
+    input_dir = Path(args.input_dir)
+    projects = sorted(d for d in input_dir.iterdir() if d.is_dir())
+    if args.limit:
+        projects = projects[:args.limit]
+    concurrency = args.concurrency
+
+    print(f"Cleaning {len(projects)} projects with concurrency={concurrency}")
+
+    session = build_requests_session(args.requests_proxy)
+    results = []
+
+    def _clean_one(proj):
+        try:
+            return clean_project(proj, session)
+        except Exception as e:
+            return {"status": "error", "project": proj.name, "error": str(e)}
+
+    if concurrency <= 1:
+        for i, proj in enumerate(projects):
+            result = _clean_one(proj)
+            results.append(result)
+            remaining = result.get("remaining_remote_refs", 0)
+            print(f"[{i+1}/{len(projects)}] {proj.name}: {result['status']} (remaining={remaining})")
+    else:
+        with ThreadPoolExecutor(max_workers=concurrency) as executor:
+            futures = {executor.submit(_clean_one, proj): proj for proj in projects}
+            for i, future in enumerate(as_completed(futures), 1):
+                proj = futures[future]
+                result = future.result()
+                results.append(result)
+                remaining = result.get("remaining_remote_refs", 0)
+                print(f"[{i}/{len(projects)}] {proj.name}: {result['status']} (remaining={remaining})")
+
+    statuses = Counter(r["status"] for r in results)
+    print(f"\nDone: {statuses}")
+
+
+def cmd_validate(args):
+    """Validate projects by opening in Playwright and checking Console errors."""
     input_dir = Path(args.input_dir)
     projects = sorted(d for d in input_dir.iterdir() if d.is_dir())
     if args.limit:
         projects = projects[:args.limit]
 
-    print(f"Cleaning {len(projects)} projects")
+    print(f"Validating {len(projects)} projects (checking Console errors)")
 
-    session = build_requests_session(args.requests_proxy)
+    from playwright.sync_api import sync_playwright
+
     results = []
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
 
-    for i, proj in enumerate(projects):
-        result = clean_project(proj, session)
-        results.append(result)
-        remaining = result.get("remaining_remote_refs", 0)
-        print(f"[{i+1}/{len(projects)}] {proj.name}: {result['status']} (remaining={remaining})")
+        for i, proj in enumerate(projects):
+            index_html = proj / "index.html"
+            if not index_html.exists():
+                results.append({"project": proj.name, "status": "no_index"})
+                continue
 
-    from collections import Counter
-    statuses = Counter(r["status"] for r in results)
-    print(f"\nDone: {statuses}")
+            page = browser.new_page()
+            console_errors = []
+
+            # Noise patterns that are not real JS errors
+            IGNORE_PATTERNS = (
+                "CORS policy", "net::ERR_", "Failed to load resource",
+                "favicon.ico", "blocked by CORS",
+                "the server responded with a status of 404",
+            )
+
+            def on_console(msg):
+                if msg.type == "error":
+                    text = msg.text
+                    if not any(p in text for p in IGNORE_PATTERNS):
+                        console_errors.append(text)
+
+            page.on("console", on_console)
+
+            try:
+                page.goto(f"file://{index_html.resolve()}", wait_until="load", timeout=60000)
+                page.wait_for_timeout(2000)  # Let JS finish
+            except Exception as e:
+                console_errors.append(f"PAGE_LOAD_ERROR: {e}")
+
+            page.close()
+
+            status = "ok" if not console_errors else f"errors({len(console_errors)})"
+            results.append({
+                "project": proj.name,
+                "status": status,
+                "console_errors": console_errors[:10],  # Cap at 10
+            })
+            error_summary = f" — {console_errors[0][:80]}" if console_errors else ""
+            print(f"[{i+1}/{len(projects)}] {proj.name}: {status}{error_summary}")
+
+        browser.close()
+
+    # Save results
+    results_path = input_dir / "validate_results.jsonl"
+    with open(results_path, "w") as f:
+        for r in results:
+            f.write(json.dumps(r, ensure_ascii=False) + "\n")
+
+    ok_count = sum(1 for r in results if r["status"] == "ok")
+    print(f"\nDone: {ok_count}/{len(results)} passed (0 console errors)")
 
 
 def main():
@@ -1027,6 +1279,11 @@ def main():
     p_clean.add_argument("--input-dir", required=True, help="Directory with project subdirs")
     p_clean.add_argument("--limit", type=int, default=None, help="Limit projects to process")
 
+    # validate
+    p_validate = subparsers.add_parser("validate", help="Check Console errors in projects")
+    p_validate.add_argument("--input-dir", required=True, help="Directory with project subdirs")
+    p_validate.add_argument("--limit", type=int, default=None, help="Limit projects to process")
+
     args = parser.parse_args()
 
     if not args.command:
@@ -1039,8 +1296,9 @@ def main():
         cmd_expand(args)
     elif args.command == "clean":
         cmd_clean(args)
+    elif args.command == "validate":
+        cmd_validate(args)
 
 
 if __name__ == "__main__":
-    from collections import Counter
     main()

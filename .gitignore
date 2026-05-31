@@ -49,6 +49,13 @@ local_trials/snapshot_test/
 local_trials/webrenderbench_render/
 local_trials/webcode2m_formal_7x10_ppapi_smoke/
 local_trials/webcode2m_official_multipage_10/
+local_trials/crawl_js_test/
+local_trials/recrawl_test/
+local_trials/recrawl_test2/
+local_trials/webrenderbench_30_raw/
+local_trials/webrenderbench_js_test/
+local_trials/webrenderbench_with_js/
+local_trials/test_samples.jsonl
 
 # Local OS/editor files
 .DS_Store
