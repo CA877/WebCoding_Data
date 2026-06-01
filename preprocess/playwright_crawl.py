@@ -40,12 +40,15 @@ Dependencies:
 import argparse
 import hashlib
 import json
+import multiprocessing as mp
+import os
+import queue
 import re
 import shutil
 import threading
 import time
 from collections import Counter
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 from pathlib import Path
 from urllib.parse import urljoin, urlparse
 
@@ -114,12 +117,14 @@ INLINE_CSS_JS = """() => {
         'doubleclick.net', 'hotjar.com', 'mixpanel.com', 'segment.com',
         'optimizely.com', 'tiktok.com', 'pinterest.com', 'linkedin.com', 'twitter.com'];
     document.querySelectorAll('script[src]').forEach(s => {
-        const src = s.getAttribute('src') || '';
+        const src = (s.getAttribute('src') || '').toLowerCase();
+        const id = (s.getAttribute('id') || '').toLowerCase();
         if (trackingDomains.some(d => src.includes(d))) s.remove();
+        if (['monsterinsights', 'frontend-gtag', 'gtag'].some(k => src.includes(k) || id.includes(k))) s.remove();
     });
     const trackingKw = ['google-analytics', 'googletagmanager', 'gtag', 'fbq(',
         'hotjar', 'adsbygoogle', '_gaq', 'ga(', 'mixpanel', 'segment',
-        'optimizely', 'googlesyndication'];
+        'optimizely', 'googlesyndication', 'monsterinsights', 'frontend-gtag'];
     document.querySelectorAll('script:not([src])').forEach(s => {
         const t = s.textContent.toLowerCase();
         if (trackingKw.some(k => t.includes(k))) s.remove();
@@ -150,6 +155,33 @@ def build_requests_session(proxy: str) -> requests.Session:
         "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     )
     return session
+
+
+def _resolve_proxy(explicit: str, env_names: tuple[str, ...]) -> str:
+    """Prefer an explicit proxy; otherwise fall back to common env vars."""
+    if explicit:
+        return explicit
+    for name in env_names:
+        value = os.environ.get(name, "").strip()
+        if value:
+            return value
+    return ""
+
+
+def resolve_browser_proxy(explicit: str) -> str:
+    """Resolve proxy for Chromium/Playwright."""
+    return _resolve_proxy(
+        explicit,
+        ("HTTPS_PROXY", "https_proxy", "HTTP_PROXY", "http_proxy", "ALL_PROXY", "all_proxy"),
+    )
+
+
+def resolve_requests_proxy(explicit: str) -> str:
+    """Resolve proxy for requests-based resource downloads."""
+    return _resolve_proxy(
+        explicit,
+        ("HTTPS_PROXY", "https_proxy", "HTTP_PROXY", "http_proxy", "ALL_PROXY", "all_proxy"),
+    )
 
 
 MAX_RESOURCES_PER_PAGE = 50  # Limit downloads to prevent hanging on heavy pages
@@ -247,7 +279,7 @@ def localize_resources(html: str, page_url: str, resources_dir: Path,
         "google-analytics", "googletagmanager", "gtag", "facebook", "fbq(",
         "hotjar", "adsbygoogle", "_gaq", "ga(", "googlesyndication",
         "mixpanel", "segment", "optimizely", "tiktok",
-        "pinterest", "twitter", "linkedin",
+        "pinterest", "twitter", "linkedin", "monsterinsights", "frontend-gtag",
     )
     TRACKING_DOMAINS = (
         "google-analytics.com", "googletagmanager.com", "googlesyndication.com",
@@ -257,10 +289,18 @@ def localize_resources(html: str, page_url: str, resources_dir: Path,
     )
     for script in list(soup.find_all("script")):
         src = script.get("src", "")
+        script_identity = " ".join(
+            str(script.get(attr, "")) for attr in ("id", "class", "data-wpfc-render", "data-wp-strategy")
+        ).lower()
         if src:
             abs_src = urljoin(page_url, src)
             # Skip tracking/analytics scripts
-            if any(d in abs_src for d in TRACKING_DOMAINS):
+            src_lower = src.lower()
+            abs_src_lower = abs_src.lower()
+            if (
+                any(d in abs_src_lower for d in TRACKING_DOMAINS)
+                or any(kw in src_lower or kw in abs_src_lower or kw in script_identity for kw in TRACKING_KEYWORDS)
+            ):
                 script.decompose()
                 continue
             # Remove broken MHTML cid: references (WebRenderBench artifacts)
@@ -719,6 +759,11 @@ DEAD_PAGE_MARKERS = [
     "enable cookies to continue",
     "please enable cookies",
     "browser check",
+    "robot challenge screen",
+    "checking the site connection security",
+    "this page requires cookies to be enabled in your browser settings",
+    "sgcaptcha",
+    "powcaptcha",
 ]
 
 
@@ -767,17 +812,23 @@ def detect_language(html: str) -> str:
 # Core crawl logic
 # ---------------------------------------------------------------------------
 
-def snapshot_page(page: Page, url: str, wait_ms: int = 3000) -> str | None:
+def snapshot_page(
+    page: Page,
+    url: str,
+    wait_ms: int = 3000,
+    timeout_ms: int = 30000,
+    retry_timeout_ms: int = 45000,
+) -> str | None:
     """Navigate to URL and return inlined HTML, or None on failure."""
     try:
-        page.goto(url, wait_until="commit", timeout=30000)
+        page.goto(url, wait_until="commit", timeout=timeout_ms)
         page.wait_for_timeout(wait_ms)
         html = page.evaluate(INLINE_CSS_JS)
         return html
     except Exception:
         # Retry with longer wait
         try:
-            page.goto(url, wait_until="networkidle", timeout=45000)
+            page.goto(url, wait_until="networkidle", timeout=retry_timeout_ms)
             html = page.evaluate(INLINE_CSS_JS)
             return html
         except Exception:
@@ -786,7 +837,8 @@ def snapshot_page(page: Page, url: str, wait_ms: int = 3000) -> str | None:
 
 def crawl_site(url: str, output_dir: Path, browser: Browser,
                session: requests.Session, max_pages: int = 4,
-               wait_ms: int = 3000) -> dict:
+               wait_ms: int = 3000, subpage_wait_ms: int = 2000,
+               timeout_ms: int = 30000, retry_timeout_ms: int = 45000) -> dict:
     """Crawl a website: index page + sub-pages.
 
     Returns a result dict with status and metadata.
@@ -799,7 +851,13 @@ def crawl_site(url: str, output_dir: Path, browser: Browser,
 
     try:
         # Step 1: Snapshot index page
-        index_html = snapshot_page(page, url, wait_ms)
+        index_html = snapshot_page(
+            page,
+            url,
+            wait_ms,
+            timeout_ms=timeout_ms,
+            retry_timeout_ms=retry_timeout_ms,
+        )
         if not index_html:
             page.close()
             return {"status": "failed_index", "url": url}
@@ -833,6 +891,9 @@ def crawl_site(url: str, output_dir: Path, browser: Browser,
                 "url": url,
                 "lang": lang,
                 "pages": 1,
+                "pages_added": 0,
+                "has_single_page": True,
+                "has_multi_page": False,
                 "html_size": len(index_html),
             }
 
@@ -848,7 +909,13 @@ def crawl_site(url: str, output_dir: Path, browser: Browser,
         url_to_file[url] = "index.html"
 
         for i, sub_url in enumerate(nav_links):
-            sub_html = snapshot_page(page, sub_url, wait_ms=2000)
+            sub_html = snapshot_page(
+                page,
+                sub_url,
+                wait_ms=subpage_wait_ms,
+                timeout_ms=timeout_ms,
+                retry_timeout_ms=retry_timeout_ms,
+            )
             if not sub_html:
                 continue
             if not validate_page(sub_html):
@@ -878,12 +945,69 @@ def crawl_site(url: str, output_dir: Path, browser: Browser,
             "url": url,
             "lang": lang,
             "pages": 1 + pages_added,
+            "pages_added": pages_added,
+            "has_single_page": True,
+            "has_multi_page": pages_added > 0,
             "html_size": sum(f.stat().st_size for f in output_dir.glob("*.html")),
         }
 
     except Exception as e:
         page.close()
         return {"status": "error", "url": url, "error": str(e)}
+
+
+def crawl_one_process(payload: tuple[str, str, str, str, str, int, int, int, int, int]) -> tuple[str, dict]:
+    """Process-isolated crawl worker.
+
+    Playwright's sync API is greenlet-backed and unsafe to share across threads.
+    A separate process per worker gives each task its own driver and browser.
+    """
+    (
+        url,
+        proj_name,
+        proj_dir,
+        browser_proxy,
+        requests_proxy,
+        max_pages,
+        wait_ms,
+        subpage_wait_ms,
+        timeout_ms,
+        retry_timeout_ms,
+    ) = payload
+    session = build_requests_session(requests_proxy)
+    with sync_playwright() as p:
+        browser = p.chromium.launch(
+            proxy={"server": browser_proxy} if browser_proxy else None,
+        )
+        try:
+            t0 = time.time()
+            try:
+                result = crawl_site(
+                    url,
+                    Path(proj_dir),
+                    browser,
+                    session,
+                    max_pages=max_pages,
+                    wait_ms=wait_ms,
+                    subpage_wait_ms=subpage_wait_ms,
+                    timeout_ms=timeout_ms,
+                    retry_timeout_ms=retry_timeout_ms,
+                )
+            except Exception as e:
+                result = {"status": "error", "url": url, "error": str(e)}
+            result["elapsed"] = round(time.time() - t0, 1)
+            return proj_name, result
+        finally:
+            browser.close()
+
+
+def crawl_one_process_entry(payload: tuple, result_queue) -> None:
+    """Run one crawl payload in a killable process and report through a queue."""
+    proj_name = str(payload[1])
+    try:
+        result_queue.put(crawl_one_process(payload))
+    except BaseException as e:
+        result_queue.put((proj_name, {"status": "error", "url": payload[0], "error": str(e)}))
 
 
 def expand_project(project_dir: Path, output_dir: Path, browser: Browser,
@@ -1021,6 +1145,28 @@ def expand_project(project_dir: Path, output_dir: Path, browser: Browser,
     }
 
 
+def expand_one_process(payload: tuple[str, str, str, str, int, int]) -> tuple[str, dict]:
+    """Process-isolated expand worker; see crawl_one_process."""
+    proj_dir, output_dir, browser_proxy, requests_proxy, max_pages, wait_ms = payload
+    project_dir = Path(proj_dir)
+    session = build_requests_session(requests_proxy)
+    with sync_playwright() as p:
+        browser = p.chromium.launch(
+            proxy={"server": browser_proxy} if browser_proxy else None,
+        )
+        try:
+            t0 = time.time()
+            try:
+                result = expand_project(project_dir, Path(output_dir), browser, session,
+                                        max_pages=max_pages, wait_ms=wait_ms)
+            except Exception as e:
+                result = {"status": "error", "project": project_dir.name, "error": str(e)}
+            result["elapsed"] = round(time.time() - t0, 1)
+            return project_dir.name, result
+        finally:
+            browser.close()
+
+
 def clean_project(project_dir: Path, session: requests.Session) -> dict:
     """Clean an existing project: download remote images, inline CSS, neutralize links."""
     index_html_path = project_dir / "index.html"
@@ -1069,10 +1215,12 @@ def cmd_crawl(args):
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     concurrency = args.concurrency
+    browser_proxy = resolve_browser_proxy(args.browser_proxy)
+    requests_proxy = resolve_requests_proxy(args.requests_proxy)
 
     print(f"Crawling {len(urls)} URLs with concurrency={concurrency}")
+    print(f"Using proxies: browser={browser_proxy or 'direct'}, requests={requests_proxy or 'direct'}")
 
-    session = build_requests_session(args.requests_proxy)
     results = []
     done_count = 0
 
@@ -1086,49 +1234,157 @@ def cmd_crawl(args):
             with open(results_path, "a", encoding="utf-8") as f:
                 f.write(json.dumps(result, ensure_ascii=False) + "\n")
 
-    with sync_playwright() as p:
-        browser = p.chromium.launch(
-            proxy={"server": args.browser_proxy} if args.browser_proxy else None,
-        )
+    # Filter out already-done URLs
+    todo = []
+    for url in urls:
+        parsed = urlparse(url)
+        proj_name = re.sub(r"[^A-Za-z0-9._-]", "_", parsed.netloc)[:60]
+        proj_dir = output_dir / proj_name
+        if proj_dir.exists() and (proj_dir / "index.html").exists():
+            done_count += 1
+            continue
+        todo.append((url, proj_name, proj_dir))
 
-        # Filter out already-done URLs
-        todo = []
-        for url in urls:
-            parsed = urlparse(url)
-            proj_name = re.sub(r"[^A-Za-z0-9._-]", "_", parsed.netloc)[:60]
-            proj_dir = output_dir / proj_name
-            if proj_dir.exists() and (proj_dir / "index.html").exists():
-                done_count += 1
-                continue
-            todo.append((url, proj_name, proj_dir))
+    if done_count:
+        print(f"Skipped {done_count} already-done projects")
 
-        if done_count:
-            print(f"Skipped {done_count} already-done projects")
+    # Clear results file for this run
+    results_path.write_text("", encoding="utf-8")
 
-        # Clear results file for this run
-        results_path.write_text("", encoding="utf-8")
+    def _crawl_one_with_browser(item, browser: Browser, session: requests.Session):
+        url, proj_name, proj_dir = item
+        t0 = time.time()
+        try:
+            result = crawl_site(url, proj_dir, browser, session,
+                                max_pages=args.max_pages, wait_ms=args.wait,
+                                subpage_wait_ms=args.subpage_wait,
+                                timeout_ms=args.timeout,
+                                retry_timeout_ms=args.retry_timeout)
+        except Exception as e:
+            result = {"status": "error", "url": url, "error": str(e)}
+        result["elapsed"] = round(time.time() - t0, 1)
+        return proj_name, result
 
-        def _crawl_one(item):
-            url, proj_name, proj_dir = item
-            t0 = time.time()
+    if concurrency <= 1:
+        session = build_requests_session(requests_proxy)
+        with sync_playwright() as p:
+            browser = p.chromium.launch(
+                proxy={"server": browser_proxy} if browser_proxy else None,
+            )
             try:
-                result = crawl_site(url, proj_dir, browser, session,
-                                   max_pages=args.max_pages, wait_ms=args.wait)
-            except Exception as e:
-                result = {"status": "error", "url": url, "error": str(e)}
-            result["elapsed"] = round(time.time() - t0, 1)
-            return proj_name, result
+                for i, item in enumerate(todo):
+                    proj_name, result = _crawl_one_with_browser(item, browser, session)
+                    _append_result(result)
+                    status = result["status"]
+                    pages = result.get("pages", 0)
+                    print(f"[{i+1}/{len(todo)}] {proj_name}: {status} ({pages} pages, {result['elapsed']:.1f}s)")
+            finally:
+                browser.close()
+    else:
+        payloads = [
+            (
+                url,
+                proj_name,
+                str(proj_dir),
+                browser_proxy,
+                requests_proxy,
+                args.max_pages,
+                args.wait,
+                args.subpage_wait,
+                args.timeout,
+                args.retry_timeout,
+            )
+            for url, proj_name, proj_dir in todo
+        ]
+        if args.site_timeout and args.site_timeout > 0:
+            ctx = mp.get_context()
+            pending = list(payloads)
+            active: dict[mp.Process, tuple[tuple, float, mp.Queue]] = {}
+            completed = 0
 
-        if concurrency <= 1:
-            for i, item in enumerate(todo):
-                proj_name, result = _crawl_one(item)
-                _append_result(result)
-                status = result["status"]
-                pages = result.get("pages", 0)
-                print(f"[{i+1}/{len(todo)}] {proj_name}: {status} ({pages} pages, {result['elapsed']:.1f}s)")
+            def _start_next() -> None:
+                payload = pending.pop(0)
+                result_queue = ctx.Queue(maxsize=1)
+                proc = ctx.Process(target=crawl_one_process_entry, args=(payload, result_queue))
+                proc.start()
+                active[proc] = (payload, time.time(), result_queue)
+
+            while pending or active:
+                while pending and len(active) < concurrency:
+                    _start_next()
+
+                for proc, (payload, started, result_queue) in list(active.items()):
+                    url, proj_name, proj_dir = payload[0], payload[1], Path(payload[2])
+                    try:
+                        got_proj_name, result = result_queue.get_nowait()
+                    except queue.Empty:
+                        got_proj_name, result = None, None
+
+                    if result is not None:
+                        proc.join(timeout=2)
+                        active.pop(proc, None)
+                        completed += 1
+                        _append_result(result)
+                        status = result["status"]
+                        pages = result.get("pages", 0)
+                        print(
+                            f"[{completed}/{len(todo)}] {got_proj_name}: {status} "
+                            f"({pages} pages, {result.get('elapsed', 0):.1f}s)",
+                            flush=True,
+                        )
+                        continue
+
+                    elapsed = time.time() - started
+                    if elapsed > args.site_timeout:
+                        proc.terminate()
+                        proc.join(timeout=5)
+                        if proc.is_alive():
+                            proc.kill()
+                            proc.join(timeout=5)
+                        if proj_dir.exists():
+                            shutil.rmtree(proj_dir, ignore_errors=True)
+                        active.pop(proc, None)
+                        completed += 1
+                        result = {
+                            "status": "site_timeout",
+                            "url": url,
+                            "project": proj_name,
+                            "elapsed": round(elapsed, 1),
+                            "site_timeout": args.site_timeout,
+                            "has_single_page": False,
+                            "has_multi_page": False,
+                            "pages_added": 0,
+                        }
+                        _append_result(result)
+                        print(
+                            f"[{completed}/{len(todo)}] {proj_name}: site_timeout "
+                            f"(0 pages, {elapsed:.1f}s)",
+                            flush=True,
+                        )
+                    elif not proc.is_alive():
+                        proc.join(timeout=2)
+                        active.pop(proc, None)
+                        completed += 1
+                        result = {
+                            "status": "worker_exited",
+                            "url": url,
+                            "project": proj_name,
+                            "elapsed": round(elapsed, 1),
+                            "has_single_page": False,
+                            "has_multi_page": False,
+                            "pages_added": 0,
+                        }
+                        _append_result(result)
+                        print(
+                            f"[{completed}/{len(todo)}] {proj_name}: worker_exited "
+                            f"(0 pages, {elapsed:.1f}s)",
+                            flush=True,
+                        )
+
+                time.sleep(0.2)
         else:
-            with ThreadPoolExecutor(max_workers=concurrency) as executor:
-                futures = {executor.submit(_crawl_one, item): item for item in todo}
+            with ProcessPoolExecutor(max_workers=concurrency) as executor:
+                futures = {executor.submit(crawl_one_process, payload): payload for payload in payloads}
                 for i, future in enumerate(as_completed(futures), 1):
                     try:
                         proj_name, result = future.result()
@@ -1140,13 +1396,15 @@ def cmd_crawl(args):
                     pages = result.get("pages", 0)
                     print(f"[{i}/{len(todo)}] {proj_name}: {status} ({pages} pages, {result.get('elapsed', 0):.1f}s)")
 
-        browser.close()
-
     # Summary
     statuses = Counter(r["status"] for r in results)
+    single_page_samples = sum(1 for r in results if r.get("has_single_page"))
+    multi_page_samples = sum(1 for r in results if r.get("has_multi_page"))
     print(f"\nDone! {len(results)} processed:")
     for s, c in statuses.most_common():
         print(f"  {s}: {c}")
+    print(f"  usable_single_page_samples: {single_page_samples}")
+    print(f"  multi_page_samples: {multi_page_samples}")
 
 
 def cmd_expand(args):
@@ -1155,14 +1413,16 @@ def cmd_expand(args):
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     concurrency = args.concurrency
+    browser_proxy = resolve_browser_proxy(args.browser_proxy)
+    requests_proxy = resolve_requests_proxy(args.requests_proxy)
 
     projects = sorted(d for d in input_dir.iterdir() if d.is_dir())
     if args.limit:
         projects = projects[:args.limit]
 
     print(f"Expanding {len(projects)} projects with concurrency={concurrency}")
+    print(f"Using proxies: browser={browser_proxy or 'direct'}, requests={requests_proxy or 'direct'}")
 
-    session = build_requests_session(args.requests_proxy)
     results = []
 
     # Incremental results file
@@ -1175,59 +1435,71 @@ def cmd_expand(args):
             with open(results_path, "a", encoding="utf-8") as f:
                 f.write(json.dumps(result, ensure_ascii=False) + "\n")
 
-    with sync_playwright() as p:
-        browser = p.chromium.launch(
-            proxy={"server": args.browser_proxy} if args.browser_proxy else None,
-        )
+    # Filter already-expanded
+    todo = []
+    skipped = 0
+    for proj in projects:
+        out_proj = output_dir / proj.name
+        if out_proj.exists() and len(list(out_proj.glob("*.html"))) > 1:
+            skipped += 1
+            continue
+        todo.append(proj)
 
-        # Filter already-expanded
-        todo = []
-        skipped = 0
-        for proj in projects:
-            out_proj = output_dir / proj.name
-            if out_proj.exists() and len(list(out_proj.glob("*.html"))) > 1:
-                skipped += 1
-                continue
-            todo.append(proj)
+    if skipped:
+        print(f"Skipped {skipped} already-expanded projects")
 
-        if skipped:
-            print(f"Skipped {skipped} already-expanded projects")
+    # Clear results file for this run
+    results_path.write_text("", encoding="utf-8")
 
-        # Clear results file for this run
-        results_path.write_text("", encoding="utf-8")
+    def _expand_one_with_browser(proj, browser: Browser, session: requests.Session):
+        t0 = time.time()
+        try:
+            result = expand_project(proj, output_dir, browser, session,
+                                    max_pages=args.max_pages, wait_ms=args.wait)
+        except Exception as e:
+            result = {"status": "error", "project": proj.name, "error": str(e)}
+        result["elapsed"] = round(time.time() - t0, 1)
+        return proj.name, result
 
-        def _expand_one(proj):
-            t0 = time.time()
+    if concurrency <= 1:
+        session = build_requests_session(requests_proxy)
+        with sync_playwright() as p:
+            browser = p.chromium.launch(
+                proxy={"server": browser_proxy} if browser_proxy else None,
+            )
             try:
-                result = expand_project(proj, output_dir, browser, session,
-                                       max_pages=args.max_pages, wait_ms=args.wait)
-            except Exception as e:
-                result = {"status": "error", "project": proj.name, "error": str(e)}
-            result["elapsed"] = round(time.time() - t0, 1)
-            return proj.name, result
-
-        if concurrency <= 1:
-            for i, proj in enumerate(todo):
-                name, result = _expand_one(proj)
-                _append_result(result)
-                status = result["status"]
-                pages = result.get("pages_added", 0)
-                print(f"[{i+1}/{len(todo)}] {name}: {status} (+{pages} pages, {result['elapsed']:.1f}s)")
-        else:
-            with ThreadPoolExecutor(max_workers=concurrency) as executor:
-                futures = {executor.submit(_expand_one, proj): proj for proj in todo}
-                for i, future in enumerate(as_completed(futures), 1):
-                    try:
-                        name, result = future.result()
-                    except Exception as e:
-                        name = str(futures[future].name)
-                        result = {"status": "error", "error": str(e)}
+                for i, proj in enumerate(todo):
+                    name, result = _expand_one_with_browser(proj, browser, session)
                     _append_result(result)
                     status = result["status"]
                     pages = result.get("pages_added", 0)
-                    print(f"[{i}/{len(todo)}] {name}: {status} (+{pages} pages, {result.get('elapsed', 0):.1f}s)")
-
-        browser.close()
+                    print(f"[{i+1}/{len(todo)}] {name}: {status} (+{pages} pages, {result['elapsed']:.1f}s)")
+            finally:
+                browser.close()
+    else:
+        payloads = [
+            (
+                str(proj),
+                str(output_dir),
+                browser_proxy,
+                requests_proxy,
+                args.max_pages,
+                args.wait,
+            )
+            for proj in todo
+        ]
+        with ProcessPoolExecutor(max_workers=concurrency) as executor:
+            futures = {executor.submit(expand_one_process, payload): payload for payload in payloads}
+            for i, future in enumerate(as_completed(futures), 1):
+                try:
+                    name, result = future.result()
+                except Exception as e:
+                    name = Path(futures[future][0]).name
+                    result = {"status": "error", "error": str(e)}
+                _append_result(result)
+                status = result["status"]
+                pages = result.get("pages_added", 0)
+                print(f"[{i}/{len(todo)}] {name}: {status} (+{pages} pages, {result.get('elapsed', 0):.1f}s)")
 
     statuses = Counter(r["status"] for r in results)
     total_pages = sum(r.get("pages_added", 0) for r in results)
@@ -1241,10 +1513,12 @@ def cmd_clean(args):
     if args.limit:
         projects = projects[:args.limit]
     concurrency = args.concurrency
+    requests_proxy = resolve_requests_proxy(args.requests_proxy)
 
     print(f"Cleaning {len(projects)} projects with concurrency={concurrency}")
+    print(f"Using requests proxy: {requests_proxy or 'direct'}")
 
-    proxy = args.requests_proxy
+    proxy = requests_proxy
     results = []
 
     # Each thread gets its own session to avoid race conditions.
@@ -1388,12 +1662,12 @@ def cmd_validate(args):
 
 def main():
     parser = argparse.ArgumentParser(description="Playwright web crawler for training data")
-    parser.add_argument("--browser-proxy", default="socks5://127.0.0.1:13659",
-                        help="Proxy for Playwright/Chromium. Use 'socks5://' (NOT socks5h). "
-                             "Set to '' for direct access.")
-    parser.add_argument("--requests-proxy", default="socks5h://127.0.0.1:13659",
-                        help="Proxy for requests library. 'socks5h://' enables remote DNS. "
-                             "Set to '' for direct access.")
+    parser.add_argument("--browser-proxy", default="",
+                        help="Proxy for Playwright/Chromium. Supports both 'socks5://' and "
+                             "'http://'. If omitted, falls back to HTTPS_PROXY/HTTP_PROXY/ALL_PROXY.")
+    parser.add_argument("--requests-proxy", default="",
+                        help="Proxy for requests library. Supports both 'socks5h://' and "
+                             "'http://'. If omitted, falls back to HTTPS_PROXY/HTTP_PROXY/ALL_PROXY.")
     parser.add_argument("--concurrency", type=int, default=1,
                         help="Number of concurrent browser pages (NOT browsers). "
                              "Mac M4 16GB: use 3-5. Server 64GB: use 15-20.")
@@ -1401,6 +1675,15 @@ def main():
                         help="Max sub-pages to crawl per site")
     parser.add_argument("--wait", type=int, default=3000,
                         help="Wait time (ms) after page load for rendering")
+    parser.add_argument("--subpage-wait", type=int, default=2000,
+                        help="Wait time (ms) after sub-page load for rendering")
+    parser.add_argument("--timeout", type=int, default=30000,
+                        help="Initial navigation timeout (ms)")
+    parser.add_argument("--retry-timeout", type=int, default=45000,
+                        help="Fallback navigation timeout (ms)")
+    parser.add_argument("--site-timeout", type=int, default=0,
+                        help="Hard wall-clock timeout per URL in seconds. "
+                             "When set, stuck crawl workers are terminated and marked site_timeout.")
 
     subparsers = parser.add_subparsers(dest="command")
 

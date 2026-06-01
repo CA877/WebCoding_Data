@@ -27,11 +27,6 @@
 
 5. 例如 huggingface 等请使用中国镜像网站。
 
-## 数据存储
-
-ssh -p 47795 root@connect.westd.seetacloud.com
-密码：SnDXpsEmpF0t
-
 ## 远程脚本工作流
 
 1. 涉及远程服务器 / H 集群的脚本修改，必须先在本地仓库里编辑和检查脚本，再通过 `rsync` 同步到 SSH 服务器上执行。
@@ -55,3 +50,23 @@ rsync -e 'ssh -CAXY' ...
 ```text
 /mnt/shared-storage-user/colab-share/liujiaheng/workspace/xieqianqian/webcoding_data
 ```
+
+5. H 集群上所有 WebCoding_Data 相关写入都必须放在 `xieqianqian` 项目目录下，即：
+
+```text
+/mnt/shared-storage-user/colab-share/liujiaheng/workspace/xieqianqian/webcoding_data
+```
+
+不要写入 `/mnt/shared-storage-user/colab-share/liujiaheng/workspace/webcoding_smoke_code_*` 或其他非 `xieqianqian` 工作目录。历史 smoke 目录只允许只读排查，不作为新实验输出位置。
+
+6. 在 H 集群运行 WebCoding_Data 相关脚本时，使用 `lora` 环境，不使用系统 Python 或其他临时环境。
+
+7. Pipeline A 使用 H 集群上的 WebRenderBench useful 数据构造，不使用 `webrenderbench_raw` 原始数据目录。useful 数据目录为：
+
+```text
+/mnt/shared-storage-user/colab-share/liujiaheng/workspace/xieqianqian/webcoding_data/h_rebuild/webrenderbench_clean_split/useful
+```
+
+该目录已确认包含 31,765 个项目目录，且 31,765 个项目目录均包含 `index.html`。
+
+8. Pipeline A 的样本级预处理必须设置硬超时保护，避免单个 expand/clean worker 卡死导致整批任务挂住。运行 `preprocess/pipeline_a_sample_level.py` 时传 `--site-timeout`，100 条 smoke run 建议先用 `--site-timeout 900`。

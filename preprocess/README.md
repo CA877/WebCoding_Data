@@ -51,6 +51,33 @@ python3 preprocess/extract_webcode2m_urls.py \
 | `expand` | 现有单页项目 | 多页项目 | 给已有项目追加子页面 |
 | `clean` | 任何项目 | 原地清洗 | 下载远程图片、去噪、中和外链 |
 
+### `filter_webcode2m_urls.py` / `preflight_webcode2m_urls.py`
+
+WebCode2M 提取出来的 URL 是按字典序排列的，前段会集中出现大量数字域名、
+托管临时页、CDN/统计域、奇怪子域，因此不能直接拿前 N 个估计整体成功率。
+
+推荐先做两层筛选：
+
+```bash
+python3 preprocess/filter_webcode2m_urls.py \
+  --input webcode2m_all_urls.txt \
+  --output webcode2m_filtered_urls.txt \
+  --rejected-output webcode2m_filtered_rejected.tsv
+
+python3 preprocess/preflight_webcode2m_urls.py \
+  --proxy "http://httpproxy-headless.kubebrain.svc.pjlab.local:3128" \
+  --concurrency 80 \
+  --timeout 8 \
+  --input webcode2m_filtered_urls.txt \
+  --accepted-output webcode2m_preflight_passed_urls.txt \
+  --rejected-output webcode2m_preflight_rejected.jsonl \
+  --report webcode2m_preflight_report.json
+```
+
+第一层只看 URL 形态并确定性打乱队列；第二层用便宜的 HTTP 首页预检剔除
+安全挑战页、停放页、默认服务器页、非 HTML 资源和空页面。只有通过预检的
+URL 才进入 Playwright 慢爬，用来更快凑够最终有效样本。
+
 ---
 
 ## 完整流程（按执行顺序）
@@ -114,7 +141,7 @@ python3 preprocess/playwright_crawl.py \
   --requests-proxy "socks5h://127.0.0.1:13659" \
   --max-pages 4 --wait 3000 --concurrency 5 \
   crawl \
-  --url-file webcode2m_urls.txt \
+  --url-file webcode2m_preflight_passed_urls.txt \
   --output-dir /data/crawled/
 ```
 
@@ -152,6 +179,16 @@ expand（需要真实外链来找子页面）
 
 服务器如果有直连网络，两个参数都传空字符串 `""`。
 
+如果服务器通过 HTTP 代理出网，也可以直接传：
+
+| 用途 | 参数 | 格式示例 |
+|------|------|----------|
+| Playwright/Chromium | `--browser-proxy` | `http://proxy-host:3128` |
+| requests 库 | `--requests-proxy` | `http://proxy-host:3128` |
+
+当前 `playwright_crawl.py` 也会在未显式传参时，自动读取服务器上的
+`https_proxy` / `http_proxy` / `ALL_PROXY` 环境变量。
+
 ---
 
 ## 图片处理策略
@@ -177,6 +214,21 @@ picsum.photos 使用固定 ID 池 (10-110)，同一网站只有 ID 数字不同�
 - ✅ 零 JavaScript
 - ✅ 文本内容 ≥ 50 字符
 - ✅ 语言为中文或英文
+
+`crawl_results.jsonl` 中的 `status` 仍保留最终形态标签：
+
+| `status` | 含义 |
+|----------|------|
+| `single_page` | 首页可用，但没有成功加入子页 |
+| `multi_page` | 首页可用，并且至少成功加入 1 个子页 |
+
+为了避免统计歧义，结果也会写入布尔字段：
+
+| 字段 | 含义 |
+|------|------|
+| `has_single_page` | 首页抓取成功且质量合格。`single_page` 和 `multi_page` 都会是 `true` |
+| `has_multi_page` | 是否额外成功加入至少 1 个子页 |
+| `pages_added` | 成功加入的子页数量 |
 
 ---
 
