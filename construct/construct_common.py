@@ -188,9 +188,17 @@ def sanitize_render_text(text: str) -> str:
         url = match.group(0)
         if url in SVG_NAMESPACE_URLS:
             return url
+        # Keep picsum.photos fallback URLs (injected by clean step)
+        if "picsum.photos" in url:
+            return url
         return "#"
 
-    text = re.sub(r"url\(\s*(['\"]?)https?://[^'\"\)]*\1\s*\)", "url(\"\")", text, flags=re.I)
+    def replace_css_url(match: re.Match[str]) -> str:
+        if "picsum.photos" in match.group(0):
+            return match.group(0)
+        return 'url("")'
+
+    text = re.sub(r"url\(\s*(['\"]?)https?://[^'\"\)]*\1\s*\)", replace_css_url, text, flags=re.I)
     text = re.sub(r"@import\s+(['\"])https?://[^'\"]*\1\s*;?", "", text, flags=re.I)
     return REMOTE_URL_RE.sub(replace_url, text)
 

@@ -752,7 +752,7 @@ def process_project(
         shutil.rmtree(out)
     copy_project(project_dir, out)
 
-    js_content = generate_js(project_dir, model, client, features)
+    js_content = generate_js(out, model, client, features)
     if not js_content:
         return {"project": name, "status": "generation_failed", "assigned_features": features}
 

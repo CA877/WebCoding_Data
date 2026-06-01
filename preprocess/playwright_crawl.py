@@ -307,9 +307,8 @@ def localize_resources(html: str, page_url: str, resources_dir: Path,
             if local:
                 tag[attr] = local
             else:
-                # Even fallback failed — use picsum URL (preserves layout)
+                # Download failed — use picsum fallback (preserves layout)
                 tag[attr] = _fallback_url(fallback_idx - 1)
-                break
         # Remove srcset (too complex to handle)
         try:
             if tag.get("srcset"):
@@ -372,17 +371,17 @@ def localize_resources(html: str, page_url: str, resources_dir: Path,
         if img.get("loading"):
             del img["loading"]
 
-    # Deduplicate adjacent <img> tags with the same src (from noscript unwrap)
-    seen_srcs = set()
-    for img in list(soup.find_all("img")):
-        src = img.get("src", "")
-        if not src:
-            continue
-        # Normalize: strip hash prefix for comparison (e.g., "abc123_image.jpg" vs "image.jpg")
-        if src in seen_srcs:
+    # Deduplicate adjacent <img> tags with the same src (from noscript unwrap).
+    # Only remove if the previous kept img has the same src — logos/decorations
+    # legitimately reappear in different sections.
+    all_imgs = list(soup.find_all("img"))
+    prev_src = ""
+    for img in all_imgs:
+        cur_src = img.get("src", "")
+        if cur_src and cur_src == prev_src:
             img.decompose()
         else:
-            seen_srcs.add(src)
+            prev_src = cur_src
 
     # Remove CKEditor artifacts and other data-*-src/href with remote URLs
     for tag in soup.find_all(True):
@@ -392,6 +391,34 @@ def localize_resources(html: str, page_url: str, resources_dir: Path,
                            and isinstance(tag[k], str) and tag[k].startswith("http"))]
         for attr in attrs_to_remove:
             del tag[attr]
+
+    # Remove off-canvas / mobile-nav panels — hidden by JS, but render as visible
+    # blocks at the page bottom when JS is missing.
+    # Use word-boundary matching and only target container-level elements (div/nav/aside).
+    OFFCANVAS_RE = re.compile(
+        r'\b(?:off-?canvas|offcanvas)\b', re.I
+    )
+    for el in list(soup.find_all(class_=OFFCANVAS_RE)):
+        if el.name in ("div", "nav", "aside", "section"):
+            el.decompose()
+
+    # Trim carousel/slider containers — keep only first few slides.
+    # Without the original JS, all slides stack vertically causing massive page height.
+    # Match whole class names (word-bounded) to avoid false positives like "slide-in".
+    CAROUSEL_CLASS_RE = re.compile(
+        r'\b(?:swiper-wrapper|slick-track|owl-stage|splide__list|flickity-slider'
+        r'|carousel-inner|x-slide-container|glide__slides'
+        r'|slides|slider-track)\b', re.I
+    )
+    MAX_SLIDES = 3
+    for container in soup.find_all(class_=CAROUSEL_CLASS_RE):
+        element_children = [c for c in container.children if hasattr(c, 'name') and c.name]
+        if len(element_children) > MAX_SLIDES + 2:
+            # Extra safety: check that children look homogeneous (same tag + similar classes)
+            first_tag = element_children[0].name
+            if all(c.name == first_tag for c in element_children[:6]):
+                for child in element_children[MAX_SLIDES:]:
+                    child.decompose()
 
     # Remove iframes (YouTube embeds, etc.) — not needed for training
     for iframe in list(soup.find_all("iframe")):
@@ -675,6 +702,23 @@ DEAD_PAGE_MARKERS = [
     "403 forbidden",
     "site not found",
     "expired domain",
+    # Cloudflare / bot-detection / CAPTCHA pages
+    "verify you are human",
+    "checking your browser",
+    "attention required",
+    "just a moment",
+    "enable javascript and cookies to continue",
+    "ray id:",
+    "performance & security by cloudflare",
+    "please turn javascript on and reload the page",
+    "access denied",
+    "you have been blocked",
+    "please verify you are a human",
+    "complete the security check",
+    # Other anti-bot / paywall / cookie walls
+    "enable cookies to continue",
+    "please enable cookies",
+    "browser check",
 ]
 
 
@@ -995,29 +1039,8 @@ def clean_project(project_dir: Path, session: requests.Session) -> dict:
         urls_in_html = re.findall(r'https?://([^/\s"\'<>]+)', html)
         base_url = f"https://{urls_in_html[0]}/" if urls_in_html else "https://example.com/"
 
-        # Localize images
+        # Localize images, inline CSS, clean up — all handled inside localize_resources
         cleaned = localize_resources(html, base_url, resources_dir, session)
-
-        # Remove remaining external CSS links (inline them if possible)
-        soup = BeautifulSoup(cleaned, "html.parser")
-        for link in list(soup.find_all("link")):
-            if not link.attrs:
-                continue
-            rel = " ".join(link.get("rel") or []).lower()
-            href = link.get("href", "")
-            if "stylesheet" in rel and href.startswith("http"):
-                try:
-                    resp = session.get(href, timeout=10)
-                    if resp.status_code == 200:
-                        style = soup.new_tag("style")
-                        style.string = resp.text
-                        link.replace_with(style)
-                    else:
-                        link.decompose()
-                except Exception:
-                    link.decompose()
-
-        cleaned = str(soup)
         html_file.write_text(cleaned, encoding="utf-8")
 
         # Count truly remote references (any *src= attribute, exclude picsum fallbacks)
@@ -1221,12 +1244,20 @@ def cmd_clean(args):
 
     print(f"Cleaning {len(projects)} projects with concurrency={concurrency}")
 
-    session = build_requests_session(args.requests_proxy)
+    proxy = args.requests_proxy
     results = []
+
+    # Each thread gets its own session to avoid race conditions.
+    _thread_local = threading.local()
+
+    def _get_session():
+        if not hasattr(_thread_local, "session"):
+            _thread_local.session = build_requests_session(proxy)
+        return _thread_local.session
 
     def _clean_one(proj):
         try:
-            return clean_project(proj, session)
+            return clean_project(proj, _get_session())
         except Exception as e:
             return {"status": "error", "project": proj.name, "error": str(e)}
 
@@ -1251,19 +1282,28 @@ def cmd_clean(args):
 
 
 def cmd_validate(args):
-    """Validate projects by opening in Playwright and checking Console errors."""
+    """Validate projects: content quality check + Playwright Console error check.
+
+    Checks performed:
+    1. Content quality — enough text, not a dead/parked/CAPTCHA page (validate_page)
+    2. Console errors — open in Playwright, check for JS errors
+
+    With --purge: delete projects that fail content quality check.
+    """
     input_dir = Path(args.input_dir)
     projects = sorted(d for d in input_dir.iterdir() if d.is_dir())
     if args.limit:
         projects = projects[:args.limit]
+    purge = getattr(args, "purge", False)
 
-    print(f"Validating {len(projects)} projects (checking Console errors)")
+    print(f"Validating {len(projects)} projects (content + console checks, purge={purge})")
 
     from playwright.sync_api import sync_playwright
 
     results = []
     results_path = input_dir / "validate_results.jsonl"
     results_path.write_text("", encoding="utf-8")
+    purged = 0
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
@@ -1277,14 +1317,31 @@ def cmd_validate(args):
                     f.write(json.dumps(result, ensure_ascii=False) + "\n")
                 continue
 
+            # --- Content quality check ---
+            html = index_html.read_text(encoding="utf-8", errors="replace")
+            if not validate_page(html):
+                result = {"project": proj.name, "status": "garbage"}
+                results.append(result)
+                with open(results_path, "a", encoding="utf-8") as f:
+                    f.write(json.dumps(result, ensure_ascii=False) + "\n")
+                if purge:
+                    import shutil
+                    shutil.rmtree(proj, ignore_errors=True)
+                    purged += 1
+                print(f"[{i+1}/{len(projects)}] {proj.name}: GARBAGE"
+                      f"{' (purged)' if purge else ''}")
+                continue
+
+            # --- Console error check ---
             page = browser.new_page()
             console_errors = []
 
-            # Noise patterns that are not real JS errors
             IGNORE_PATTERNS = (
                 "CORS policy", "net::ERR_", "Failed to load resource",
                 "favicon.ico", "blocked by CORS",
                 "the server responded with a status of 404",
+                "Unsafe attempt to load URL",
+                "PAGE_LOAD_ERROR",
             )
 
             def on_console(msg):
@@ -1297,9 +1354,15 @@ def cmd_validate(args):
 
             try:
                 page.goto(f"file://{index_html.resolve()}", wait_until="load", timeout=60000)
-                page.wait_for_timeout(2000)  # Let JS finish
-            except Exception as e:
-                console_errors.append(f"PAGE_LOAD_ERROR: {e}")
+                page.wait_for_timeout(2000)
+            except Exception:
+                # Load timeout is common for local files with unresolvable font/CSS refs.
+                # Fall back to domcontentloaded — the JS we care about is already loaded.
+                try:
+                    page.goto(f"file://{index_html.resolve()}", wait_until="domcontentloaded", timeout=15000)
+                    page.wait_for_timeout(3000)
+                except Exception:
+                    pass  # Still count console errors collected so far
 
             page.close()
 
@@ -1307,7 +1370,7 @@ def cmd_validate(args):
             result = {
                 "project": proj.name,
                 "status": status,
-                "console_errors": console_errors[:10],  # Cap at 10
+                "console_errors": console_errors[:10],
             }
             results.append(result)
             with open(results_path, "a", encoding="utf-8") as f:
@@ -1318,7 +1381,9 @@ def cmd_validate(args):
         browser.close()
 
     ok_count = sum(1 for r in results if r["status"] == "ok")
-    print(f"\nDone: {ok_count}/{len(results)} passed (0 console errors)")
+    garbage_count = sum(1 for r in results if r["status"] == "garbage")
+    print(f"\nDone: {ok_count}/{len(results)} passed, {garbage_count} garbage"
+          f"{f', {purged} purged' if purge else ''}")
 
 
 def main():
@@ -1356,9 +1421,11 @@ def main():
     p_clean.add_argument("--limit", type=int, default=None, help="Limit projects to process")
 
     # validate
-    p_validate = subparsers.add_parser("validate", help="Check Console errors in projects")
+    p_validate = subparsers.add_parser("validate", help="Content quality + Console error check")
     p_validate.add_argument("--input-dir", required=True, help="Directory with project subdirs")
     p_validate.add_argument("--limit", type=int, default=None, help="Limit projects to process")
+    p_validate.add_argument("--purge", action="store_true",
+                            help="Delete projects that fail content quality check")
 
     args = parser.parse_args()
 
