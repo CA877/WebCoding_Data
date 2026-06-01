@@ -40,10 +40,20 @@
 
 2. 不直接在远程服务器上临时手写或改脚本；除非只是查看状态、启动已有脚本、杀进程、检查日志等操作。
 
-3. 连接 H 集群使用：
+3. 从 GitHub 同步别人的代码更新后，应立即将本地仓库同步到 H 集群的项目目录，保证本地与 `h-liu` 上的代码一致。
+
+4. 如果在 H 集群上跑小规模测试，应将测试结果打包并同步回本地，方便用户在本地检查结果。
+
+5. 连接 H 集群使用：
 
 ```bash
 ssh -CAXY main.liujiaheng.ailab-colab.ws@h.pjlab.org.cn
+```
+
+本机 SSH 配置中可使用别名：
+
+```bash
+ssh -CAXY h-liu
 ```
 
 对应的 `rsync`：
@@ -52,28 +62,32 @@ ssh -CAXY main.liujiaheng.ailab-colab.ws@h.pjlab.org.cn
 rsync -e 'ssh -CAXY' ...
 ```
 
-4. H 集群项目目录：
+6. H 集群项目目录：
 
 ```text
 /mnt/shared-storage-user/colab-share/liujiaheng/workspace/xieqianqian/webcoding_data
 ```
 
-5. H 集群上所有 WebCoding_Data 相关写入都必须放在 `xieqianqian` 项目目录下，即：
+7. H 集群上所有 WebCoding_Data 相关写入都必须放在 `xieqianqian` 项目目录下，即：
 
 ```text
 /mnt/shared-storage-user/colab-share/liujiaheng/workspace/xieqianqian/webcoding_data
 ```
 
-不要写入 `/mnt/shared-storage-user/colab-share/liujiaheng/workspace/webcoding_smoke_code_*` 或其他非 `xieqianqian` 工作目录。历史 smoke 目录只允许只读排查，不作为新实验输出位置。
+不要写入历史临时测试目录或其他非 `xieqianqian` 工作目录。历史临时测试目录只允许只读排查，不作为新实验输出位置。除非用户明确指定其他项目，否则新脚本、日志、数据、临时文件都只能写入上述 `webcoding_data` 目录及其子目录。
 
-6. 在 H 集群运行 WebCoding_Data 相关脚本时，使用 `lora` 环境，不使用系统 Python 或其他临时环境。
+8. 在 H 集群运行 WebCoding_Data 相关脚本时，使用 `lora` 环境，不使用系统 Python 或其他临时环境。
 
-7. Pipeline A 使用 H 集群上的 WebRenderBench useful 数据构造，不使用 `webrenderbench_raw` 原始数据目录。useful 数据目录为：
+9. 新实验、脚本、日志、目录和结果包命名禁止使用 `smoke`；小规模验证统一称为“小规模测试”或“预检查运行”。
+
+10. Pipeline A 使用 H 集群上的 WebRenderBench useful 数据构造，不使用 `webrenderbench_raw` 原始数据目录。useful 数据目录为：
 
 ```text
-/mnt/shared-storage-user/colab-share/liujiaheng/workspace/xieqianqian/webcoding_data/h_rebuild/webrenderbench_clean_split/useful
+/mnt/shared-storage-user/colab-share/liujiaheng/workspace/xieqianqian/webcoding_data/datasets/pipeline_a/useful
 ```
 
-该目录已确认包含 31,765 个项目目录，且 31,765 个项目目录均包含 `index.html`。
+该目录已确认包含 31,765 个项目目录，且 31,765 个项目目录均包含 `index.html`。旧路径
+`/mnt/shared-storage-user/colab-share/liujiaheng/workspace/xieqianqian/webcoding_data/h_rebuild/webrenderbench_clean_split/useful`
+保留为指向该目录的 symlink，仅用于兼容历史脚本。
 
-8. Pipeline A 的样本级预处理必须设置硬超时保护，避免单个 expand/clean worker 卡死导致整批任务挂住。运行 `preprocess/pipeline_a_sample_level.py` 时传 `--site-timeout`，100 条 smoke run 建议先用 `--site-timeout 900`。
+11. Pipeline A / Pipeline B 的样本级预处理与爬取必须设置硬超时保护，避免单个 worker 卡死导致整批任务挂住。100 条小规模预检查运行建议先用 `--site-timeout 600`。

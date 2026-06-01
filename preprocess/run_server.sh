@@ -3,7 +3,7 @@
 # WebCoding Data Pipeline — 服务器运行脚本
 #
 # 并行执行 Pipeline A 和 Pipeline B。
-# 默认小批量试跑（A=1000, B=2000），全量跑时调大 PIPELINE_A_LIMIT / PIPELINE_B_URL_LIMIT。
+# 默认运行规模为 A=15000、B=15000，可通过 PIPELINE_A_LIMIT / PIPELINE_B_URL_LIMIT 调整。
 #
 # 用法:
 #   # 已有 preflight 通过的 URL（默认）
@@ -20,20 +20,34 @@
 # =============================================================================
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DEFAULT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+ENV_FILE="${ENV_FILE:-$DEFAULT_ROOT/.env}"
+if [ -f "$ENV_FILE" ]; then
+    set -a
+    # shellcheck disable=SC1090
+    source "$ENV_FILE"
+    set +a
+fi
+
 # ======================== ↓↓↓ 请在这里填写 ↓↓↓ ========================
 
 # --- 代理（必填）---
-HTTP_PROXY_URL="${HTTP_PROXY_URL:-}"          # 例: http://192.168.1.1:7890
+HTTP_PROXY_URL="${HTTP_PROXY_URL:-${HTTPS_PROXY:-${https_proxy:-${HTTP_PROXY:-${http_proxy:-}}}}}"  # 例: http://192.168.1.1:7890
 
 # --- LLM API（Pipeline A 的 add_js 需要，必填）---
 export OPENAI_API_KEY="${OPENAI_API_KEY:-}"    # API 密钥
 export OPENAI_BASE_URL="${OPENAI_BASE_URL:-}"  # 例: https://dashscope.aliyuncs.com/compatible-mode/v1
 export OPENAI_MODEL="${OPENAI_MODEL:-}"        # 例: qwen-plus
 
-# --- 数据路径（按服务器实际路径修改）---
-DATASET_DIR="${DATASET_DIR:-/path/to/datasets}"
-PIPELINE_A_INPUT="${PIPELINE_A_INPUT:-$DATASET_DIR/webrenderbench_projects}"
-PIPELINE_B_URL_FILE="${PIPELINE_B_URL_FILE:-$DATASET_DIR/webcode2m_preflight_passed_urls.txt}"
+# --- 数据路径 ---
+PROJECT_BASE="${PROJECT_BASE:-/mnt/shared-storage-user/colab-share/liujiaheng/workspace/xieqianqian/webcoding_data}"
+DATASET_DIR="${DATASET_DIR:-$PROJECT_BASE/datasets}"
+PIPELINE_A_ROOT="${PIPELINE_A_ROOT:-$DATASET_DIR/pipeline_a}"
+PIPELINE_B_ROOT="${PIPELINE_B_ROOT:-$DATASET_DIR/pipeline_b}"
+PIPELINE_A_INPUT="${PIPELINE_A_INPUT:-$PIPELINE_A_ROOT/useful}"
+PIPELINE_B_INPUT_DIR="${PIPELINE_B_INPUT_DIR:-$PIPELINE_B_ROOT/inputs}"
+PIPELINE_B_URL_FILE="${PIPELINE_B_URL_FILE:-$PIPELINE_B_INPUT_DIR/webcode2m_preflight_passed_urls.txt}"
 
 # --- conda 环境名 ---
 CONDA_ENV="${CONDA_ENV:-lora}"
@@ -41,7 +55,7 @@ CONDA_ENV="${CONDA_ENV:-lora}"
 # ======================== ↑↑↑ 填写结束 ↑↑↑ ========================
 
 # 项目路径
-ROOT="${ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
+ROOT="${ROOT:-$DEFAULT_ROOT}"
 BROWSER_PROXY="${BROWSER_PROXY:-$HTTP_PROXY_URL}"
 REQUESTS_PROXY="${REQUESTS_PROXY:-$HTTP_PROXY_URL}"
 
@@ -52,17 +66,25 @@ CONCURRENCY_B="${CONCURRENCY_B:-100}"
 # 超时（秒）
 SITE_TIMEOUT="${SITE_TIMEOUT:-900}"
 
+# 运行名
+RUN_NAME="${RUN_NAME:-run_$(date +%Y%m%d_%H%M%S)}"
+
 # Pipeline A 输出 & 限量
-PIPELINE_A_OUTPUT="${PIPELINE_A_OUTPUT:-$DATASET_DIR/pipeline_a_output}"
-PIPELINE_A_LIMIT="${PIPELINE_A_LIMIT:-12000}"
+PIPELINE_A_RUN_DIR="${PIPELINE_A_RUN_DIR:-$PIPELINE_A_ROOT/runs/$RUN_NAME}"
+PIPELINE_A_OUTPUT="${PIPELINE_A_OUTPUT:-$PIPELINE_A_RUN_DIR/output}"
+PIPELINE_A_LOG_DIR="${PIPELINE_A_LOG_DIR:-$PIPELINE_A_RUN_DIR/logs}"
+PIPELINE_A_LIMIT="${PIPELINE_A_LIMIT:-15000}"
 
 # Pipeline B 输出 & 限量
-PIPELINE_B_OUTPUT="${PIPELINE_B_OUTPUT:-$DATASET_DIR/pipeline_b_output}"
-PIPELINE_B_URL_LIMIT="${PIPELINE_B_URL_LIMIT:-28000}"
+PIPELINE_B_RUN_DIR="${PIPELINE_B_RUN_DIR:-$PIPELINE_B_ROOT/runs/$RUN_NAME}"
+PIPELINE_B_OUTPUT="${PIPELINE_B_OUTPUT:-$PIPELINE_B_RUN_DIR/output}"
+PIPELINE_B_LOG_DIR="${PIPELINE_B_LOG_DIR:-$PIPELINE_B_RUN_DIR/logs}"
+PIPELINE_B_URL_LIMIT="${PIPELINE_B_URL_LIMIT:-15000}"
 
 # 可选: 从原始 URL 开始跑 filter + preflight（默认跳过）
 RUN_PREFLIGHT="${RUN_PREFLIGHT:-}"
-PIPELINE_B_ALL_URLS="${PIPELINE_B_ALL_URLS:-$DATASET_DIR/webcode2m_all_urls.txt}"
+PIPELINE_B_PREFLIGHT_DIR="${PIPELINE_B_PREFLIGHT_DIR:-$PIPELINE_B_ROOT/preflight/$RUN_NAME}"
+PIPELINE_B_ALL_URLS="${PIPELINE_B_ALL_URLS:-$PIPELINE_B_INPUT_DIR/webcode2m_all_urls.txt}"
 PIPELINE_B_PREFLIGHT_LIMIT="${PIPELINE_B_PREFLIGHT_LIMIT:-30000}"
 PIPELINE_B_PREFLIGHT_CONCURRENCY="${PIPELINE_B_PREFLIGHT_CONCURRENCY:-200}"
 
@@ -77,9 +99,8 @@ SKIP_PIPELINE_B="${SKIP_PIPELINE_B:-}"
 
 # ======================== 初始化 ========================
 
-RUN_NAME="run_$(date +%Y%m%d_%H%M%S)"
-LOG_DIR="$DATASET_DIR/logs/$RUN_NAME"
-mkdir -p "$LOG_DIR"
+RUN_LOG_DIR="${RUN_LOG_DIR:-$DATASET_DIR/runs/$RUN_NAME/logs}"
+mkdir -p "$RUN_LOG_DIR" "$PIPELINE_A_LOG_DIR" "$PIPELINE_B_LOG_DIR"
 
 # 激活 conda 环境
 set +u
@@ -104,7 +125,7 @@ fi
 # ======================== 日志函数 ========================
 
 log() {
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "$LOG_DIR/run.log"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "$RUN_LOG_DIR/run.log"
 }
 
 # ======================== 打印配置 ========================
@@ -113,8 +134,17 @@ log "=========================================="
 log "WebCoding Data Pipeline Server Run"
 log "=========================================="
 log "run_name=$RUN_NAME"
+log "project_base=$PROJECT_BASE"
 log "root=$ROOT"
 log "dataset_dir=$DATASET_DIR"
+log "pipeline_a_root=$PIPELINE_A_ROOT"
+log "pipeline_a_input=$PIPELINE_A_INPUT"
+log "pipeline_a_output=$PIPELINE_A_OUTPUT"
+log "pipeline_a_log_dir=$PIPELINE_A_LOG_DIR"
+log "pipeline_b_root=$PIPELINE_B_ROOT"
+log "pipeline_b_url_file=$PIPELINE_B_URL_FILE"
+log "pipeline_b_output=$PIPELINE_B_OUTPUT"
+log "pipeline_b_log_dir=$PIPELINE_B_LOG_DIR"
 log "concurrency: A=$CONCURRENCY_A, B=$CONCURRENCY_B (总计=$((CONCURRENCY_A + CONCURRENCY_B)))"
 log "site_timeout=${SITE_TIMEOUT}s"
 log "browser_proxy=$BROWSER_PROXY"
@@ -124,8 +154,20 @@ log "skip_pipeline_a=${SKIP_PIPELINE_A:-no}"
 log "skip_pipeline_b=${SKIP_PIPELINE_B:-no}"
 log "run_preflight=${RUN_PREFLIGHT:-no}"
 log "no_js=${NO_JS:-no}"
-log "log_dir=$LOG_DIR"
+log "run_log_dir=$RUN_LOG_DIR"
 log "=========================================="
+
+if [ -z "$SKIP_PIPELINE_A" ]; then
+    MISSING_API=()
+    [ -n "$OPENAI_API_KEY" ] || MISSING_API+=("OPENAI_API_KEY")
+    [ -n "$OPENAI_BASE_URL" ] || MISSING_API+=("OPENAI_BASE_URL")
+    [ -n "$OPENAI_MODEL" ] || MISSING_API+=("OPENAI_MODEL")
+    if [ "${#MISSING_API[@]}" -gt 0 ]; then
+        log "[A] 错误: Pipeline A 需要 API 配置，缺少: ${MISSING_API[*]}"
+        log "[A] 请在 $ENV_FILE 中配置，或运行脚本前 export 对应环境变量。"
+        exit 1
+    fi
+fi
 
 # ======================== Pipeline B 前置（可选）========================
 
@@ -133,9 +175,9 @@ if [ -z "$SKIP_PIPELINE_B" ] && [ -n "$RUN_PREFLIGHT" ]; then
     log ""
     log "========== Pipeline B: 前置过滤 =========="
 
-    mkdir -p "$PIPELINE_B_OUTPUT"
-    FILTERED_URLS="$PIPELINE_B_OUTPUT/filtered_urls.txt"
-    PREFLIGHT_PASSED="$PIPELINE_B_OUTPUT/preflight_passed.txt"
+    mkdir -p "$PIPELINE_B_PREFLIGHT_DIR"
+    FILTERED_URLS="$PIPELINE_B_PREFLIGHT_DIR/filtered_urls.txt"
+    PREFLIGHT_PASSED="$PIPELINE_B_PREFLIGHT_DIR/preflight_passed.txt"
 
     # Step 1: filter
     if [ -f "$FILTERED_URLS" ] && [ -s "$FILTERED_URLS" ]; then
@@ -145,8 +187,8 @@ if [ -z "$SKIP_PIPELINE_B" ] && [ -n "$RUN_PREFLIGHT" ]; then
         $PYTHON preprocess/filter_webcode2m_urls.py \
             --input "$PIPELINE_B_ALL_URLS" \
             --output "$FILTERED_URLS" \
-            --rejected-output "$PIPELINE_B_OUTPUT/filter_rejected.tsv" \
-            2>&1 | tee "$LOG_DIR/pipeline_b_filter.log"
+            --rejected-output "$PIPELINE_B_PREFLIGHT_DIR/filter_rejected.tsv" \
+            2>&1 | tee "$PIPELINE_B_LOG_DIR/filter.log"
         log "[B-filter] 完成: $(wc -l < "$FILTERED_URLS") URLs"
     fi
 
@@ -158,12 +200,12 @@ if [ -z "$SKIP_PIPELINE_B" ] && [ -n "$RUN_PREFLIGHT" ]; then
         $PYTHON preprocess/preflight_webcode2m_urls.py \
             --input "$FILTERED_URLS" \
             --accepted-output "$PREFLIGHT_PASSED" \
-            --rejected-output "$PIPELINE_B_OUTPUT/preflight_rejected.jsonl" \
-            --report "$PIPELINE_B_OUTPUT/preflight_report.json" \
+            --rejected-output "$PIPELINE_B_PREFLIGHT_DIR/preflight_rejected.jsonl" \
+            --report "$PIPELINE_B_PREFLIGHT_DIR/preflight_report.json" \
             --proxy "$REQUESTS_PROXY" \
             --concurrency "$PIPELINE_B_PREFLIGHT_CONCURRENCY" \
             --limit "$PIPELINE_B_PREFLIGHT_LIMIT" \
-            2>&1 | tee "$LOG_DIR/pipeline_b_preflight.log"
+            2>&1 | tee "$PIPELINE_B_LOG_DIR/preflight.log"
         log "[B-preflight] 完成: $(wc -l < "$PREFLIGHT_PASSED") URLs"
     fi
 
@@ -196,7 +238,7 @@ if [ -z "$SKIP_PIPELINE_A" ]; then
             --browser-proxy "$BROWSER_PROXY" \
             --requests-proxy "$REQUESTS_PROXY" \
             $JS_ARGS \
-            2>&1 | tee "$LOG_DIR/pipeline_a.log"
+            2>&1 | tee "$PIPELINE_A_LOG_DIR/pipeline_a.log"
     ) &
     PID_A=$!
     PIDS+=($PID_A)
@@ -225,7 +267,7 @@ if [ -z "$SKIP_PIPELINE_B" ]; then
             --limit "$PIPELINE_B_URL_LIMIT" \
             --browser-proxy "$BROWSER_PROXY" \
             --requests-proxy "$REQUESTS_PROXY" \
-            2>&1 | tee "$LOG_DIR/pipeline_b.log"
+            2>&1 | tee "$PIPELINE_B_LOG_DIR/pipeline_b.log"
     ) &
     PID_B=$!
     PIDS+=($PID_B)
@@ -275,7 +317,11 @@ print(f'总URL={len(results)}, 可用={ok}, 状态分布={statuses}')
     log "Pipeline B: $B_STATS"
 fi
 
-log "日志目录: $LOG_DIR"
+log "运行日志目录: $RUN_LOG_DIR"
+log "Pipeline A 输出目录: $PIPELINE_A_OUTPUT"
+log "Pipeline A 日志目录: $PIPELINE_A_LOG_DIR"
+log "Pipeline B 输出目录: $PIPELINE_B_OUTPUT"
+log "Pipeline B 日志目录: $PIPELINE_B_LOG_DIR"
 log "完成时间: $(date '+%Y-%m-%d %H:%M:%S')"
 
 if [ "$FAIL" -ne 0 ]; then
