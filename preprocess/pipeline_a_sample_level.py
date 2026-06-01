@@ -227,6 +227,55 @@ def cleanup_sample_outputs(payload: tuple[str, str, str, str, int, int]) -> None
     shutil.rmtree(output_dir / "clean_projects" / f"{project}__expanded", ignore_errors=True)
 
 
+def existing_outputs_for_project(project: str, output_dir: Path) -> list[dict[str, Any]]:
+    clean_root = output_dir / "clean_projects"
+    outputs: list[dict[str, Any]] = []
+    for variant in ("original", "expanded"):
+        out_path = clean_root / f"{project}__{variant}"
+        if (out_path / "index.html").exists():
+            outputs.append(
+                {
+                    "variant": variant,
+                    "path": str(out_path),
+                    "clean_status": "existing_output",
+                    "remaining_remote_refs": None,
+                }
+            )
+    return outputs
+
+
+def load_done_projects(manifest: Path, output_dir: Path) -> set[str]:
+    done_projects: set[str] = set()
+    if not manifest.exists():
+        return done_projects
+
+    for line in manifest.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        try:
+            entry = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        project = entry.get("project", "")
+        if project and existing_outputs_for_project(project, output_dir):
+            done_projects.add(project)
+    return done_projects
+
+
+def existing_pipeline_a_result(project: str, output_dir: Path) -> dict[str, Any] | None:
+    outputs = existing_outputs_for_project(project, output_dir)
+    if not outputs:
+        return None
+    return {
+        "project": project,
+        "status": "existing_output",
+        "expand_status": "existing_output",
+        "outputs": outputs,
+        "errors": [],
+        "elapsed": 0,
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run sample-level WebRenderBench expand/clean preprocessing")
     parser.add_argument("--input-dir", type=Path, required=True)
@@ -281,7 +330,28 @@ def main() -> None:
         projects = projects[: args.limit]
 
     manifest = args.output_dir / "sample_pipeline_results.jsonl"
-    manifest.write_text("", encoding="utf-8")
+    done_projects: set[str] = set()
+    if args.overwrite:
+        manifest.write_text("", encoding="utf-8")
+    else:
+        if not manifest.exists():
+            manifest.write_text("", encoding="utf-8")
+        done_projects = load_done_projects(manifest, args.output_dir)
+        recovered = []
+        for project in projects:
+            if project.name in done_projects:
+                continue
+            result = existing_pipeline_a_result(project.name, args.output_dir)
+            if result is not None:
+                recovered.append(result)
+                done_projects.add(project.name)
+        if recovered:
+            with manifest.open("a", encoding="utf-8") as f:
+                for result in recovered:
+                    f.write(json.dumps(result, ensure_ascii=False) + "\n")
+            print(f"Recovered {len(recovered)} existing Pipeline A projects into manifest", flush=True)
+        if done_projects:
+            print(f"Resuming: {len(done_projects)} projects already processed, skipping", flush=True)
 
     payloads = [
         (
@@ -293,6 +363,7 @@ def main() -> None:
             args.wait,
         )
         for project in projects
+        if project.name not in done_projects
     ]
 
     print(f"Processing {len(payloads)} samples with concurrency={args.concurrency}"

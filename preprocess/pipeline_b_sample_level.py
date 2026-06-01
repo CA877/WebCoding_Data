@@ -137,6 +137,49 @@ def cleanup_sample_outputs(payload: tuple[str, str, str, str, int, int]) -> None
     shutil.rmtree(output_dir / "crawled" / proj_name, ignore_errors=True)
 
 
+def load_done_urls(manifest: Path, output_dir: Path) -> set[str]:
+    done_urls: set[str] = set()
+    if not manifest.exists():
+        return done_urls
+
+    crawl_root = output_dir / "crawled"
+    for line in manifest.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        try:
+            entry = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        url = entry.get("url", "")
+        project = entry.get("project") or project_name_from_url(url)
+        if url and (crawl_root / project / "index.html").exists():
+            done_urls.add(url)
+    return done_urls
+
+
+def existing_crawl_result(url: str, output_dir: Path) -> dict[str, Any] | None:
+    project = project_name_from_url(url)
+    project_dir = output_dir / "crawled" / project
+    if not (project_dir / "index.html").exists():
+        return None
+
+    html_count = len(list(project_dir.glob("*.html")))
+    return {
+        "url": url,
+        "project": project,
+        "status": "existing_output",
+        "crawl_status": "existing_output",
+        "crawl_result": {
+            "status": "existing_output",
+            "pages": html_count,
+            "reused_from_disk": True,
+        },
+        "postprocess": {},
+        "errors": [],
+        "elapsed": 0,
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Run sample-level Pipeline B: crawl → postprocess",
@@ -170,19 +213,28 @@ def main() -> None:
 
     # --- Resume support ---
     manifest = args.output_dir / "pipeline_b_results.jsonl"
-    done_urls: set[str] = set()
-    if manifest.exists() and not args.overwrite:
-        for line in manifest.read_text(encoding="utf-8").splitlines():
-            if line.strip():
-                try:
-                    entry = json.loads(line)
-                    done_urls.add(entry.get("url", ""))
-                except json.JSONDecodeError:
-                    pass
+    done_urls = set()
+    if args.overwrite:
+        manifest.write_text("", encoding="utf-8")
+    else:
+        if not manifest.exists():
+            manifest.write_text("", encoding="utf-8")
+        done_urls = load_done_urls(manifest, args.output_dir)
+        recovered = []
+        for url in urls:
+            if url in done_urls:
+                continue
+            result = existing_crawl_result(url, args.output_dir)
+            if result is not None:
+                recovered.append(result)
+                done_urls.add(url)
+        if recovered:
+            with manifest.open("a", encoding="utf-8") as f:
+                for result in recovered:
+                    f.write(json.dumps(result, ensure_ascii=False) + "\n")
+            print(f"Recovered {len(recovered)} existing crawled projects into manifest", flush=True)
         if done_urls:
             print(f"Resuming: {len(done_urls)} URLs already processed, skipping")
-    else:
-        manifest.write_text("", encoding="utf-8")
 
     payloads = [
         (url, str(args.output_dir), args.browser_proxy or "", args.requests_proxy or "",

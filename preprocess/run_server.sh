@@ -4,6 +4,7 @@
 #
 # 并行执行 Pipeline A 和 Pipeline B。
 # 默认运行规模为 A=15000、B=15000，可通过 PIPELINE_A_LIMIT / PIPELINE_B_URL_LIMIT 调整。
+# 默认 RUN_NAME 固定，重复运行同一脚本会续跑同一批输出；需要新批次时显式设置 RUN_NAME。
 #
 # 用法:
 #   # 已有 preflight 通过的 URL（默认）
@@ -67,7 +68,7 @@ CONCURRENCY_B="${CONCURRENCY_B:-100}"
 SITE_TIMEOUT="${SITE_TIMEOUT:-900}"
 
 # 运行名
-RUN_NAME="${RUN_NAME:-run_$(date +%Y%m%d_%H%M%S)}"
+RUN_NAME="${RUN_NAME:-run_a15000_b15000}"
 
 # Pipeline A 输出 & 限量
 PIPELINE_A_RUN_DIR="${PIPELINE_A_RUN_DIR:-$PIPELINE_A_ROOT/runs/$RUN_NAME}"
