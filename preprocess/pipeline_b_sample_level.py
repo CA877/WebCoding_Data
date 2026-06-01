@@ -243,16 +243,37 @@ def main() -> None:
     ]
 
     total = len(payloads)
-    print(f"Processing {total} URLs with concurrency={args.concurrency}", flush=True)
+    total_inputs = len(urls)
+    initial_done = len(done_urls)
+    print(
+        f"Processing {total} URLs with concurrency={args.concurrency}; "
+        f"resume_done={initial_done}, total_inputs={total_inputs}",
+        flush=True,
+    )
     results: list[dict[str, Any]] = []
+    progress_statuses: Counter[str] = Counter({"resumed": initial_done})
+    success_count = initial_done
+    failed_count = 0
 
     def record_result(i: int, result: dict[str, Any]) -> None:
+        nonlocal success_count, failed_count
         results.append(result)
         with manifest.open("a", encoding="utf-8") as f:
             f.write(json.dumps(result, ensure_ascii=False) + "\n")
+        status = result.get("status", "?")
+        progress_statuses[status] += 1
+        if status in ("ok", "partial", "existing_output"):
+            success_count += 1
+        else:
+            failed_count += 1
+        overall_done = initial_done + i
+        success_rate = success_count / overall_done if overall_done else 0.0
         print(
             f"[{i}/{total}] {result['project']}: {result['status']} "
-            f"(crawl={result.get('crawl_status')}, {result.get('elapsed', 0)}s)",
+            f"(crawl={result.get('crawl_status')}, {result.get('elapsed', 0)}s) "
+            f"progress={overall_done}/{total_inputs} success={success_count} "
+            f"failed={failed_count} success_rate={success_rate:.2%} "
+            f"statuses={dict(progress_statuses)}",
             flush=True,
         )
 
