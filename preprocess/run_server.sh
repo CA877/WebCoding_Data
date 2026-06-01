@@ -12,6 +12,9 @@
 #   export OPENAI_API_KEY=... OPENAI_BASE_URL=... OPENAI_MODEL=...
 #   bash preprocess/run_server.sh
 #
+#   # 后台运行，SSH 断开后继续执行
+#   bash preprocess/run_server.sh --background
+#
 #   # 从原始 URL 开始（需要跑 filter + preflight）
 #   RUN_PREFLIGHT=1 bash preprocess/run_server.sh
 #
@@ -22,6 +25,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_PATH="$SCRIPT_DIR/$(basename "${BASH_SOURCE[0]}")"
 DEFAULT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 ENV_FILE="${ENV_FILE:-$DEFAULT_ROOT/.env}"
 if [ -f "$ENV_FILE" ]; then
@@ -29,6 +33,17 @@ if [ -f "$ENV_FILE" ]; then
     # shellcheck disable=SC1090
     source "$ENV_FILE"
     set +a
+fi
+
+BACKGROUND=0
+if [ "${1:-}" = "--background" ]; then
+    BACKGROUND=1
+    shift
+fi
+if [ "$#" -gt 0 ]; then
+    echo "Unknown arguments: $*" >&2
+    echo "Usage: bash preprocess/run_server.sh [--background]" >&2
+    exit 2
 fi
 
 # ======================== ↓↓↓ 请在这里填写 ↓↓↓ ========================
@@ -60,7 +75,7 @@ ROOT="${ROOT:-$DEFAULT_ROOT}"
 BROWSER_PROXY="${BROWSER_PROXY:-$HTTP_PROXY_URL}"
 REQUESTS_PROXY="${REQUESTS_PROXY:-$HTTP_PROXY_URL}"
 
-# 并发数（A 调 LLM 限流，B 纯爬取可以开大）
+# 并发数
 CONCURRENCY_A="${CONCURRENCY_A:-50}"
 CONCURRENCY_B="${CONCURRENCY_B:-100}"
 
@@ -69,6 +84,14 @@ SITE_TIMEOUT="${SITE_TIMEOUT:-900}"
 
 # 运行名
 RUN_NAME="${RUN_NAME:-run_a15000_b15000}"
+RUN_BATCH_DIR="${RUN_BATCH_DIR:-$DATASET_DIR/runs/$RUN_NAME}"
+FIRST_RUN_DATE_FILE="${FIRST_RUN_DATE_FILE:-$RUN_BATCH_DIR/first_run_date.txt}"
+mkdir -p "$RUN_BATCH_DIR"
+if [ ! -s "$FIRST_RUN_DATE_FILE" ]; then
+    date +%Y%m%d > "$FIRST_RUN_DATE_FILE"
+fi
+FIRST_RUN_DATE="$(tr -d '[:space:]' < "$FIRST_RUN_DATE_FILE")"
+RUN_BATCH_ID="${RUN_BATCH_ID:-${RUN_NAME}_${FIRST_RUN_DATE}}"
 
 # Pipeline A 输出 & 限量
 PIPELINE_A_RUN_DIR="${PIPELINE_A_RUN_DIR:-$PIPELINE_A_ROOT/runs/$RUN_NAME}"
@@ -100,8 +123,24 @@ SKIP_PIPELINE_B="${SKIP_PIPELINE_B:-}"
 
 # ======================== 初始化 ========================
 
-RUN_LOG_DIR="${RUN_LOG_DIR:-$DATASET_DIR/runs/$RUN_NAME/logs}"
+RUN_LOG_DIR="${RUN_LOG_DIR:-$RUN_BATCH_DIR/logs}"
 mkdir -p "$RUN_LOG_DIR" "$PIPELINE_A_LOG_DIR" "$PIPELINE_B_LOG_DIR"
+
+if [ "$BACKGROUND" = "1" ] && [ "${WEBCODING_BACKGROUND_CHILD:-}" != "1" ]; then
+    BACKGROUND_LOG="$RUN_LOG_DIR/background.log"
+    PID_FILE="$RUN_BATCH_DIR/run_server.pid"
+    nohup env WEBCODING_BACKGROUND_CHILD=1 bash "$SCRIPT_PATH" > "$BACKGROUND_LOG" 2>&1 &
+    CHILD_PID=$!
+    echo "$CHILD_PID" > "$PID_FILE"
+    echo "Started WebCoding pipeline in background."
+    echo "PID: $CHILD_PID"
+    echo "PID file: $PID_FILE"
+    echo "Launcher log: $BACKGROUND_LOG"
+    echo "Run log: $RUN_LOG_DIR/run.log"
+    echo "Pipeline A log: $PIPELINE_A_LOG_DIR/pipeline_a.log"
+    echo "Pipeline B log: $PIPELINE_B_LOG_DIR/pipeline_b.log"
+    exit 0
+fi
 
 # 激活 conda 环境
 set +u
@@ -135,6 +174,9 @@ log "=========================================="
 log "WebCoding Data Pipeline Server Run"
 log "=========================================="
 log "run_name=$RUN_NAME"
+log "run_batch_id=$RUN_BATCH_ID"
+log "first_run_date=$FIRST_RUN_DATE"
+log "run_batch_dir=$RUN_BATCH_DIR"
 log "project_base=$PROJECT_BASE"
 log "root=$ROOT"
 log "dataset_dir=$DATASET_DIR"
