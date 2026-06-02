@@ -1,26 +1,20 @@
 #!/usr/bin/env bash
 # =============================================================================
-# WebCoding Data Pipeline — 服务器运行脚本
+# Pipeline B — WebCode2M 预处理（crawl → postprocess）
 #
-# 并行执行 Pipeline A 和 Pipeline B。
-# 默认运行规模为 A=15000、B=15000，可通过 PIPELINE_A_LIMIT / PIPELINE_B_URL_LIMIT 调整。
+# 默认运行规模 15000 URL，可通过 PIPELINE_B_URL_LIMIT 调整。
 # 默认 RUN_NAME 固定，重复运行同一脚本会续跑同一批输出；需要新批次时显式设置 RUN_NAME。
 #
 # 用法:
 #   # 已有 preflight 通过的 URL（默认）
 #   export HTTP_PROXY_URL=http://your-proxy:port
-#   export OPENAI_API_KEY=... OPENAI_BASE_URL=... OPENAI_MODEL=...
-#   bash preprocess/run_server.sh
+#   bash preprocess/run_pipeline_b.sh
 #
-#   # 后台运行，SSH 断开后继续执行
-#   bash preprocess/run_server.sh --background
+#   # 后台运行
+#   bash preprocess/run_pipeline_b.sh --background
 #
 #   # 从原始 URL 开始（需要跑 filter + preflight）
-#   RUN_PREFLIGHT=1 bash preprocess/run_server.sh
-#
-#   # 只跑其中一个
-#   SKIP_PIPELINE_B=1 bash preprocess/run_server.sh
-#   SKIP_PIPELINE_A=1 bash preprocess/run_server.sh
+#   RUN_PREFLIGHT=1 bash preprocess/run_pipeline_b.sh
 # =============================================================================
 set -euo pipefail
 
@@ -42,26 +36,19 @@ if [ "${1:-}" = "--background" ]; then
 fi
 if [ "$#" -gt 0 ]; then
     echo "Unknown arguments: $*" >&2
-    echo "Usage: bash preprocess/run_server.sh [--background]" >&2
+    echo "Usage: bash preprocess/run_pipeline_b.sh [--background]" >&2
     exit 2
 fi
 
 # ======================== ↓↓↓ 请在这里填写 ↓↓↓ ========================
 
 # --- 代理（必填）---
-HTTP_PROXY_URL="${HTTP_PROXY_URL:-${HTTPS_PROXY:-${https_proxy:-${HTTP_PROXY:-${http_proxy:-}}}}}"  # 例: http://192.168.1.1:7890
-
-# --- LLM API（Pipeline A 的 add_js 需要，必填）---
-export OPENAI_API_KEY="${OPENAI_API_KEY:-}"    # API 密钥
-export OPENAI_BASE_URL="${OPENAI_BASE_URL:-}"  # 例: https://dashscope.aliyuncs.com/compatible-mode/v1
-export OPENAI_MODEL="${OPENAI_MODEL:-}"        # 例: qwen-plus
+HTTP_PROXY_URL="${HTTP_PROXY_URL:-${HTTPS_PROXY:-${https_proxy:-${HTTP_PROXY:-${http_proxy:-}}}}}"
 
 # --- 数据路径 ---
 PROJECT_BASE="${PROJECT_BASE:-/mnt/shared-storage-user/colab-share/liujiaheng/workspace/xieqianqian/webcoding_data}"
 DATASET_DIR="${DATASET_DIR:-$PROJECT_BASE/datasets}"
-PIPELINE_A_ROOT="${PIPELINE_A_ROOT:-$DATASET_DIR/pipeline_a}"
 PIPELINE_B_ROOT="${PIPELINE_B_ROOT:-$DATASET_DIR/pipeline_b}"
-PIPELINE_A_INPUT="${PIPELINE_A_INPUT:-$PIPELINE_A_ROOT/useful}"
 PIPELINE_B_INPUT_DIR="${PIPELINE_B_INPUT_DIR:-$PIPELINE_B_ROOT/inputs}"
 PIPELINE_B_URL_FILE="${PIPELINE_B_URL_FILE:-$PIPELINE_B_INPUT_DIR/webcode2m_preflight_passed_urls.txt}"
 
@@ -76,14 +63,13 @@ BROWSER_PROXY="${BROWSER_PROXY:-$HTTP_PROXY_URL}"
 REQUESTS_PROXY="${REQUESTS_PROXY:-$HTTP_PROXY_URL}"
 
 # 并发数
-CONCURRENCY_A="${CONCURRENCY_A:-50}"
 CONCURRENCY_B="${CONCURRENCY_B:-100}"
 
 # 超时（秒）
-SITE_TIMEOUT="${SITE_TIMEOUT:-180}"
+SITE_TIMEOUT="${SITE_TIMEOUT:-120}"
 
 # 运行名
-RUN_NAME="${RUN_NAME:-run_a15000_b15000}"
+RUN_NAME="${RUN_NAME:-run_b15000}"
 RUN_BATCH_DIR="${RUN_BATCH_DIR:-$DATASET_DIR/runs/$RUN_NAME}"
 FIRST_RUN_DATE_FILE="${FIRST_RUN_DATE_FILE:-$RUN_BATCH_DIR/first_run_date.txt}"
 mkdir -p "$RUN_BATCH_DIR"
@@ -92,12 +78,6 @@ if [ ! -s "$FIRST_RUN_DATE_FILE" ]; then
 fi
 FIRST_RUN_DATE="$(tr -d '[:space:]' < "$FIRST_RUN_DATE_FILE")"
 RUN_BATCH_ID="${RUN_BATCH_ID:-${RUN_NAME}_${FIRST_RUN_DATE}}"
-
-# Pipeline A 输出 & 限量
-PIPELINE_A_RUN_DIR="${PIPELINE_A_RUN_DIR:-$PIPELINE_A_ROOT/runs/$RUN_NAME}"
-PIPELINE_A_OUTPUT="${PIPELINE_A_OUTPUT:-$PIPELINE_A_RUN_DIR/output}"
-PIPELINE_A_LOG_DIR="${PIPELINE_A_LOG_DIR:-$PIPELINE_A_RUN_DIR/logs}"
-PIPELINE_A_LIMIT="${PIPELINE_A_LIMIT:-15000}"
 
 # Pipeline B 输出 & 限量
 PIPELINE_B_RUN_DIR="${PIPELINE_B_RUN_DIR:-$PIPELINE_B_ROOT/runs/$RUN_NAME}"
@@ -112,32 +92,22 @@ PIPELINE_B_ALL_URLS="${PIPELINE_B_ALL_URLS:-$PIPELINE_B_INPUT_DIR/webcode2m_all_
 PIPELINE_B_PREFLIGHT_LIMIT="${PIPELINE_B_PREFLIGHT_LIMIT:-30000}"
 PIPELINE_B_PREFLIGHT_CONCURRENCY="${PIPELINE_B_PREFLIGHT_CONCURRENCY:-200}"
 
-# JS 生成配置（Pipeline A 默认启用）
-NO_JS="${NO_JS:-}"
-JS_MODEL="${JS_MODEL:-}"
-JS_RATIO="${JS_RATIO:-0.5}"  # add_js 比例（0.5 = 一半项目加 JS）
-
-# 跳过控制
-SKIP_PIPELINE_A="${SKIP_PIPELINE_A:-}"
-SKIP_PIPELINE_B="${SKIP_PIPELINE_B:-}"
-
 # ======================== 初始化 ========================
 
 RUN_LOG_DIR="${RUN_LOG_DIR:-$RUN_BATCH_DIR/logs}"
-mkdir -p "$RUN_LOG_DIR" "$PIPELINE_A_LOG_DIR" "$PIPELINE_B_LOG_DIR"
+mkdir -p "$RUN_LOG_DIR" "$PIPELINE_B_LOG_DIR"
 
 if [ "$BACKGROUND" = "1" ] && [ "${WEBCODING_BACKGROUND_CHILD:-}" != "1" ]; then
     BACKGROUND_LOG="$RUN_LOG_DIR/background.log"
-    PID_FILE="$RUN_BATCH_DIR/run_server.pid"
+    PID_FILE="$RUN_BATCH_DIR/run_pipeline_b.pid"
     nohup env WEBCODING_BACKGROUND_CHILD=1 bash "$SCRIPT_PATH" > "$BACKGROUND_LOG" 2>&1 &
     CHILD_PID=$!
     echo "$CHILD_PID" > "$PID_FILE"
-    echo "Started WebCoding pipeline in background."
+    echo "Started Pipeline B in background."
     echo "PID: $CHILD_PID"
     echo "PID file: $PID_FILE"
     echo "Launcher log: $BACKGROUND_LOG"
     echo "Run log: $RUN_LOG_DIR/run.log"
-    echo "Pipeline A log: $PIPELINE_A_LOG_DIR/pipeline_a.log"
     echo "Pipeline B log: $PIPELINE_B_LOG_DIR/pipeline_b.log"
     exit 0
 fi
@@ -153,15 +123,6 @@ set -u
 cd "$ROOT"
 PYTHON="${PYTHON:-python3}"
 
-# 构建通用参数
-JS_ARGS="--js-ratio $JS_RATIO"
-if [ -n "$NO_JS" ]; then
-    JS_ARGS="--no-js"
-fi
-if [ -n "$JS_MODEL" ]; then
-    JS_ARGS="$JS_ARGS --js-model $JS_MODEL"
-fi
-
 # ======================== 日志函数 ========================
 
 log() {
@@ -171,7 +132,7 @@ log() {
 # ======================== 打印配置 ========================
 
 log "=========================================="
-log "WebCoding Data Pipeline Server Run"
+log "Pipeline B — WebCode2M 预处理"
 log "=========================================="
 log "run_name=$RUN_NAME"
 log "run_batch_id=$RUN_BATCH_ID"
@@ -180,41 +141,22 @@ log "run_batch_dir=$RUN_BATCH_DIR"
 log "project_base=$PROJECT_BASE"
 log "root=$ROOT"
 log "dataset_dir=$DATASET_DIR"
-log "pipeline_a_root=$PIPELINE_A_ROOT"
-log "pipeline_a_input=$PIPELINE_A_INPUT"
-log "pipeline_a_output=$PIPELINE_A_OUTPUT"
-log "pipeline_a_log_dir=$PIPELINE_A_LOG_DIR"
 log "pipeline_b_root=$PIPELINE_B_ROOT"
 log "pipeline_b_url_file=$PIPELINE_B_URL_FILE"
 log "pipeline_b_output=$PIPELINE_B_OUTPUT"
 log "pipeline_b_log_dir=$PIPELINE_B_LOG_DIR"
-log "concurrency: A=$CONCURRENCY_A, B=$CONCURRENCY_B (总计=$((CONCURRENCY_A + CONCURRENCY_B)))"
+log "concurrency=$CONCURRENCY_B"
 log "site_timeout=${SITE_TIMEOUT}s"
 log "browser_proxy=$BROWSER_PROXY"
 log "requests_proxy=$REQUESTS_PROXY"
 log "python=$($PYTHON --version 2>&1)"
-log "skip_pipeline_a=${SKIP_PIPELINE_A:-no}"
-log "skip_pipeline_b=${SKIP_PIPELINE_B:-no}"
 log "run_preflight=${RUN_PREFLIGHT:-no}"
-log "no_js=${NO_JS:-no}"
 log "run_log_dir=$RUN_LOG_DIR"
 log "=========================================="
 
-if [ -z "$SKIP_PIPELINE_A" ]; then
-    MISSING_API=()
-    [ -n "$OPENAI_API_KEY" ] || MISSING_API+=("OPENAI_API_KEY")
-    [ -n "$OPENAI_BASE_URL" ] || MISSING_API+=("OPENAI_BASE_URL")
-    [ -n "$OPENAI_MODEL" ] || MISSING_API+=("OPENAI_MODEL")
-    if [ "${#MISSING_API[@]}" -gt 0 ]; then
-        log "[A] 错误: Pipeline A 需要 API 配置，缺少: ${MISSING_API[*]}"
-        log "[A] 请在 $ENV_FILE 中配置，或运行脚本前 export 对应环境变量。"
-        exit 1
-    fi
-fi
-
 # ======================== Pipeline B 前置（可选）========================
 
-if [ -z "$SKIP_PIPELINE_B" ] && [ -n "$RUN_PREFLIGHT" ]; then
+if [ -n "$RUN_PREFLIGHT" ]; then
     log ""
     log "========== Pipeline B: 前置过滤 =========="
 
@@ -256,101 +198,45 @@ if [ -z "$SKIP_PIPELINE_B" ] && [ -n "$RUN_PREFLIGHT" ]; then
     PIPELINE_B_URL_FILE="$PREFLIGHT_PASSED"
 fi
 
-# ======================== 并行运行两个 Pipeline ========================
+# ======================== 检查输入 ========================
 
-PIDS=()
-
-# --- 启动 Pipeline A ---
-if [ -z "$SKIP_PIPELINE_A" ]; then
-    if [ ! -d "$PIPELINE_A_INPUT" ]; then
-        log "[A] 错误: 输入目录不存在: $PIPELINE_A_INPUT"
-        exit 1
-    fi
-
-    log ""
-    log "========== 启动 Pipeline A (并发=$CONCURRENCY_A, limit=$PIPELINE_A_LIMIT) =========="
-    (
-        $PYTHON preprocess/pipeline_a_sample_level.py \
-            --input-dir "$PIPELINE_A_INPUT" \
-            --output-dir "$PIPELINE_A_OUTPUT" \
-            --concurrency "$CONCURRENCY_A" \
-            --site-timeout "$SITE_TIMEOUT" \
-            --max-pages 7 \
-            --wait 3000 \
-            --limit "$PIPELINE_A_LIMIT" \
-            --browser-proxy "$BROWSER_PROXY" \
-            --requests-proxy "$REQUESTS_PROXY" \
-            $JS_ARGS \
-            2>&1 | tee "$PIPELINE_A_LOG_DIR/pipeline_a.log"
-    ) &
-    PID_A=$!
-    PIDS+=($PID_A)
-    log "[A] 已启动 PID=$PID_A"
+if [ ! -f "$PIPELINE_B_URL_FILE" ]; then
+    log "[B] 错误: URL 文件不存在: $PIPELINE_B_URL_FILE"
+    log "[B] 提示: 设置 PIPELINE_B_URL_FILE 指向 preflight 通过的 URL 文件"
+    log "[B]       或设置 RUN_PREFLIGHT=1 从原始 URL 开始"
+    exit 1
 fi
 
-# --- 启动 Pipeline B ---
-if [ -z "$SKIP_PIPELINE_B" ]; then
-    if [ ! -f "$PIPELINE_B_URL_FILE" ]; then
-        log "[B] 错误: URL 文件不存在: $PIPELINE_B_URL_FILE"
-        log "[B] 提示: 设置 PIPELINE_B_URL_FILE 指向 preflight 通过的 URL 文件"
-        log "[B]       或设置 RUN_PREFLIGHT=1 从原始 URL 开始"
-        exit 1
-    fi
+URL_COUNT=$(wc -l < "$PIPELINE_B_URL_FILE")
+log "[B] URL 文件行数: $URL_COUNT"
 
-    log ""
-    log "========== 启动 Pipeline B (并发=$CONCURRENCY_B, limit=$PIPELINE_B_URL_LIMIT) =========="
-    (
-        $PYTHON preprocess/pipeline_b_sample_level.py \
-            --url-file "$PIPELINE_B_URL_FILE" \
-            --output-dir "$PIPELINE_B_OUTPUT" \
-            --concurrency "$CONCURRENCY_B" \
-            --site-timeout "$SITE_TIMEOUT" \
-            --max-pages 7 \
-            --wait 3000 \
-            --limit "$PIPELINE_B_URL_LIMIT" \
-            --browser-proxy "$BROWSER_PROXY" \
-            --requests-proxy "$REQUESTS_PROXY" \
-            2>&1 | tee "$PIPELINE_B_LOG_DIR/pipeline_b.log"
-    ) &
-    PID_B=$!
-    PIDS+=($PID_B)
-    log "[B] 已启动 PID=$PID_B"
-fi
+# ======================== 运行 Pipeline B ========================
 
-# --- 等待所有 Pipeline 完成 ---
 log ""
-log "等待所有 Pipeline 完成 (PIDs: ${PIDS[*]})..."
-FAIL=0
-for pid in "${PIDS[@]}"; do
-    if ! wait "$pid"; then
-        log "警告: PID=$pid 退出码非零"
-        FAIL=1
-    fi
-done
+log "========== 启动 Pipeline B (并发=$CONCURRENCY_B, limit=$PIPELINE_B_URL_LIMIT) =========="
+
+$PYTHON preprocess/pipeline_b_sample_level.py \
+    --url-file "$PIPELINE_B_URL_FILE" \
+    --output-dir "$PIPELINE_B_OUTPUT" \
+    --concurrency "$CONCURRENCY_B" \
+    --site-timeout "$SITE_TIMEOUT" \
+    --max-pages 7 \
+    --wait 3000 \
+    --limit "$PIPELINE_B_URL_LIMIT" \
+    --browser-proxy "$BROWSER_PROXY" \
+    --requests-proxy "$REQUESTS_PROXY" \
+    2>&1 | tee "$PIPELINE_B_LOG_DIR/pipeline_b.log"
+
+PIPELINE_EXIT=$?
 
 # ======================== 汇总 ========================
 
 log ""
 log "=========================================="
-log "运行完成"
+log "Pipeline B 运行完成"
 log "=========================================="
 
-if [ -z "$SKIP_PIPELINE_A" ] && [ -f "$PIPELINE_A_OUTPUT/sample_pipeline_results.jsonl" ]; then
-    A_TOTAL=$(wc -l < "$PIPELINE_A_OUTPUT/sample_pipeline_results.jsonl")
-    A_STATS=$($PYTHON -c "
-import json, collections
-lines = open('$PIPELINE_A_OUTPUT/sample_pipeline_results.jsonl').readlines()
-results = [json.loads(l) for l in lines]
-total_samples = sum(len(r.get('outputs',[])) for r in results)
-single_count = sum(1 for r in results for o in r.get('outputs',[]) if o.get('variant')=='single')
-multi_count = sum(1 for r in results for o in r.get('outputs',[]) if o.get('variant')=='multi')
-statuses = dict(collections.Counter(r.get('status','?') for r in results))
-print(f'项目={len(results)}, 总样本={total_samples} (单页={single_count}, 多页={multi_count}), 状态分布={statuses}')
-" 2>/dev/null || echo "统计失败")
-    log "Pipeline A: $A_STATS"
-fi
-
-if [ -z "$SKIP_PIPELINE_B" ] && [ -f "$PIPELINE_B_OUTPUT/pipeline_b_results.jsonl" ]; then
+if [ -f "$PIPELINE_B_OUTPUT/pipeline_b_results.jsonl" ]; then
     B_STATS=$($PYTHON -c "
 import json, collections
 lines = open('$PIPELINE_B_OUTPUT/pipeline_b_results.jsonl').readlines()
@@ -363,16 +249,16 @@ statuses = dict(collections.Counter(r.get('status','?') for r in results))
 print(f'URL={len(results)}, 总样本={total_samples} (单页={single_count}, 多页={multi_count}), 可用={ok}, 状态分布={statuses}')
 " 2>/dev/null || echo "统计失败")
     log "Pipeline B: $B_STATS"
+else
+    log "[B] 警告: 未找到输出 manifest"
 fi
 
 log "运行日志目录: $RUN_LOG_DIR"
-log "Pipeline A 输出目录: $PIPELINE_A_OUTPUT"
-log "Pipeline A 日志目录: $PIPELINE_A_LOG_DIR"
 log "Pipeline B 输出目录: $PIPELINE_B_OUTPUT"
 log "Pipeline B 日志目录: $PIPELINE_B_LOG_DIR"
 log "完成时间: $(date '+%Y-%m-%d %H:%M:%S')"
 
-if [ "$FAIL" -ne 0 ]; then
-    log "警告: 有 Pipeline 退出码非零，请检查日志"
+if [ "$PIPELINE_EXIT" -ne 0 ]; then
+    log "警告: Pipeline B 退出码非零 ($PIPELINE_EXIT)，请检查日志"
     exit 1
 fi

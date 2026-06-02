@@ -33,16 +33,33 @@ from postprocess_webcode2m_crawl import (
 )
 
 
+def _copy_fresh(src: Path, dst: Path) -> None:
+    if dst.exists():
+        shutil.rmtree(dst)
+    shutil.copytree(src, dst)
+
+
 def process_sample(payload: tuple[str, str, str, str, int, int]) -> dict[str, Any]:
-    """Process one URL: crawl → postprocess."""
+    """Process one URL: crawl → postprocess.
+
+    Output:
+    - Always produces single_page/{project}/ (1 sample) if crawl succeeds.
+    - If crawl is multi_page, also produces multi_page/{project}/ (+1 sample).
+    """
     url, output_root, browser_proxy, requests_proxy, max_pages, wait_ms = payload
     output_dir = Path(output_root)
-    crawl_root = output_dir / "crawled"
+    single_root = output_dir / "single_page"
+    multi_root = output_dir / "multi_page"
     quarantine_dir = output_dir / "quarantined"
-    crawl_root.mkdir(parents=True, exist_ok=True)
+    crawl_tmp_root = output_dir / "_crawl_tmp"
+    single_root.mkdir(parents=True, exist_ok=True)
+    multi_root.mkdir(parents=True, exist_ok=True)
+    crawl_tmp_root.mkdir(parents=True, exist_ok=True)
 
     proj_name = project_name_from_url(url)
-    proj_dir = crawl_root / proj_name
+    tmp_dir = crawl_tmp_root / proj_name
+    if tmp_dir.exists():
+        shutil.rmtree(tmp_dir)
 
     started = time.time()
     result: dict[str, Any] = {
@@ -51,20 +68,21 @@ def process_sample(payload: tuple[str, str, str, str, int, int]) -> dict[str, An
         "status": "ok",
         "crawl_status": None,
         "crawl_result": {},
+        "outputs": [],
         "postprocess": {},
         "errors": [],
     }
 
     session = build_requests_session(requests_proxy)
 
-    # --- Step 1: Crawl ---
+    # --- Step 1: Crawl to temp directory ---
     with sync_playwright() as p:
         browser = p.chromium.launch(
             proxy={"server": browser_proxy} if browser_proxy else None,
         )
         try:
             crawl_result = crawl_site(
-                url, proj_dir, browser, session,
+                url, tmp_dir, browser, session,
                 max_pages=max_pages, wait_ms=wait_ms,
             )
         except Exception as exc:  # noqa: BLE001
@@ -79,29 +97,62 @@ def process_sample(payload: tuple[str, str, str, str, int, int]) -> dict[str, An
     result["crawl_status"] = crawl_result.get("status")
     result["crawl_result"] = crawl_result
 
-    # Only postprocess if crawl produced usable content
-    if crawl_result.get("status") in ("single_page", "multi_page"):
-        # --- Step 2a: Challenge detection ---
-        try:
-            markers = find_challenge_markers(proj_dir)
-            if markers:
-                quarantine_project(proj_dir, quarantine_dir, dry_run=False)
-                result["status"] = "challenge_page"
-                result["postprocess"]["challenge_markers"] = markers
-                result["elapsed"] = round(time.time() - started, 1)
-                return result
-        except Exception as exc:  # noqa: BLE001
-            result["errors"].append({"stage": "challenge_check", "error": f"{type(exc).__name__}: {exc}"})
-
-        # --- Step 2b: Analytics removal ---
-        try:
-            analytics_result = clean_analytics(proj_dir, dry_run=False)
-            result["postprocess"]["analytics_removed"] = analytics_result
-        except Exception as exc:  # noqa: BLE001
-            result["errors"].append({"stage": "clean_analytics", "error": f"{type(exc).__name__}: {exc}"})
-    else:
-        # Crawl failed — propagate crawl status as overall status
+    # --- Step 2: Distribute to single_page / multi_page ---
+    crawl_ok = crawl_result.get("status") in ("single_page", "multi_page")
+    if not crawl_ok or not (tmp_dir / "index.html").exists():
         result["status"] = crawl_result.get("status", "error")
+        shutil.rmtree(tmp_dir, ignore_errors=True)
+        result["elapsed"] = round(time.time() - started, 1)
+        return result
+
+    # --- Step 2a: Challenge detection (before copying) ---
+    try:
+        markers = find_challenge_markers(tmp_dir)
+        if markers:
+            quarantine_project(tmp_dir, quarantine_dir, dry_run=False)
+            result["status"] = "challenge_page"
+            result["postprocess"]["challenge_markers"] = markers
+            result["elapsed"] = round(time.time() - started, 1)
+            return result
+    except Exception as exc:  # noqa: BLE001
+        result["errors"].append({"stage": "challenge_check", "error": f"{type(exc).__name__}: {exc}"})
+
+    # --- Step 2b: Analytics removal on temp ---
+    try:
+        analytics_result = clean_analytics(tmp_dir, dry_run=False)
+        result["postprocess"]["analytics_removed"] = analytics_result
+    except Exception as exc:  # noqa: BLE001
+        result["errors"].append({"stage": "clean_analytics", "error": f"{type(exc).__name__}: {exc}"})
+
+    # --- Step 3: Copy to single_page/ (always) ---
+    single_out = single_root / proj_name
+    try:
+        _copy_fresh(tmp_dir, single_out)
+        result["outputs"].append({
+            "variant": "single",
+            "path": str(single_out),
+        })
+    except Exception as exc:  # noqa: BLE001
+        shutil.rmtree(single_out, ignore_errors=True)
+        result["errors"].append({"stage": "copy_single", "error": f"{type(exc).__name__}: {exc}"})
+
+    # --- Step 4: Also copy to multi_page/ if crawl was multi_page ---
+    crawl_is_multi = crawl_result.get("status") == "multi_page"
+    if crawl_is_multi:
+        multi_out = multi_root / proj_name
+        try:
+            _copy_fresh(tmp_dir, multi_out)
+            result["outputs"].append({
+                "variant": "multi",
+                "path": str(multi_out),
+                "pages": crawl_result.get("pages", 0),
+            })
+        except Exception as exc:  # noqa: BLE001
+            shutil.rmtree(multi_out, ignore_errors=True)
+            result["errors"].append({"stage": "copy_multi", "error": f"{type(exc).__name__}: {exc}"})
+
+    # Clean up temp
+    shutil.rmtree(tmp_dir, ignore_errors=True)
 
     if result["errors"] and result["status"] == "ok":
         result["status"] = "partial"
@@ -134,7 +185,9 @@ def cleanup_sample_outputs(payload: tuple[str, str, str, str, int, int]) -> None
     url = payload[0]
     output_dir = Path(payload[1])
     proj_name = project_name_from_url(url)
-    shutil.rmtree(output_dir / "crawled" / proj_name, ignore_errors=True)
+    shutil.rmtree(output_dir / "_crawl_tmp" / proj_name, ignore_errors=True)
+    shutil.rmtree(output_dir / "single_page" / proj_name, ignore_errors=True)
+    shutil.rmtree(output_dir / "multi_page" / proj_name, ignore_errors=True)
 
 
 def load_done_urls(manifest: Path, output_dir: Path) -> set[str]:
@@ -142,7 +195,6 @@ def load_done_urls(manifest: Path, output_dir: Path) -> set[str]:
     if not manifest.exists():
         return done_urls
 
-    crawl_root = output_dir / "crawled"
     for line in manifest.read_text(encoding="utf-8").splitlines():
         if not line.strip():
             continue
@@ -152,28 +204,33 @@ def load_done_urls(manifest: Path, output_dir: Path) -> set[str]:
             continue
         url = entry.get("url", "")
         project = entry.get("project") or project_name_from_url(url)
-        if url and (crawl_root / project / "index.html").exists():
+        # URL is "done" if single_page output exists
+        if url and (output_dir / "single_page" / project / "index.html").exists():
             done_urls.add(url)
     return done_urls
 
 
 def existing_crawl_result(url: str, output_dir: Path) -> dict[str, Any] | None:
     project = project_name_from_url(url)
-    project_dir = output_dir / "crawled" / project
-    if not (project_dir / "index.html").exists():
+    outputs: list[dict[str, Any]] = []
+    for variant, root_name in [("single", "single_page"), ("multi", "multi_page")]:
+        out_path = output_dir / root_name / project
+        if (out_path / "index.html").exists():
+            html_count = len(list(out_path.glob("*.html")))
+            outputs.append({
+                "variant": variant,
+                "path": str(out_path),
+                "pages": html_count,
+            })
+    if not outputs:
         return None
-
-    html_count = len(list(project_dir.glob("*.html")))
     return {
         "url": url,
         "project": project,
         "status": "existing_output",
         "crawl_status": "existing_output",
-        "crawl_result": {
-            "status": "existing_output",
-            "pages": html_count,
-            "reused_from_disk": True,
-        },
+        "crawl_result": {"status": "existing_output", "reused_from_disk": True},
+        "outputs": outputs,
         "postprocess": {},
         "errors": [],
         "elapsed": 0,
@@ -201,10 +258,14 @@ def main() -> None:
     args = parser.parse_args()
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    crawl_root = args.output_dir / "crawled"
+    single_root = args.output_dir / "single_page"
+    multi_root = args.output_dir / "multi_page"
     if args.overwrite:
-        shutil.rmtree(crawl_root, ignore_errors=True)
-    crawl_root.mkdir(parents=True, exist_ok=True)
+        shutil.rmtree(single_root, ignore_errors=True)
+        shutil.rmtree(multi_root, ignore_errors=True)
+        shutil.rmtree(args.output_dir / "_crawl_tmp", ignore_errors=True)
+    single_root.mkdir(parents=True, exist_ok=True)
+    multi_root.mkdir(parents=True, exist_ok=True)
 
     # --- Load URLs ---
     urls = [line.strip() for line in args.url_file.read_text().splitlines() if line.strip()]
@@ -252,26 +313,28 @@ def main() -> None:
     )
     results: list[dict[str, Any]] = []
     progress_statuses: Counter[str] = Counter({"resumed": initial_done})
-    success_count = initial_done
+    sample_count = initial_done
     failed_count = 0
 
     def record_result(i: int, result: dict[str, Any]) -> None:
-        nonlocal success_count, failed_count
+        nonlocal sample_count, failed_count
         results.append(result)
         with manifest.open("a", encoding="utf-8") as f:
             f.write(json.dumps(result, ensure_ascii=False) + "\n")
         status = result.get("status", "?")
         progress_statuses[status] += 1
-        if status in ("ok", "partial", "existing_output"):
-            success_count += 1
+        outputs_count = len(result.get("outputs", []))
+        if outputs_count > 0:
+            sample_count += outputs_count  # single=1, single+multi=2
         else:
             failed_count += 1
         overall_done = initial_done + i
-        success_rate = success_count / overall_done if overall_done else 0.0
+        success_rate = sample_count / (sample_count + failed_count) if (sample_count + failed_count) else 0.0
         print(
             f"[{i}/{total}] {result['project']}: {result['status']} "
-            f"(crawl={result.get('crawl_status')}, {result.get('elapsed', 0)}s) "
-            f"progress={overall_done}/{total_inputs} success={success_count} "
+            f"(crawl={result.get('crawl_status')}, samples={outputs_count}, "
+            f"{result.get('elapsed', 0)}s) "
+            f"progress={overall_done}/{total_inputs} samples={sample_count} "
             f"failed={failed_count} success_rate={success_rate:.2%} "
             f"statuses={dict(progress_statuses)}",
             flush=True,
@@ -364,7 +427,11 @@ def main() -> None:
 
     statuses = Counter(r.get("status", "?") for r in results)
     crawl_statuses = Counter(r.get("crawl_status", "?") for r in results)
-    print(f"\nDone: statuses={dict(statuses)}, crawl={dict(crawl_statuses)}", flush=True)
+    total_outputs = sum(len(r.get("outputs", [])) for r in results)
+    single_count = sum(1 for r in results for o in r.get("outputs", []) if o.get("variant") == "single")
+    multi_count = sum(1 for r in results for o in r.get("outputs", []) if o.get("variant") == "multi")
+    print(f"\nDone: statuses={dict(statuses)}, crawl={dict(crawl_statuses)}, "
+          f"total_samples={total_outputs} (single={single_count}, multi={multi_count})", flush=True)
 
 
 if __name__ == "__main__":

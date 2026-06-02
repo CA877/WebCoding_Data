@@ -801,7 +801,7 @@ DEAD_PAGE_MARKERS = [
 ]
 
 
-def validate_page(html: str, min_text_len: int = 200) -> bool:
+def validate_page(html: str, min_text_len: int = 50) -> bool:
     """Check if page has enough visible content and isn't a dead/parked page."""
     soup = BeautifulSoup(html, "html.parser")
     text = soup.get_text(strip=True)
@@ -849,30 +849,31 @@ def detect_language(html: str) -> str:
 def snapshot_page(
     page: Page,
     url: str,
-    wait_ms: int = 3000,
-    timeout_ms: int = 30000,
-    retry_timeout_ms: int = 45000,
+    wait_ms: int = 2000,
+    timeout_ms: int = 20000,
+    retry_timeout_ms: int | None = None,  # kept for backward compat, no longer used
 ) -> str | None:
-    """Navigate to URL and return inlined HTML, or None on failure."""
+    """Navigate to URL and return inlined HTML, or None on failure. No retry."""
+    # Try commit first (fastest, works for most sites)
     try:
-        page.goto(url, wait_until="commit", timeout=timeout_ms)
-        page.wait_for_timeout(wait_ms)
-        html = page.evaluate(INLINE_CSS_JS)
-        return html
+        page.goto(url, wait_until="commit", timeout=min(timeout_ms, 10000))
+        page.wait_for_timeout(max(wait_ms, 5000))  # extra time for JS to render
+        return page.evaluate(INLINE_CSS_JS)
     except Exception:
-        # Retry with longer wait
-        try:
-            page.goto(url, wait_until="networkidle", timeout=retry_timeout_ms)
-            html = page.evaluate(INLINE_CSS_JS)
-            return html
-        except Exception:
-            return None
+        pass
+    # Fallback: domcontentloaded (slower but works for more sites through proxy)
+    try:
+        page.goto(url, wait_until="domcontentloaded", timeout=timeout_ms)
+        page.wait_for_timeout(wait_ms)
+        return page.evaluate(INLINE_CSS_JS)
+    except Exception:
+        return None
 
 
 def crawl_site(url: str, output_dir: Path, browser: Browser,
                session: requests.Session, max_pages: int = 4,
                wait_ms: int = 3000, subpage_wait_ms: int = 2000,
-               timeout_ms: int = 30000, retry_timeout_ms: int = 45000) -> dict:
+               timeout_ms: int = 20000) -> dict:
     """Crawl a website: index page + sub-pages.
 
     Returns a result dict with status and metadata.
@@ -890,7 +891,6 @@ def crawl_site(url: str, output_dir: Path, browser: Browser,
             url,
             wait_ms,
             timeout_ms=timeout_ms,
-            retry_timeout_ms=retry_timeout_ms,
         )
         if not index_html:
             page.close()
@@ -948,7 +948,6 @@ def crawl_site(url: str, output_dir: Path, browser: Browser,
                 sub_url,
                 wait_ms=subpage_wait_ms,
                 timeout_ms=timeout_ms,
-                retry_timeout_ms=retry_timeout_ms,
             )
             if not sub_html:
                 continue
@@ -1025,7 +1024,6 @@ def crawl_one_process(payload: tuple[str, str, str, str, str, int, int, int, int
                     wait_ms=wait_ms,
                     subpage_wait_ms=subpage_wait_ms,
                     timeout_ms=timeout_ms,
-                    retry_timeout_ms=retry_timeout_ms,
                 )
             except Exception as e:
                 result = {"status": "error", "url": url, "error": str(e)}
@@ -1140,13 +1138,22 @@ def expand_project(project_dir: Path, output_dir: Path, browser: Browser,
     url_to_file: dict[str, str] = {base_url: "index.html"}
     used_names: set[str] = {"index.html"}
     pages_added = 0
+    total_fails = 0
 
     for i, sub_url in enumerate(nav_links):
         sub_html = snapshot_page(page, sub_url, wait_ms=wait_ms)
         if not sub_html:
+            total_fails += 1
+            if total_fails >= 3:
+                break
             continue
         if not validate_page(sub_html):
+            total_fails += 1
+            if total_fails >= 3:
+                break
             continue
+
+        # Success — keep going, no fail limit on successes
 
         # Localize images
         sub_html = localize_resources(sub_html, sub_url, resources_dir, session)
@@ -1297,8 +1304,7 @@ def cmd_crawl(args):
             result = crawl_site(url, proj_dir, browser, session,
                                 max_pages=args.max_pages, wait_ms=args.wait,
                                 subpage_wait_ms=args.subpage_wait,
-                                timeout_ms=args.timeout,
-                                retry_timeout_ms=args.retry_timeout)
+                                timeout_ms=args.timeout)
         except Exception as e:
             result = {"status": "error", "url": url, "error": str(e)}
         result["elapsed"] = round(time.time() - t0, 1)
@@ -1710,14 +1716,10 @@ def _validate_one_project(proj_path: str, purge: bool) -> dict:
         page.on("console", on_console)
 
         try:
-            page.goto(f"file://{index_html.resolve()}", wait_until="load", timeout=60000)
+            page.goto(f"file://{index_html.resolve()}", wait_until="domcontentloaded", timeout=15000)
             page.wait_for_timeout(2000)
         except Exception:
-            try:
-                page.goto(f"file://{index_html.resolve()}", wait_until="domcontentloaded", timeout=15000)
-                page.wait_for_timeout(3000)
-            except Exception:
-                pass
+            pass
 
         page.close()
         browser.close()

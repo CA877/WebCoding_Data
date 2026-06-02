@@ -3,9 +3,15 @@
 
 For each input project:
 1. Try to expand it to multiple pages.
-2. Always clean the original project.
-3. If expansion succeeds, also clean the expanded project.
-4. Add JS features via LLM (default; disable with --no-js).
+2. Always clean the original → single_page/{project}/ (1 sample).
+3. If expansion succeeds, also clean expanded → multi_page/{project}/ (+1 sample).
+4. Each sample gets JS features via LLM (default; disable with --no-js).
+
+Output structure:
+    output/
+    ├── single_page/   # every project (1 sample each)
+    ├── multi_page/    # only expand-success projects (1 extra sample each)
+    └── sample_pipeline_results.jsonl
 
 This keeps concurrency at the sample level instead of running all expand work
 before all clean work.
@@ -19,6 +25,7 @@ import json
 import multiprocessing as mp
 import os
 import queue
+import re
 import shutil
 import sys
 import time
@@ -35,6 +42,10 @@ from playwright_crawl import build_requests_session, clean_project, expand_proje
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
+# Also add construct/ so fallback absolute imports (e.g. in add_js.py) work in subprocess workers
+_CONSTRUCT_DIR = str(_REPO_ROOT / "construct")
+if _CONSTRUCT_DIR not in sys.path:
+    sys.path.insert(0, _CONSTRUCT_DIR)
 
 
 def _copy_fresh(src: Path, dst: Path) -> None:
@@ -54,7 +65,7 @@ def _add_js_to_project(project_out: Path, add_js_config: dict) -> dict[str, Any]
     client = OpenAI(
         api_key=add_js_config["api_key"],
         base_url=add_js_config.get("base_url"),
-        timeout=180.0,
+        timeout=40.0,
     )
 
     features = select_features(project_out.name, seed=seed)
@@ -81,14 +92,50 @@ def _add_js_to_project(project_out: Path, add_js_config: dict) -> dict[str, Any]
     }
 
 
+def _add_js_single(add_js_config: dict | None, result: dict[str, Any],
+                    project_name: str, started: float) -> None:
+    """Run add_js on the single output before expand, so timeout can't lose it."""
+    if not add_js_config or not result["outputs"]:
+        return
+
+    ratio = add_js_config.get("ratio", 1.0)
+    if ratio < 1.0:
+        h = int(hashlib.md5(project_name.encode()).hexdigest(), 16) % 10000
+        if h >= ratio * 10000:
+            for o in result["outputs"]:
+                if o.get("variant") == "single":
+                    o["add_js_status"] = "skipped_by_ratio"
+            return
+
+    for output_info in result["outputs"]:
+        if output_info.get("variant") != "single":
+            continue
+        out_path = Path(output_info["path"])
+        if out_path.exists() and (out_path / "index.html").exists():
+            try:
+                js_result = _add_js_to_project(out_path, add_js_config)
+                output_info["add_js_status"] = js_result["status"]
+                output_info["add_js_features"] = js_result.get("features", [])
+                output_info["add_js_lines"] = js_result.get("js_lines", 0)
+            except Exception as exc:  # noqa: BLE001
+                output_info["add_js_status"] = "error"
+                result["errors"].append({
+                    "stage": "add_js_single",
+                    "error": f"{type(exc).__name__}: {exc}",
+                })
+
+
 def process_sample(payload: tuple[str, str, str, str, int, int],
-                    add_js_config: dict | None = None) -> dict[str, Any]:
+                    add_js_config: dict | None = None,
+                    no_expand: bool = False) -> dict[str, Any]:
     project_path, output_root, browser_proxy, requests_proxy, max_pages, wait_ms = payload
     project_dir = Path(project_path)
     output_dir = Path(output_root)
-    clean_root = output_dir / "clean_projects"
+    single_root = output_dir / "single_page"
+    multi_root = output_dir / "multi_page"
     expand_tmp_root = output_dir / "_expand_tmp"
-    clean_root.mkdir(parents=True, exist_ok=True)
+    single_root.mkdir(parents=True, exist_ok=True)
+    multi_root.mkdir(parents=True, exist_ok=True)
     expand_tmp_root.mkdir(parents=True, exist_ok=True)
 
     started = time.time()
@@ -102,86 +149,152 @@ def process_sample(payload: tuple[str, str, str, str, int, int],
 
     session = build_requests_session(requests_proxy)
 
-    expanded_project = expand_tmp_root / project_dir.name
-    if expanded_project.exists():
-        shutil.rmtree(expanded_project)
-
-    with sync_playwright() as p:
-        browser = p.chromium.launch(
-            proxy={"server": browser_proxy} if browser_proxy else None,
+    # ============================================================
+    # Step 1: Clean original → single_page sample (ALWAYS, no Playwright)
+    # ============================================================
+    single_out = single_root / project_dir.name
+    try:
+        _copy_fresh(project_dir, single_out)
+        clean_result = clean_project(single_out, session)
+        result["outputs"].append(
+            {
+                "variant": "single",
+                "path": str(single_out),
+                "clean_status": clean_result.get("status"),
+                "remaining_remote_refs": clean_result.get("remaining_remote_refs"),
+            }
         )
+    except Exception as exc:  # noqa: BLE001
+        shutil.rmtree(single_out, ignore_errors=True)
+        result["errors"].append({"stage": "clean_single", "error": f"{type(exc).__name__}: {exc}"})
+
+    # ============================================================
+    # Step 1b: add_js on single NOW (before expand, so timeout doesn't lose it)
+    # ============================================================
+    _add_js_single(add_js_config, result, project_dir.name, started)
+
+    # ============================================================
+    # --no-expand: skip expand entirely, single-page is enough
+    # ============================================================
+    if no_expand:
+        result["expand_status"] = "skipped"
+        result["elapsed"] = round(time.time() - started, 1)
+        return result
+
+    # ============================================================
+    # Step 2: Quick nav-link check + domain preflight → skip expand if dead
+    # ============================================================
+    index_html_path = project_dir / "index.html"
+    nav_links: list[str] = []
+    domain_alive = False
+    if index_html_path.exists():
         try:
-            expand_result = expand_project(
-                project_dir,
-                expand_tmp_root,
-                browser,
-                session,
-                max_pages=max_pages,
-                wait_ms=wait_ms,
-            )
+            html = index_html_path.read_text(encoding="utf-8", errors="replace")
+            # Extract domain
+            all_urls = re.findall(r'https?://([^/\s"\'<>]+)', html)
+            noise = {"google", "facebook", "twitter", "cdn", "fonts.g", "jquery",
+                     "bootstrap", "cloudflare", "gstatic", "w3.org", "schema.org",
+                     "gravatar", "youtube", "vimeo", "instagram", "linkedin", "pinterest"}
+            real_domains = [d for d in all_urls if not any(n in d.lower() for n in noise)]
+            if real_domains:
+                from collections import Counter as _Counter
+                from playwright_crawl import extract_nav_links as _extract_nav_links
+                main_domain = _Counter(real_domains).most_common(1)[0][0]
+                base_url = f"https://{main_domain}/"
+                # --- Preflight: quick HTTP check before expensive Playwright expand ---
+                try:
+                    r = session.get(base_url, timeout=(3, 5), allow_redirects=True)
+                    domain_alive = r.status_code < 500
+                except Exception:
+                    domain_alive = False
+                if domain_alive:
+                    nav_links = _extract_nav_links(html, base_url, max_links=max_pages)
+        except Exception:
+            pass
+
+    # ============================================================
+    # Step 3: Try expand → multi_page sample (BONUS, only if links exist AND domain alive)
+    # ============================================================
+    if nav_links and domain_alive:
+        expanded_project = expand_tmp_root / project_dir.name
+        if expanded_project.exists():
+            shutil.rmtree(expanded_project)
+
+        try:
+            with sync_playwright() as p:
+                browser = p.chromium.launch(
+                    proxy={"server": browser_proxy} if browser_proxy else None,
+                )
+                try:
+                    expand_result = expand_project(
+                        project_dir,
+                        expand_tmp_root,
+                        browser,
+                        session,
+                        max_pages=max_pages,
+                        wait_ms=wait_ms,
+                    )
+                except Exception as exc:  # noqa: BLE001
+                    expand_result = {
+                        "status": "error",
+                        "project": project_dir.name,
+                        "error": f"{type(exc).__name__}: {exc}",
+                    }
+                finally:
+                    browser.close()
         except Exception as exc:  # noqa: BLE001
             expand_result = {
                 "status": "error",
                 "project": project_dir.name,
                 "error": f"{type(exc).__name__}: {exc}",
             }
-        finally:
-            browser.close()
 
-    result["expand_status"] = expand_result.get("status")
-    result["expand_result"] = expand_result
+        result["expand_status"] = expand_result.get("status")
+        result["expand_result"] = expand_result
 
-    original_out = clean_root / f"{project_dir.name}__original"
-    try:
-        _copy_fresh(project_dir, original_out)
-        clean_result = clean_project(original_out, session)
-        result["outputs"].append(
-            {
-                "variant": "original",
-                "path": str(original_out),
-                "clean_status": clean_result.get("status"),
-                "remaining_remote_refs": clean_result.get("remaining_remote_refs"),
-            }
-        )
-    except Exception as exc:  # noqa: BLE001
-        shutil.rmtree(original_out, ignore_errors=True)
-        result["errors"].append({"stage": "clean_original", "error": f"{type(exc).__name__}: {exc}"})
+        if expand_result.get("status") == "expanded" and expanded_project.exists():
+            multi_out = multi_root / project_dir.name
+            try:
+                _copy_fresh(expanded_project, multi_out)
+                clean_result = clean_project(multi_out, session)
+                result["outputs"].append(
+                    {
+                        "variant": "multi",
+                        "path": str(multi_out),
+                        "clean_status": clean_result.get("status"),
+                        "remaining_remote_refs": clean_result.get("remaining_remote_refs"),
+                        "pages_added": expand_result.get("pages_added"),
+                        "total_pages": expand_result.get("total_pages"),
+                    }
+                )
+            except Exception as exc:  # noqa: BLE001
+                shutil.rmtree(multi_out, ignore_errors=True)
+                result["errors"].append({"stage": "clean_multi", "error": f"{type(exc).__name__}: {exc}"})
 
-    if expand_result.get("status") == "expanded" and expanded_project.exists():
-        expanded_out = clean_root / f"{project_dir.name}__expanded"
-        try:
-            _copy_fresh(expanded_project, expanded_out)
-            clean_result = clean_project(expanded_out, session)
-            result["outputs"].append(
-                {
-                    "variant": "expanded",
-                    "path": str(expanded_out),
-                    "clean_status": clean_result.get("status"),
-                    "remaining_remote_refs": clean_result.get("remaining_remote_refs"),
-                    "pages_added": expand_result.get("pages_added"),
-                    "total_pages": expand_result.get("total_pages"),
-                }
-            )
-        except Exception as exc:  # noqa: BLE001
-            shutil.rmtree(expanded_out, ignore_errors=True)
-            result["errors"].append({"stage": "clean_expanded", "error": f"{type(exc).__name__}: {exc}"})
+        shutil.rmtree(expanded_project, ignore_errors=True)
+    elif not domain_alive:
+        result["expand_status"] = "domain_dead"
+        result["expand_result"] = {"status": "domain_dead", "project": project_dir.name}
+    else:
+        result["expand_status"] = "no_nav_links"
+        result["expand_result"] = {"status": "no_nav_links", "project": project_dir.name}
 
-    shutil.rmtree(expanded_project, ignore_errors=True)
-
-    # --- Optional: add JS features via LLM ---
-    # Deterministic skip based on project name hash and js_ratio
+    # --- add_js on multi output (single was already done before expand) ---
     if add_js_config and result["outputs"]:
         ratio = add_js_config.get("ratio", 1.0)
         if ratio < 1.0:
             h = int(hashlib.md5(project_dir.name.encode()).hexdigest(), 16) % 10000
             if h >= ratio * 10000:
                 for output_info in result["outputs"]:
-                    output_info["add_js_status"] = "skipped_by_ratio"
+                    if output_info.get("add_js_status") is None:
+                        output_info["add_js_status"] = "skipped_by_ratio"
                 result["elapsed"] = round(time.time() - started, 1)
                 return result
 
     if add_js_config and result["outputs"]:
         for output_info in result["outputs"]:
+            if output_info.get("add_js_status") is not None:
+                continue  # already processed (single was done before expand)
             out_path = Path(output_info["path"])
             if out_path.exists() and (out_path / "index.html").exists():
                 try:
@@ -203,17 +316,39 @@ def process_sample(payload: tuple[str, str, str, str, int, int],
 
 
 def process_sample_entry(payload: tuple[str, str, str, str, int, int], result_queue: mp.Queue,
-                         add_js_config: dict | None = None) -> None:
-    result_queue.put(process_sample(payload, add_js_config=add_js_config))
+                         add_js_config: dict | None = None, no_expand: bool = False) -> None:
+    result_queue.put(process_sample(payload, add_js_config=add_js_config, no_expand=no_expand))
 
 
 def timeout_result(payload: tuple[str, str, str, str, int, int], elapsed: float, site_timeout: int) -> dict[str, Any]:
+    project = Path(payload[0]).name
+    output_dir = Path(payload[1])
+    # Check if single_page output was already written to disk before timeout
+    outputs: list[dict[str, Any]] = []
+    single_out = output_dir / "single_page" / project
+    if (single_out / "index.html").exists():
+        js_file = single_out / "main.js"
+        add_js_info: dict[str, Any] = {}
+        if js_file.exists():
+            add_js_info = {
+                "add_js_status": "ok",
+                "add_js_lines": len(js_file.read_text(encoding="utf-8").splitlines()),
+            }
+        else:
+            add_js_info = {"add_js_status": "skipped_by_ratio"}
+        outputs.append({
+            "variant": "single",
+            "path": str(single_out),
+            "clean_status": "recovered_after_timeout",
+            "remaining_remote_refs": None,
+            **add_js_info,
+        })
     return {
-        "project": Path(payload[0]).name,
+        "project": project,
         "status": "site_timeout",
         "expand_status": "site_timeout",
-        "outputs": [],
-        "errors": [{"stage": "sample", "error": f"site_timeout after {site_timeout}s"}],
+        "outputs": outputs,
+        "errors": [{"stage": "expand", "error": f"site_timeout after {site_timeout}s (single preserved)"}],
         "elapsed": round(elapsed, 1),
         "site_timeout": site_timeout,
     }
@@ -223,15 +358,14 @@ def cleanup_sample_outputs(payload: tuple[str, str, str, str, int, int]) -> None
     project = Path(payload[0]).name
     output_dir = Path(payload[1])
     shutil.rmtree(output_dir / "_expand_tmp" / project, ignore_errors=True)
-    shutil.rmtree(output_dir / "clean_projects" / f"{project}__original", ignore_errors=True)
-    shutil.rmtree(output_dir / "clean_projects" / f"{project}__expanded", ignore_errors=True)
+    shutil.rmtree(output_dir / "multi_page" / project, ignore_errors=True)
+    # Note: do NOT delete single_page — it was saved before expand
 
 
 def existing_outputs_for_project(project: str, output_dir: Path) -> list[dict[str, Any]]:
-    clean_root = output_dir / "clean_projects"
     outputs: list[dict[str, Any]] = []
-    for variant in ("original", "expanded"):
-        out_path = clean_root / f"{project}__{variant}"
+    for variant, root_name in [("single", "single_page"), ("multi", "multi_page")]:
+        out_path = output_dir / root_name / project
         if (out_path / "index.html").exists():
             outputs.append(
                 {
@@ -301,14 +435,19 @@ def main() -> None:
                         help="Seed for JS feature selection")
     parser.add_argument("--js-ratio", type=float, default=1.0,
                         help="Fraction of projects to add JS (0.0-1.0, default: 1.0 = all)")
+    parser.add_argument("--no-expand", action="store_true",
+                        help="Skip expand step, only produce single-page samples")
     args = parser.parse_args()
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    clean_root = args.output_dir / "clean_projects"
+    single_root = args.output_dir / "single_page"
+    multi_root = args.output_dir / "multi_page"
     if args.overwrite:
-        shutil.rmtree(clean_root, ignore_errors=True)
+        shutil.rmtree(single_root, ignore_errors=True)
+        shutil.rmtree(multi_root, ignore_errors=True)
         shutil.rmtree(args.output_dir / "_expand_tmp", ignore_errors=True)
-    clean_root.mkdir(parents=True, exist_ok=True)
+    single_root.mkdir(parents=True, exist_ok=True)
+    multi_root.mkdir(parents=True, exist_ok=True)
 
     # --- add-js config (enabled by default) ---
     add_js_config = None
@@ -376,11 +515,11 @@ def main() -> None:
     )
     results: list[dict[str, Any]] = []
     progress_statuses: Counter[str] = Counter({"resumed": initial_done})
-    success_count = initial_done
+    sample_count = initial_done  # single-page samples always produced; multi-page count as extra
     failed_count = 0
 
     def record_result(i: int, result: dict[str, Any]) -> None:
-        nonlocal success_count, failed_count
+        nonlocal sample_count, failed_count
         results.append(result)
         with manifest.open("a", encoding="utf-8") as f:
             f.write(json.dumps(result, ensure_ascii=False) + "\n")
@@ -388,16 +527,16 @@ def main() -> None:
         progress_statuses[status] += 1
         outputs_count = len(result.get("outputs", []))
         if outputs_count > 0:
-            success_count += 1
+            sample_count += outputs_count  # single=1, single+multi=2
         else:
             failed_count += 1
         overall_done = initial_done + i
-        success_rate = success_count / overall_done if overall_done else 0.0
+        success_rate = sample_count / (sample_count + failed_count) if (sample_count + failed_count) else 0.0
         print(
             f"[{i}/{len(payloads)}] {result['project']}: {result['status']} "
-            f"(expand={result.get('expand_status')}, outputs={len(result.get('outputs', []))}, "
+            f"(expand={result.get('expand_status')}, samples={outputs_count}, "
             f"{result.get('elapsed', 0)}s) "
-            f"progress={overall_done}/{total_inputs} success={success_count} "
+            f"progress={overall_done}/{total_inputs} samples={sample_count} "
             f"failed={failed_count} success_rate={success_rate:.2%} "
             f"statuses={dict(progress_statuses)}",
             flush=True,
@@ -412,7 +551,7 @@ def main() -> None:
         def start_next() -> None:
             payload = pending.pop(0)
             result_queue = ctx.Queue(maxsize=1)
-            proc = ctx.Process(target=process_sample_entry, args=(payload, result_queue, add_js_config))
+            proc = ctx.Process(target=process_sample_entry, args=(payload, result_queue, add_js_config, args.no_expand))
             proc.start()
             active[proc] = (payload, time.time(), result_queue)
 
@@ -448,12 +587,24 @@ def main() -> None:
                     proc.join(timeout=2)
                     active.pop(proc, None)
                     completed += 1
+                    # Check if single_page was already saved before worker crashed
+                    _proj = Path(payload[0]).name
+                    _out_dir = Path(payload[1])
+                    _outputs: list[dict[str, Any]] = []
+                    _single_out = _out_dir / "single_page" / _proj
+                    if (_single_out / "index.html").exists():
+                        _outputs.append({
+                            "variant": "single",
+                            "path": str(_single_out),
+                            "clean_status": "recovered_after_crash",
+                            "remaining_remote_refs": None,
+                        })
                     result = {
-                        "project": Path(payload[0]).name,
+                        "project": _proj,
                         "status": "worker_exited",
                         "expand_status": "worker_exited",
-                        "outputs": [],
-                        "errors": [{"stage": "sample", "error": "worker exited without result"}],
+                        "outputs": _outputs,
+                        "errors": [{"stage": "expand", "error": "worker exited without result (single preserved)"}],
                         "elapsed": round(elapsed, 1),
                     }
                     record_result(completed, result)
@@ -461,7 +612,7 @@ def main() -> None:
             time.sleep(0.5)
     else:
         with ProcessPoolExecutor(max_workers=args.concurrency) as executor:
-            futures = {executor.submit(process_sample, payload, add_js_config): payload for payload in payloads}
+            futures = {executor.submit(process_sample, payload, add_js_config, args.no_expand): payload for payload in payloads}
             for i, future in enumerate(as_completed(futures), 1):
                 try:
                     result = future.result(timeout=600 if add_js_config else 300)
@@ -483,8 +634,11 @@ def main() -> None:
 
     statuses = Counter(r.get("status", "?") for r in results)
     expand_statuses = Counter(r.get("expand_status", "?") for r in results)
-    outputs = sum(len(r.get("outputs", [])) for r in results)
-    print(f"Done: statuses={dict(statuses)}, expand={dict(expand_statuses)}, outputs={outputs}", flush=True)
+    total_outputs = sum(len(r.get("outputs", [])) for r in results)
+    single_count = sum(1 for r in results for o in r.get("outputs", []) if o.get("variant") == "single")
+    multi_count = sum(1 for r in results for o in r.get("outputs", []) if o.get("variant") == "multi")
+    print(f"Done: statuses={dict(statuses)}, expand={dict(expand_statuses)}, "
+          f"total_samples={total_outputs} (single={single_count}, multi={multi_count})", flush=True)
 
 
 if __name__ == "__main__":

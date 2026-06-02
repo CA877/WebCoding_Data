@@ -28,12 +28,20 @@ from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
-from construct_common import (
-    copy_project,
-    ensure_api_env,
-    maybe_load_env,
-    read_code_bundle,
-)
+try:
+    from .construct_common import (
+        copy_project,
+        ensure_api_env,
+        maybe_load_env,
+        read_code_bundle,
+    )
+except ImportError:
+    from construct_common import (
+        copy_project,
+        ensure_api_env,
+        maybe_load_env,
+        read_code_bundle,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -793,7 +801,7 @@ def build_code_context(project_dir: Path, max_chars: int = 20000) -> str:
 # JS generation
 # ---------------------------------------------------------------------------
 
-_RETRY_DELAYS = [10, 30, 60]  # seconds between retries
+_RETRY_DELAYS = [5]  # seconds between retries
 
 
 def generate_js(
@@ -854,7 +862,10 @@ def generate_js(
             last_error = str(e)
             err_lower = last_error.lower()
             # Non-retryable errors: invalid API key, model not found, etc.
-            if any(kw in err_lower for kw in ["invalid api key", "authentication", "model not found"]):
+            if any(kw in err_lower for kw in [
+                "invalid api key", "authentication", "model not found",
+                "invalid token", "unauthorized", "forbidden", "401",
+            ]):
                 print(f"  LLM fatal error: {e}")
                 return None
 
