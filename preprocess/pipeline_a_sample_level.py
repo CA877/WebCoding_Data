@@ -14,6 +14,7 @@ before all clean work.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import multiprocessing as mp
 import os
@@ -168,6 +169,17 @@ def process_sample(payload: tuple[str, str, str, str, int, int],
     shutil.rmtree(expanded_project, ignore_errors=True)
 
     # --- Optional: add JS features via LLM ---
+    # Deterministic skip based on project name hash and js_ratio
+    if add_js_config and result["outputs"]:
+        ratio = add_js_config.get("ratio", 1.0)
+        if ratio < 1.0:
+            h = int(hashlib.md5(project_dir.name.encode()).hexdigest(), 16) % 10000
+            if h >= ratio * 10000:
+                for output_info in result["outputs"]:
+                    output_info["add_js_status"] = "skipped_by_ratio"
+                result["elapsed"] = round(time.time() - started, 1)
+                return result
+
     if add_js_config and result["outputs"]:
         for output_info in result["outputs"]:
             out_path = Path(output_info["path"])
@@ -238,6 +250,8 @@ def main() -> None:
                         help="Override LLM model for JS generation (default: from env)")
     parser.add_argument("--js-seed", type=int, default=42,
                         help="Seed for JS feature selection")
+    parser.add_argument("--js-ratio", type=float, default=1.0,
+                        help="Fraction of projects to add JS (0.0-1.0, default: 1.0 = all)")
     args = parser.parse_args()
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
@@ -258,8 +272,9 @@ def main() -> None:
             "base_url": base_url,
             "model": args.js_model or env_model,
             "seed": args.js_seed,
+            "ratio": args.js_ratio,
         }
-        print(f"Add-JS enabled: model={add_js_config['model']}")
+        print(f"Add-JS enabled: model={add_js_config['model']}, ratio={args.js_ratio}")
 
     projects = sorted(d for d in args.input_dir.iterdir() if d.is_dir() and (d / "index.html").exists())
     if args.limit:

@@ -69,6 +69,7 @@ PIPELINE_B_PREFLIGHT_CONCURRENCY="${PIPELINE_B_PREFLIGHT_CONCURRENCY:-200}"
 # JS 生成配置（Pipeline A 默认启用）
 NO_JS="${NO_JS:-}"
 JS_MODEL="${JS_MODEL:-}"
+JS_RATIO="${JS_RATIO:-0.5}"  # add_js 比例（0.5 = 一半项目加 JS）
 
 # 跳过控制
 SKIP_PIPELINE_A="${SKIP_PIPELINE_A:-}"
@@ -92,7 +93,7 @@ cd "$ROOT"
 PYTHON="${PYTHON:-python3}"
 
 # 构建通用参数
-JS_ARGS=""
+JS_ARGS="--js-ratio $JS_RATIO"
 if [ -n "$NO_JS" ]; then
     JS_ARGS="--no-js"
 fi

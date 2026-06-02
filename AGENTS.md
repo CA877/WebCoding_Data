@@ -2,16 +2,23 @@
 
 ## 终极目标
 
-构建训练集，使模型在以下 4 个榜单上取得高分：
+构建 **70K 训练集**（7 类任务 × 10K），使模型在以下 4 个榜单上取得高分：
 
-| 榜单 | 论文 | 输出格式 | 图片处理 | 评测要点 |
-|------|------|----------|----------|----------|
-| **WebCompass** | — | 多文件项目 | 本地 assets/ | Docker 内 http.server 渲染 |
-| **Design2Code** | — | 单 HTML | `rick.jpg` 占位 | 视觉相似度 |
-| **Vision2Web** | arxiv:2603.26648 | 多文件项目 | 本地 resources/ | Visual Score + Functional Score，GUI Agent + VLM judge |
-| **FLAME-VLM-Code** | arxiv:2503.01619 | React 组件 | 不涉及图片路径 | 渲染截图 cosine similarity (pass@k) |
+| 榜单 | 输出格式 | 评测要点 |
+|------|----------|----------|
+| **WebCompass** | 多文件项目（index.html + styles.css + script.js） | Docker 内 http.server 渲染 |
+| **Design2Code** | 单 HTML，CSS inline | 视觉相似度 |
+| **Vision2Web** | 多文件项目 | Visual Score + Functional Score |
+| **FLAME-VLM-Code** | React 组件 | 渲染截图 cosine similarity |
 
-关键结论：**所有榜单都不要求模型输出远程 URL**。训练数据统一用 `assets/` 本地相对路径。
+所有榜单都不要求模型输出远程 URL。训练数据统一用 `assets/` 本地相对路径。
+
+## 数据来源与处理
+
+- **Pipeline A** — WebRenderBench 31,765 个单页 HTML，expand → clean → add_js（LLM 生成 43 种 JS 功能之一，ratio=0.5）
+- **Pipeline B** — WebCode2M 28K URL，Playwright 爬取 → postprocess（保留网站原生 JS，无 LLM 调用）
+- 两条 Pipeline 并行执行，入口: `preprocess/run_server.sh`
+- 预计产出 ~30K 可用项目 → 构造 70K 训练样本
 
 ---
 
