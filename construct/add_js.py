@@ -491,6 +491,145 @@ JS_FEATURE_CATALOG = {
             "Use subtle colors (rgba with low alpha)."
         ),
     },
+
+    # ===== C类: Advanced features (higher complexity) =====
+
+    "virtual_list": {
+        "category": "enhance",
+        "name": "Virtual Scrolling / Windowed List",
+        "desc": (
+            "Find the main content list or table. Replace it with a virtual-scroll container "
+            "that only renders visible rows plus a small overscan buffer (5 rows above/below). "
+            "Maintain a sentinel div whose height equals total_rows × row_height to preserve "
+            "native scrollbar behavior. On scroll, recalculate the visible window and "
+            "translate the rendered slice with transform:translateY. "
+            "Clone existing list items as templates; generate 500+ virtual rows by duplicating "
+            "and numbering them. Debounce scroll handler with requestAnimationFrame. "
+            "Support dynamic row heights: measure each row after render and cache heights "
+            "in an array; use a binary search to find the start index from scrollTop."
+        ),
+    },
+    "undo_redo": {
+        "category": "inject",
+        "name": "Undo / Redo State Manager",
+        "desc": (
+            "Implement a generic undo/redo system that tracks DOM mutations. "
+            "Use a MutationObserver on the main content area to capture changes "
+            "(childList, attributes, characterData, subtree:true). "
+            "Maintain an undo stack (max 50 entries) and a redo stack. Each entry stores "
+            "a serialized snapshot or a list of MutationRecord reverse operations. "
+            "Add a floating toolbar with Undo (↶) and Redo (↷) buttons; disable when stack is empty. "
+            "Support Ctrl+Z / Ctrl+Shift+Z keyboard shortcuts. "
+            "Show a toast 'Undone' / 'Redone' on each action. "
+            "Pause observation while applying undo/redo to avoid recursive recording."
+        ),
+    },
+    "command_palette": {
+        "category": "inject",
+        "name": "Command Palette (Spotlight Search)",
+        "desc": (
+            "Create a VS-Code-style command palette overlay triggered by Ctrl+K or Cmd+K. "
+            "Show a centered modal with a search input at the top and a scrollable results list below. "
+            "Register 15+ commands: navigate to sections on the page, toggle theme, scroll to top, "
+            "print page, copy current URL, toggle fullscreen, increase/decrease font size, "
+            "show keyboard shortcuts, open notification center, etc. "
+            "Fuzzy-match the query against command names: split query into characters and check "
+            "if they appear in order in the command name (highlight matched chars in bold). "
+            "Navigate results with Arrow Up/Down keys, select with Enter. "
+            "Show each command with an icon, name, and shortcut hint on the right. "
+            "Close on Escape or backdrop click. Animate in with scale(0.95)→scale(1) + fade."
+        ),
+    },
+    "data_table": {
+        "category": "inject",
+        "name": "Interactive Data Table with CRUD",
+        "desc": (
+            "Create a full-featured data table component injected into the page. "
+            "Generate 30+ sample rows with columns: ID, Name, Email, Role, Status, Date. "
+            "Features: "
+            "- Inline editing: double-click a cell to edit, Enter to confirm, Escape to cancel. "
+            "- Row selection: checkbox column, select-all header checkbox, highlight selected rows. "
+            "- Delete selected: toolbar button, confirm with modal, animate row removal. "
+            "- Add row: button opens a form modal, validate required fields, append to table. "
+            "- Pagination: 10 rows per page, Previous/Next buttons, page number display. "
+            "- Column resize: drag column borders to resize, cursor:col-resize on hover. "
+            "- Export: 'Download CSV' button that generates a CSV blob and triggers download. "
+            "Persist data to localStorage. Style with zebra striping and hover highlight."
+        ),
+    },
+    "canvas_drawing": {
+        "category": "inject",
+        "name": "Canvas Drawing Board",
+        "desc": (
+            "Create a floating drawing tool button (🎨) that opens a full-screen canvas overlay. "
+            "Toolbar at top with: pen, eraser, line, rectangle, circle, text tools. "
+            "Color picker (8 preset colors + custom input). Line width slider (1-20px). "
+            "Implement freehand drawing with mouse/touch events: collect points on mousemove, "
+            "draw smooth curves using quadraticCurveTo between midpoints. "
+            "Shape tools: preview shape while dragging (draw on temp canvas, composite on mouseup). "
+            "Eraser: draw with destination-out composite mode. "
+            "Undo (Ctrl+Z): store canvas snapshots in a stack (toDataURL), restore with drawImage. "
+            "Clear all button with confirmation. "
+            "Save button: download canvas as PNG via toBlob + URL.createObjectURL. "
+            "Close button returns to the page."
+        ),
+    },
+    "rich_text_editor": {
+        "category": "inject",
+        "name": "Rich Text Editor Widget",
+        "desc": (
+            "Create a rich text editor component injected into the page as a floating panel "
+            "(toggle with a 📝 button). Use a contenteditable div as the editing surface. "
+            "Toolbar buttons using document.execCommand and modern alternatives: "
+            "- Text: Bold (Ctrl+B), Italic (Ctrl+I), Underline, Strikethrough. "
+            "- Headings: H1, H2, H3 dropdown. "
+            "- Lists: ordered, unordered, indent, outdent. "
+            "- Alignment: left, center, right, justify. "
+            "- Insert: horizontal rule, blockquote, code block (wrap in <pre><code>). "
+            "- Link: prompt for URL, wrap selection in <a> tag. "
+            "- Color: text color picker (foreColor). "
+            "Show active state on toolbar buttons matching current selection format "
+            "(use document.queryCommandState). "
+            "Word count and character count in the footer bar, updated on input. "
+            "Auto-save content to localStorage every 5 seconds. "
+            "Export as HTML button (copy innerHTML to clipboard with a toast)."
+        ),
+    },
+    "kanban_board": {
+        "category": "inject",
+        "name": "Kanban Task Board",
+        "desc": (
+            "Create a Kanban board overlay (toggle with a 📋 button). "
+            "Three columns: 'To Do', 'In Progress', 'Done', each as a vertical droppable zone. "
+            "Pre-populate with 8-10 sample task cards. Each card shows: title, description "
+            "(truncated to 2 lines), priority tag (High=red, Medium=orange, Low=green), due date. "
+            "Drag and drop cards between columns using HTML5 drag API: "
+            "dragstart sets dataTransfer with card ID, dragover on columns shows drop indicator "
+            "(blue dashed border), drop moves the card DOM element to the new column. "
+            "Add task: '+' button at top of each column opens inline form (title + description). "
+            "Delete task: hover reveals ✕ button, click removes with fade-out. "
+            "Edit task: click card to expand inline, edit title/description, click outside to save. "
+            "Column task counts in header. Persist board state to localStorage. "
+            "Subtle card shadow on drag (transform:rotate(3deg) + box-shadow)."
+        ),
+    },
+    "image_cropper": {
+        "category": "enhance",
+        "name": "Image Crop & Filter Tool",
+        "desc": (
+            "Find content images on the page. Add a small edit icon overlay on hover. "
+            "On click, open a modal with the image on a <canvas>. "
+            "Crop: draw a resizable selection rectangle with 8 drag handles (corners + edges). "
+            "The area outside the selection is dimmed with semi-transparent overlay. "
+            "Drag inside the selection to move it. Maintain aspect ratio when Shift is held. "
+            "Filter controls below the canvas: sliders for brightness, contrast, saturation, "
+            "blur (0-10px), and grayscale (0-100%). Apply filters using canvas context.filter "
+            "or manual pixel manipulation via getImageData/putImageData. "
+            "Buttons: 'Rotate 90°' (rotate canvas), 'Flip H' (scale(-1,1)), 'Reset'. "
+            "Apply: crop to selection, apply filters, replace the original <img> src with "
+            "canvas.toDataURL(). Cancel: close modal without changes."
+        ),
+    },
 }
 
 # Sorted lists for stable random selection

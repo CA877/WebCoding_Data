@@ -5,6 +5,7 @@ For each input project:
 1. Try to expand it to multiple pages.
 2. Always clean the original project.
 3. If expansion succeeds, also clean the expanded project.
+4. Add JS features via LLM (default; disable with --no-js).
 
 This keeps concurrency at the sample level instead of running all expand work
 before all clean work.
@@ -15,8 +16,10 @@ from __future__ import annotations
 import argparse
 import json
 import multiprocessing as mp
+import os
 import queue
 import shutil
+import sys
 import time
 from collections import Counter
 from concurrent.futures import ProcessPoolExecutor, as_completed
@@ -27,6 +30,11 @@ from playwright.sync_api import sync_playwright
 
 from playwright_crawl import build_requests_session, clean_project, expand_project
 
+# Add repo root to path so we can import from construct/
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+
 
 def _copy_fresh(src: Path, dst: Path) -> None:
     if dst.exists():
@@ -34,7 +42,46 @@ def _copy_fresh(src: Path, dst: Path) -> None:
     shutil.copytree(src, dst)
 
 
-def process_sample(payload: tuple[str, str, str, str, int, int]) -> dict[str, Any]:
+def _add_js_to_project(project_out: Path, add_js_config: dict) -> dict[str, Any]:
+    """Add JS features to a cleaned project via LLM."""
+    from construct.add_js import generate_js, select_features
+
+    model = add_js_config["model"]
+    seed = add_js_config.get("seed", 42)
+
+    from openai import OpenAI
+    client = OpenAI(
+        api_key=add_js_config["api_key"],
+        base_url=add_js_config.get("base_url"),
+        timeout=180.0,
+    )
+
+    features = select_features(project_out.name, seed=seed)
+    js_content = generate_js(project_out, model, client, features)
+    if not js_content:
+        return {"status": "generation_failed", "features": features}
+
+    (project_out / "main.js").write_text(js_content, encoding="utf-8")
+
+    # Inject <script src="main.js"> into all HTML files
+    for html_file in project_out.glob("*.html"):
+        html = html_file.read_text(encoding="utf-8", errors="replace")
+        if '<script src="main.js">' not in html:
+            if "</body>" in html:
+                html = html.replace("</body>", '  <script src="main.js"></script>\n</body>')
+            else:
+                html += '\n<script src="main.js"></script>'
+            html_file.write_text(html, encoding="utf-8")
+
+    return {
+        "status": "ok",
+        "features": features,
+        "js_lines": len(js_content.splitlines()),
+    }
+
+
+def process_sample(payload: tuple[str, str, str, str, int, int],
+                    add_js_config: dict | None = None) -> dict[str, Any]:
     project_path, output_root, browser_proxy, requests_proxy, max_pages, wait_ms = payload
     project_dir = Path(project_path)
     output_dir = Path(output_root)
@@ -120,14 +167,32 @@ def process_sample(payload: tuple[str, str, str, str, int, int]) -> dict[str, An
 
     shutil.rmtree(expanded_project, ignore_errors=True)
 
+    # --- Optional: add JS features via LLM ---
+    if add_js_config and result["outputs"]:
+        for output_info in result["outputs"]:
+            out_path = Path(output_info["path"])
+            if out_path.exists() and (out_path / "index.html").exists():
+                try:
+                    js_result = _add_js_to_project(out_path, add_js_config)
+                    output_info["add_js_status"] = js_result["status"]
+                    output_info["add_js_features"] = js_result.get("features", [])
+                    output_info["add_js_lines"] = js_result.get("js_lines", 0)
+                except Exception as exc:  # noqa: BLE001
+                    output_info["add_js_status"] = "error"
+                    result["errors"].append({
+                        "stage": f"add_js_{output_info['variant']}",
+                        "error": f"{type(exc).__name__}: {exc}",
+                    })
+
     if result["errors"]:
         result["status"] = "partial" if result["outputs"] else "error"
     result["elapsed"] = round(time.time() - started, 1)
     return result
 
 
-def process_sample_entry(payload: tuple[str, str, str, str, int, int], result_queue: mp.Queue) -> None:
-    result_queue.put(process_sample(payload))
+def process_sample_entry(payload: tuple[str, str, str, str, int, int], result_queue: mp.Queue,
+                         add_js_config: dict | None = None) -> None:
+    result_queue.put(process_sample(payload, add_js_config=add_js_config))
 
 
 def timeout_result(payload: tuple[str, str, str, str, int, int], elapsed: float, site_timeout: int) -> dict[str, Any]:
@@ -156,7 +221,7 @@ def main() -> None:
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--concurrency", type=int, default=5)
-    parser.add_argument("--max-pages", type=int, default=4)
+    parser.add_argument("--max-pages", type=int, default=7)
     parser.add_argument("--wait", type=int, default=3000)
     parser.add_argument("--browser-proxy", default="")
     parser.add_argument("--requests-proxy", default="")
@@ -167,6 +232,12 @@ def main() -> None:
         help="Hard wall-clock timeout per sample in seconds. When set, stuck workers are terminated.",
     )
     parser.add_argument("--overwrite", action="store_true")
+    parser.add_argument("--no-js", action="store_true",
+                        help="Skip JS feature generation (default: add JS via LLM)")
+    parser.add_argument("--js-model", default=None,
+                        help="Override LLM model for JS generation (default: from env)")
+    parser.add_argument("--js-seed", type=int, default=42,
+                        help="Seed for JS feature selection")
     args = parser.parse_args()
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
@@ -175,6 +246,20 @@ def main() -> None:
         shutil.rmtree(clean_root, ignore_errors=True)
         shutil.rmtree(args.output_dir / "_expand_tmp", ignore_errors=True)
     clean_root.mkdir(parents=True, exist_ok=True)
+
+    # --- add-js config (enabled by default) ---
+    add_js_config = None
+    if not args.no_js:
+        from construct.construct_common import ensure_api_env, maybe_load_env
+        maybe_load_env()
+        api_key, base_url, env_model = ensure_api_env()
+        add_js_config = {
+            "api_key": api_key,
+            "base_url": base_url,
+            "model": args.js_model or env_model,
+            "seed": args.js_seed,
+        }
+        print(f"Add-JS enabled: model={add_js_config['model']}")
 
     projects = sorted(d for d in args.input_dir.iterdir() if d.is_dir() and (d / "index.html").exists())
     if args.limit:
@@ -195,7 +280,8 @@ def main() -> None:
         for project in projects
     ]
 
-    print(f"Processing {len(payloads)} samples with concurrency={args.concurrency}", flush=True)
+    print(f"Processing {len(payloads)} samples with concurrency={args.concurrency}"
+          f"{' (with add-js)' if add_js_config else ' (no-js)'}", flush=True)
     results: list[dict[str, Any]] = []
 
     def record_result(i: int, result: dict[str, Any]) -> None:
@@ -218,7 +304,7 @@ def main() -> None:
         def start_next() -> None:
             payload = pending.pop(0)
             result_queue = ctx.Queue(maxsize=1)
-            proc = ctx.Process(target=process_sample_entry, args=(payload, result_queue))
+            proc = ctx.Process(target=process_sample_entry, args=(payload, result_queue, add_js_config))
             proc.start()
             active[proc] = (payload, time.time(), result_queue)
 
@@ -267,10 +353,17 @@ def main() -> None:
             time.sleep(0.5)
     else:
         with ProcessPoolExecutor(max_workers=args.concurrency) as executor:
-            futures = {executor.submit(process_sample, payload): payload for payload in payloads}
+            futures = {executor.submit(process_sample, payload, add_js_config): payload for payload in payloads}
             for i, future in enumerate(as_completed(futures), 1):
                 try:
-                    result = future.result()
+                    result = future.result(timeout=600 if add_js_config else 300)
+                except TimeoutError:
+                    result = {
+                        "project": Path(futures[future][0]).name,
+                        "status": "future_timeout",
+                        "outputs": [],
+                        "errors": [{"stage": "sample", "error": "future.result() timeout after 300s"}],
+                    }
                 except Exception as exc:  # noqa: BLE001
                     result = {
                         "project": Path(futures[future][0]).name,

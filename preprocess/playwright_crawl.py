@@ -137,6 +137,18 @@ INLINE_CSS_JS = """() => {
     while (walker.nextNode()) comments.push(walker.currentNode);
     comments.forEach(c => c.remove());
 
+    // Ensure charset declaration exists
+    if (!document.querySelector('meta[charset]') && !document.querySelector('meta[http-equiv="Content-Type"]')) {
+        const meta = document.createElement('meta');
+        meta.setAttribute('charset', 'UTF-8');
+        const head = document.head || document.querySelector('head');
+        if (head) head.prepend(meta);
+    }
+    // Fix LiteSpeed-blocked scripts
+    document.querySelectorAll('script[type="litespeed/javascript"]').forEach(s => {
+        s.setAttribute('type', 'text/javascript');
+    });
+
     return '<!DOCTYPE html>\\n' + document.documentElement.outerHTML;
 }"""
 
@@ -190,7 +202,7 @@ MAX_RESOURCES_PER_PAGE = 50  # Limit downloads to prevent hanging on heavy pages
 def _download_js(session: requests.Session, url: str, resources_dir: Path) -> str | None:
     """Download a remote JS file to resources/ dir. Returns relative path or None."""
     try:
-        resp = session.get(url, timeout=10, allow_redirects=True)
+        resp = session.get(url, timeout=(5, 10), allow_redirects=True)
         if resp.status_code == 200 and len(resp.content) >= 10:
             h = hashlib.md5(url.encode()).hexdigest()[:8]
             name = Path(urlparse(url).path).name or "script.js"
@@ -213,7 +225,7 @@ def download_resource(session: requests.Session, url: str, resources_dir: Path,
     If download fails and fallback_index >= 0, downloads a fallback image instead.
     """
     try:
-        resp = session.get(url, timeout=8, allow_redirects=True)
+        resp = session.get(url, timeout=(5, 8), allow_redirects=True)
         if resp.status_code == 200 and len(resp.content) >= 100:
             h = hashlib.md5(url.encode()).hexdigest()[:8]
             name = Path(urlparse(url).path).name or "resource"
@@ -273,6 +285,16 @@ def localize_resources(html: str, page_url: str, resources_dir: Path,
     html = re.sub(r'<!--.*?-->', '', html, flags=re.DOTALL)
 
     soup = BeautifulSoup(html, "html.parser")
+
+    # Ensure charset declaration
+    head = soup.find("head")
+    if head and not soup.find("meta", attrs={"charset": True}) and not soup.find("meta", attrs={"http-equiv": "Content-Type"}):
+        meta = soup.new_tag("meta", charset="UTF-8")
+        head.insert(0, meta)
+
+    # Fix LiteSpeed-blocked scripts
+    for script in soup.find_all("script", type="litespeed/javascript"):
+        script["type"] = "text/javascript"
 
     # Download remote JS files to local; remove tracking/analytics scripts
     TRACKING_KEYWORDS = (
@@ -488,6 +510,9 @@ def localize_resources(html: str, page_url: str, resources_dir: Path,
             else:
                 del tag["style"]
 
+    # Non-image extensions that should NOT get picsum fallbacks
+    _NON_IMAGE_EXTS = {".woff", ".woff2", ".ttf", ".otf", ".eot", ".css", ".js", ".json", ".xml", ".svg"}
+
     # Process CSS background-image url() in style attributes
     def replace_bg_url(match):
         nonlocal fallback_idx, download_count
@@ -497,16 +522,25 @@ def localize_resources(html: str, page_url: str, resources_dir: Path,
         abs_url = urljoin(page_url, img_url)
         if not abs_url.startswith("http"):
             return match.group(0)
+        # Detect non-image resources (fonts, CSS, etc.) — no picsum fallback for these
+        url_path = urlparse(abs_url).path.lower()
+        ext = Path(url_path).suffix if url_path else ""
+        is_non_image = ext in _NON_IMAGE_EXTS
         if download_count >= MAX_RESOURCES_PER_PAGE:
+            if is_non_image:
+                return 'url("")'
             fb = _fallback_url(fallback_idx)
             fallback_idx += 1
             return f"url('{fb}')"
         local = download_resource(session, abs_url, resources_dir,
-                                  fallback_index=fallback_idx)
+                                  fallback_index=-1 if is_non_image else fallback_idx)
         download_count += 1
-        fallback_idx += 1
+        if not is_non_image:
+            fallback_idx += 1
         if local:
             return f"url({local})"
+        if is_non_image:
+            return 'url("")'
         return match.group(0)
 
     for tag in soup.find_all(style=True):
@@ -525,7 +559,7 @@ def localize_resources(html: str, page_url: str, resources_dir: Path,
         href = link.get("href", "")
         if "stylesheet" in rel and href.startswith("http"):
             try:
-                resp = session.get(href, timeout=10)
+                resp = session.get(href, timeout=(5, 10))
                 if resp.status_code == 200 and "text" in resp.headers.get("content-type", ""):
                     style = soup.new_tag("style")
                     css_text = resp.text
@@ -1089,7 +1123,7 @@ def expand_project(project_dir: Path, output_dir: Path, browser: Browser,
         href = link.get("href", "")
         if "stylesheet" in rel and href.startswith("http"):
             try:
-                resp = session.get(href, timeout=10)
+                resp = session.get(href, timeout=(5, 10))
                 if resp.status_code == 200:
                     style = soup.new_tag("style")
                     style.string = resp.text
@@ -1165,6 +1199,11 @@ def expand_one_process(payload: tuple[str, str, str, str, int, int]) -> tuple[st
             return project_dir.name, result
         finally:
             browser.close()
+
+
+def expand_one_process_entry(payload: tuple[str, str, str, str, int, int], result_queue: mp.Queue) -> None:
+    """mp.Process entry point for expand with site-timeout support."""
+    result_queue.put(expand_one_process(payload))
 
 
 def clean_project(project_dir: Path, session: requests.Session) -> dict:
@@ -1387,7 +1426,10 @@ def cmd_crawl(args):
                 futures = {executor.submit(crawl_one_process, payload): payload for payload in payloads}
                 for i, future in enumerate(as_completed(futures), 1):
                     try:
-                        proj_name, result = future.result()
+                        proj_name, result = future.result(timeout=300)
+                    except TimeoutError:
+                        proj_name = str(futures[future][1])
+                        result = {"status": "future_timeout", "project": proj_name}
                     except Exception as e:
                         proj_name = str(futures[future][1])
                         result = {"status": "error", "error": str(e)}
@@ -1488,18 +1530,86 @@ def cmd_expand(args):
             )
             for proj in todo
         ]
-        with ProcessPoolExecutor(max_workers=concurrency) as executor:
-            futures = {executor.submit(expand_one_process, payload): payload for payload in payloads}
-            for i, future in enumerate(as_completed(futures), 1):
-                try:
-                    name, result = future.result()
-                except Exception as e:
-                    name = Path(futures[future][0]).name
-                    result = {"status": "error", "error": str(e)}
-                _append_result(result)
-                status = result["status"]
-                pages = result.get("pages_added", 0)
-                print(f"[{i}/{len(todo)}] {name}: {status} (+{pages} pages, {result.get('elapsed', 0):.1f}s)")
+        site_timeout = args.site_timeout if args.site_timeout and args.site_timeout > 0 else 0
+        if site_timeout:
+            ctx = mp.get_context()
+            pending = list(payloads)
+            active: dict[mp.Process, tuple[tuple, float, mp.Queue]] = {}
+            completed = 0
+
+            def _start_next_expand() -> None:
+                payload = pending.pop(0)
+                rq = ctx.Queue(maxsize=1)
+                proc = ctx.Process(target=expand_one_process_entry, args=(payload, rq))
+                proc.start()
+                active[proc] = (payload, time.time(), rq)
+
+            while pending or active:
+                while pending and len(active) < concurrency:
+                    _start_next_expand()
+
+                for proc, (payload, started, rq) in list(active.items()):
+                    proj_name = Path(payload[0]).name
+                    try:
+                        name, result = rq.get_nowait()
+                    except queue.Empty:
+                        name, result = None, None
+
+                    if result is not None:
+                        proc.join(timeout=2)
+                        active.pop(proc, None)
+                        completed += 1
+                        _append_result(result)
+                        pages = result.get("pages_added", 0)
+                        print(f"[{completed}/{len(todo)}] {name}: {result['status']} "
+                              f"(+{pages} pages, {result.get('elapsed', 0):.1f}s)", flush=True)
+                        continue
+
+                    elapsed = time.time() - started
+                    if elapsed > site_timeout:
+                        proc.terminate()
+                        proc.join(timeout=5)
+                        if proc.is_alive():
+                            proc.kill()
+                            proc.join(timeout=5)
+                        out_proj = output_dir / proj_name
+                        if out_proj.exists():
+                            shutil.rmtree(out_proj, ignore_errors=True)
+                        active.pop(proc, None)
+                        completed += 1
+                        result = {"status": "site_timeout", "project": proj_name,
+                                  "elapsed": round(elapsed, 1), "site_timeout": site_timeout,
+                                  "pages_added": 0}
+                        _append_result(result)
+                        print(f"[{completed}/{len(todo)}] {proj_name}: site_timeout "
+                              f"({elapsed:.1f}s)", flush=True)
+                    elif not proc.is_alive():
+                        proc.join(timeout=2)
+                        active.pop(proc, None)
+                        completed += 1
+                        result = {"status": "worker_exited", "project": proj_name,
+                                  "elapsed": round(elapsed, 1), "pages_added": 0}
+                        _append_result(result)
+                        print(f"[{completed}/{len(todo)}] {proj_name}: worker_exited "
+                              f"({elapsed:.1f}s)", flush=True)
+
+                time.sleep(0.2)
+        else:
+            with ProcessPoolExecutor(max_workers=concurrency) as executor:
+                futures = {executor.submit(expand_one_process, payload): payload for payload in payloads}
+                for i, future in enumerate(as_completed(futures), 1):
+                    try:
+                        name, result = future.result(timeout=300)
+                    except TimeoutError:
+                        name = Path(futures[future][0]).name
+                        result = {"status": "future_timeout", "project": name, "pages_added": 0}
+                    except Exception as e:
+                        name = Path(futures[future][0]).name
+                        result = {"status": "error", "error": str(e)}
+                    _append_result(result)
+                    status = result["status"]
+                    pages = result.get("pages_added", 0)
+                    print(f"[{i}/{len(todo)}] {name}: {status} (+{pages} pages, {result.get('elapsed', 0):.1f}s)")
 
     statuses = Counter(r["status"] for r in results)
     total_pages = sum(r.get("pages_added", 0) for r in results)
@@ -1535,6 +1645,8 @@ def cmd_clean(args):
         except Exception as e:
             return {"status": "error", "project": proj.name, "error": str(e)}
 
+    clean_timeout = args.site_timeout if args.site_timeout and args.site_timeout > 0 else 300
+
     if concurrency <= 1:
         for i, proj in enumerate(projects):
             result = _clean_one(proj)
@@ -1546,13 +1658,76 @@ def cmd_clean(args):
             futures = {executor.submit(_clean_one, proj): proj for proj in projects}
             for i, future in enumerate(as_completed(futures), 1):
                 proj = futures[future]
-                result = future.result()
+                try:
+                    result = future.result(timeout=clean_timeout)
+                except TimeoutError:
+                    result = {"status": "clean_timeout", "project": proj.name,
+                              "remaining_remote_refs": -1}
+                except Exception as e:
+                    result = {"status": "error", "project": proj.name, "error": str(e)}
                 results.append(result)
                 remaining = result.get("remaining_remote_refs", 0)
                 print(f"[{i}/{len(projects)}] {proj.name}: {result['status']} (remaining={remaining})")
 
     statuses = Counter(r["status"] for r in results)
     print(f"\nDone: {statuses}")
+
+
+VALIDATE_IGNORE_PATTERNS = (
+    "CORS policy", "net::ERR_", "Failed to load resource",
+    "favicon.ico", "blocked by CORS",
+    "the server responded with a status of 404",
+    "Unsafe attempt to load URL",
+    "PAGE_LOAD_ERROR",
+)
+
+
+def _validate_one_project(proj_path: str, purge: bool) -> dict:
+    """Validate a single project. Runs in a subprocess."""
+    proj = Path(proj_path)
+    index_html = proj / "index.html"
+    if not index_html.exists():
+        return {"project": proj.name, "status": "no_index"}
+
+    html = index_html.read_text(encoding="utf-8", errors="replace")
+    if not validate_page(html):
+        if purge:
+            shutil.rmtree(proj, ignore_errors=True)
+        return {"project": proj.name, "status": "garbage", "purged": purge}
+
+    from playwright.sync_api import sync_playwright
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        page = browser.new_page()
+        console_errors = []
+
+        def on_console(msg):
+            if msg.type == "error":
+                text = msg.text
+                if not any(pat in text for pat in VALIDATE_IGNORE_PATTERNS):
+                    console_errors.append(text)
+
+        page.on("console", on_console)
+
+        try:
+            page.goto(f"file://{index_html.resolve()}", wait_until="load", timeout=60000)
+            page.wait_for_timeout(2000)
+        except Exception:
+            try:
+                page.goto(f"file://{index_html.resolve()}", wait_until="domcontentloaded", timeout=15000)
+                page.wait_for_timeout(3000)
+            except Exception:
+                pass
+
+        page.close()
+        browser.close()
+
+    status = "ok" if not console_errors else f"errors({len(console_errors)})"
+    return {
+        "project": proj.name,
+        "status": status,
+        "console_errors": console_errors[:10],
+    }
 
 
 def cmd_validate(args):
@@ -1569,90 +1744,97 @@ def cmd_validate(args):
     if args.limit:
         projects = projects[:args.limit]
     purge = getattr(args, "purge", False)
+    concurrency = args.concurrency
 
-    print(f"Validating {len(projects)} projects (content + console checks, purge={purge})")
-
-    from playwright.sync_api import sync_playwright
+    print(f"Validating {len(projects)} projects (content + console, purge={purge}, concurrency={concurrency})")
 
     results = []
     results_path = input_dir / "validate_results.jsonl"
     results_path.write_text("", encoding="utf-8")
     purged = 0
 
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
+    validate_timeout = args.site_timeout if args.site_timeout and args.site_timeout > 0 else 120
 
-        for i, proj in enumerate(projects):
-            index_html = proj / "index.html"
-            if not index_html.exists():
-                result = {"project": proj.name, "status": "no_index"}
-                results.append(result)
-                with open(results_path, "a", encoding="utf-8") as f:
-                    f.write(json.dumps(result, ensure_ascii=False) + "\n")
-                continue
+    if concurrency <= 1:
+        from playwright.sync_api import sync_playwright
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
 
-            # --- Content quality check ---
-            html = index_html.read_text(encoding="utf-8", errors="replace")
-            if not validate_page(html):
-                result = {"project": proj.name, "status": "garbage"}
-                results.append(result)
-                with open(results_path, "a", encoding="utf-8") as f:
-                    f.write(json.dumps(result, ensure_ascii=False) + "\n")
-                if purge:
-                    import shutil
-                    shutil.rmtree(proj, ignore_errors=True)
-                    purged += 1
-                print(f"[{i+1}/{len(projects)}] {proj.name}: GARBAGE"
-                      f"{' (purged)' if purge else ''}")
-                continue
+            for i, proj in enumerate(projects):
+                index_html = proj / "index.html"
+                if not index_html.exists():
+                    result = {"project": proj.name, "status": "no_index"}
+                    results.append(result)
+                    with open(results_path, "a", encoding="utf-8") as f:
+                        f.write(json.dumps(result, ensure_ascii=False) + "\n")
+                    continue
 
-            # --- Console error check ---
-            page = browser.new_page()
-            console_errors = []
+                html = index_html.read_text(encoding="utf-8", errors="replace")
+                if not validate_page(html):
+                    result = {"project": proj.name, "status": "garbage"}
+                    results.append(result)
+                    with open(results_path, "a", encoding="utf-8") as f:
+                        f.write(json.dumps(result, ensure_ascii=False) + "\n")
+                    if purge:
+                        shutil.rmtree(proj, ignore_errors=True)
+                        purged += 1
+                    print(f"[{i+1}/{len(projects)}] {proj.name}: GARBAGE"
+                          f"{' (purged)' if purge else ''}")
+                    continue
 
-            IGNORE_PATTERNS = (
-                "CORS policy", "net::ERR_", "Failed to load resource",
-                "favicon.ico", "blocked by CORS",
-                "the server responded with a status of 404",
-                "Unsafe attempt to load URL",
-                "PAGE_LOAD_ERROR",
-            )
+                page = browser.new_page()
+                console_errors = []
 
-            def on_console(msg):
-                if msg.type == "error":
-                    text = msg.text
-                    if not any(p in text for p in IGNORE_PATTERNS):
-                        console_errors.append(text)
+                def on_console(msg):
+                    if msg.type == "error":
+                        text = msg.text
+                        if not any(pat in text for pat in VALIDATE_IGNORE_PATTERNS):
+                            console_errors.append(text)
 
-            page.on("console", on_console)
-
-            try:
-                page.goto(f"file://{index_html.resolve()}", wait_until="load", timeout=60000)
-                page.wait_for_timeout(2000)
-            except Exception:
-                # Load timeout is common for local files with unresolvable font/CSS refs.
-                # Fall back to domcontentloaded — the JS we care about is already loaded.
+                page.on("console", on_console)
                 try:
-                    page.goto(f"file://{index_html.resolve()}", wait_until="domcontentloaded", timeout=15000)
-                    page.wait_for_timeout(3000)
+                    page.goto(f"file://{index_html.resolve()}", wait_until="load", timeout=60000)
+                    page.wait_for_timeout(2000)
                 except Exception:
-                    pass  # Still count console errors collected so far
+                    try:
+                        page.goto(f"file://{index_html.resolve()}", wait_until="domcontentloaded", timeout=15000)
+                        page.wait_for_timeout(3000)
+                    except Exception:
+                        pass
 
-            page.close()
+                page.close()
+                status = "ok" if not console_errors else f"errors({len(console_errors)})"
+                result = {"project": proj.name, "status": status, "console_errors": console_errors[:10]}
+                results.append(result)
+                with open(results_path, "a", encoding="utf-8") as f:
+                    f.write(json.dumps(result, ensure_ascii=False) + "\n")
+                error_summary = f" — {console_errors[0][:80]}" if console_errors else ""
+                print(f"[{i+1}/{len(projects)}] {proj.name}: {status}{error_summary}")
 
-            status = "ok" if not console_errors else f"errors({len(console_errors)})"
-            result = {
-                "project": proj.name,
-                "status": status,
-                "console_errors": console_errors[:10],
-            }
-            results.append(result)
-            with open(results_path, "a", encoding="utf-8") as f:
-                f.write(json.dumps(result, ensure_ascii=False) + "\n")
-            error_summary = f" — {console_errors[0][:80]}" if console_errors else ""
-            print(f"[{i+1}/{len(projects)}] {proj.name}: {status}{error_summary}")
-
-        browser.close()
+            browser.close()
+    else:
+        payloads = [(str(proj), purge) for proj in projects]
+        with ProcessPoolExecutor(max_workers=concurrency) as executor:
+            future_map = {executor.submit(_validate_one_project, *p): p for p in payloads}
+            for i, future in enumerate(as_completed(future_map), 1):
+                proj_name = Path(future_map[future][0]).name
+                try:
+                    result = future.result(timeout=validate_timeout)
+                except TimeoutError:
+                    result = {"project": proj_name, "status": "validate_timeout"}
+                except Exception as e:
+                    result = {"project": proj_name, "status": "error", "error": str(e)}
+                results.append(result)
+                with open(results_path, "a", encoding="utf-8") as f:
+                    f.write(json.dumps(result, ensure_ascii=False) + "\n")
+                if result.get("purged"):
+                    purged += 1
+                status = result["status"]
+                extra = ""
+                if status.startswith("errors"):
+                    errs = result.get("console_errors", [])
+                    extra = f" — {errs[0][:80]}" if errs else ""
+                print(f"[{i}/{len(projects)}] {proj_name}: {status}{extra}")
 
     ok_count = sum(1 for r in results if r["status"] == "ok")
     garbage_count = sum(1 for r in results if r["status"] == "garbage")
@@ -1671,7 +1853,7 @@ def main():
     parser.add_argument("--concurrency", type=int, default=1,
                         help="Number of concurrent browser pages (NOT browsers). "
                              "Mac M4 16GB: use 3-5. Server 64GB: use 15-20.")
-    parser.add_argument("--max-pages", type=int, default=4,
+    parser.add_argument("--max-pages", type=int, default=7,
                         help="Max sub-pages to crawl per site")
     parser.add_argument("--wait", type=int, default=3000,
                         help="Wait time (ms) after page load for rendering")
