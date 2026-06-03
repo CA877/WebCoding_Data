@@ -13,13 +13,14 @@ if str(REPO_ROOT) not in sys.path:
 from WebCoding_Data.construct.construct_common import (
     append_jsonl,
     base_info,
+    build_file_manifest,
     build_forward_edit_synthesizer,
     build_generation_data,
     choose_task_types,
-    description_to_text,
     ensure_api_env,
     infer_page_bucket,
     load_edit_catalog,
+    read_code_bundle,
     safe_write_json,
     serialize_patch_xml,
     write_pair_instance,
@@ -32,7 +33,8 @@ def main() -> None:
     parser.add_argument("--input-dir", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--limit", type=int, default=0)
-    parser.add_argument("--task-count", type=int, default=1)
+    parser.add_argument("--min-tasks", type=int, default=4)
+    parser.add_argument("--max-tasks", type=int, default=12)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--max-retries", type=int, default=3)
     parser.add_argument("--overwrite", action="store_true")
@@ -54,20 +56,21 @@ def main() -> None:
             shutil.rmtree(instance_dir)
         try:
             generation_data = build_generation_data(project_dir)
-            task_types = choose_task_types(all_task_types, args.task_count, args.seed, project_dir.name)
+            task_types = choose_task_types(all_task_types, (args.min_tasks, args.max_tasks), args.seed, project_dir.name)
             task = synthesizer.generate_forward_pair(generation_data, task_types)
 
-            info = base_info(project_dir.name, "text-editing", "edit")
+            info = base_info(project_dir.name, "edit")
             info["task_type"] = task_types
-            info["description"] = description_to_text(task["description"])
-            info["instruction"] = info["description"]
-            info["src_code"] = task["src_code"]
-            info["dst_code"] = task["dst_code"]
+            info["description"] = task["description"]  # [{task_type, description}, ...] array
+            info["src_code"] = read_code_bundle(project_dir, code_only=True)
+            # Filter dst_code to code-only files (html/css/js), matching src_code
+            dst_code_only = [f for f in task["dst_code"] if any(f["path"].endswith(ext) for ext in (".html", ".htm", ".css", ".js", ".jsx", ".ts", ".tsx"))]
+            info["dst_code"] = dst_code_only
+            info["file_manifest"] = build_file_manifest(project_dir)
             info["label_modified_files"] = task["label_modified_files"]
             info["resources"] = task["resources"]
             info["meta"] = {
                 "source_project": str(project_dir),
-                "description_items": task["description"],
                 "patch_xml": serialize_patch_xml(task["label_modified_files"]),
                 "llm_metadata": task.get("llm_metadata", {}),
             }

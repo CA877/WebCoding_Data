@@ -52,7 +52,8 @@ def main() -> None:
             info = json.loads((dst_instance_dir / "info.json").read_text(encoding="utf-8"))
             src_screens = screenshot_project_to_dir(dst_instance_dir / "src", dst_instance_dir / "src_screenshots")
             dst_screens = screenshot_project_to_dir(dst_instance_dir / "dst", dst_instance_dir / "dst_screenshots")
-            info["task"] = "image-repair"
+            info["task"] = "repair"
+            info.pop("instruction", None)
             info["src_screenshot"] = src_screens
             info["dst_screenshot"] = dst_screens
             safe_write_json(dst_instance_dir / "info.json", info)
