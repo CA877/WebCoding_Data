@@ -10,7 +10,7 @@ OUTPUT_DIR="${OUTPUT_DIR:-./output}"
 # API 配置
 export OPENAI_API_KEY="0356831d861695f2622f50025b9ee465"
 export OPENAI_BASE_URL="https://idealab.alibaba-inc.com/api/openai/v1"
-export OPENAI_MODEL="Qwen3-235B-A22B"
+export OPENAI_MODEL="kimi-k2.6"
 
 # 视觉模型（text-generation 的 PRD 需要，同一套 API）
 export VISION_OPENAI_API_KEY="$OPENAI_API_KEY"
