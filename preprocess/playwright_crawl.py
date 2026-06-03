@@ -199,8 +199,19 @@ def resolve_requests_proxy(explicit: str) -> str:
 MAX_RESOURCES_PER_PAGE = 50  # Limit downloads to prevent hanging on heavy pages
 
 
+def _is_alive(session: requests.Session, url: str) -> bool:
+    """Quick HEAD check before attempting a full download."""
+    try:
+        r = session.head(url, timeout=2, allow_redirects=True)
+        return r.status_code < 400
+    except Exception:
+        return False
+
+
 def _download_js(session: requests.Session, url: str, resources_dir: Path) -> str | None:
     """Download a remote JS file to resources/ dir. Returns relative path or None."""
+    if not _is_alive(session, url):
+        return None
     try:
         resp = session.get(url, timeout=(5, 10), allow_redirects=True)
         if resp.status_code == 200 and len(resp.content) >= 10:
@@ -264,7 +275,7 @@ def download_resource(session: requests.Session, url: str, resources_dir: Path,
     If download fails and fallback_index >= 0, downloads a fallback image instead.
     """
     try:
-        resp = session.get(url, timeout=(5, 8), allow_redirects=True)
+        resp = session.get(url, timeout=(2, 3), allow_redirects=True)
         if resp.status_code == 200 and len(resp.content) >= 100:
             h = hashlib.md5(url.encode()).hexdigest()[:8]
             name = Path(urlparse(url).path).name or "resource"
@@ -453,89 +464,37 @@ def localize_resources(html: str, page_url: str, resources_dir: Path,
     download_count = 0
 
     # Process <img>, <source>, and <input type="image"> tags
+    # NOTE: Skip image downloads — keep original URLs (fast mode)
     for tag in list(soup.find_all(["img", "source", "input"])):
-        # Skip <input> that aren't type="image"
         if tag.name == "input" and (tag.get("type") or "").lower() != "image":
             continue
-        for attr in ("src", "data-src", "data-lazy-src", "data-cke-saved-src", "nitro-lazy-src", "data-original", "data-lazy"):
+        for attr in ("src", "data-src", "data-lazy-src", "data-cke-saved-src",
+                      "nitro-lazy-src", "data-original", "data-lazy"):
             val = tag.get(attr)
-            if not val or val.startswith("data:") or val.startswith("./resources/") or "picsum.photos" in val:
+            if not val or val.startswith("data:") or val.startswith("./resources/"):
                 continue
             abs_url = urljoin(page_url, val)
-            if not abs_url.startswith("http"):
-                continue
-            if download_count >= MAX_RESOURCES_PER_PAGE:
-                # Hit limit — use picsum fallback URL (don't delete, preserves layout)
-                tag[attr] = _fallback_url(fallback_idx)
-                fallback_idx += 1
-                break
-            local = download_resource(session, abs_url, resources_dir,
-                                      fallback_index=fallback_idx)
-            download_count += 1
-            fallback_idx += 1
-            if local:
-                tag[attr] = local
-            else:
-                # Download failed — use picsum fallback (preserves layout)
-                tag[attr] = _fallback_url(fallback_idx - 1)
-        # Remove srcset (too complex to handle)
+            if abs_url.startswith("http"):
+                # Keep original URL — don't download, don't replace
+                tag[attr] = abs_url
         try:
             if tag.get("srcset"):
                 del tag["srcset"]
         except (AttributeError, TypeError):
             pass
 
-    # Process data-src on any element (lazy-load divs, etc.)
+    # Process data-src on any element — keep original URLs, skip downloads
     for tag in list(soup.find_all(attrs={"data-src": True})):
         val = tag["data-src"]
-        if val.startswith("data:") or val.startswith("./resources/") or "picsum.photos" in val:
-            local = val if val.startswith("./resources/") else None
-        else:
-            abs_url = urljoin(page_url, val)
-            if not abs_url.startswith("http"):
-                continue
-            if download_count >= MAX_RESOURCES_PER_PAGE:
-                tag["data-src"] = _fallback_url(fallback_idx)
-                fallback_idx += 1
-                local = tag["data-src"]
-            else:
-                local = download_resource(session, abs_url, resources_dir,
-                                          fallback_index=fallback_idx)
-                download_count += 1
-                fallback_idx += 1
-                if local:
-                    tag["data-src"] = local
-                else:
-                    del tag["data-src"]
-                    continue
-        # For non-img elements: promote data-src to background-image if not set
-        if local and tag.name != "img":
-            style = tag.get("style", "")
-            if "background-image" not in style:
-                tag["style"] = style.rstrip("; ") + f"; background-image: url({local});" if style.strip() else f"background-image: url({local});"
+        if val.startswith("data:") or val.startswith("./resources/"):
+            continue
+        abs_url = urljoin(page_url, val)
+        if abs_url.startswith("http"):
+            tag["data-src"] = abs_url
 
-    # Promote lazy-load attrs to src and clean up lazy attributes
+    # Clean up lazy attributes — keep original URLs
     LAZY_ATTRS = ("data-lazy-src", "data-src", "nitro-lazy-src", "data-original", "data-lazy")
     for img in soup.find_all("img"):
-        src = img.get("src", "")
-        if src.startswith("./resources/") or "picsum.photos" in src:
-            pass  # src already good
-        else:
-            # Try promote from lazy attrs
-            promoted = False
-            for lazy_attr in LAZY_ATTRS:
-                lazy_val = img.get(lazy_attr, "")
-                if lazy_val and (lazy_val.startswith("./resources/") or "picsum.photos" in lazy_val):
-                    img["src"] = lazy_val
-                    promoted = True
-                    break
-            if not promoted and (not src or src.startswith("data:")):
-                img["src"] = _fallback_url(fallback_idx)
-                fallback_idx += 1
-        # Clean up lazy attrs — no longer needed
-        for lazy_attr in LAZY_ATTRS:
-            if img.get(lazy_attr):
-                del img[lazy_attr]
         # Remove loading="lazy" — we want immediate rendering
         if img.get("loading"):
             del img["loading"]
@@ -956,8 +915,8 @@ def detect_language(html: str) -> str:
 def snapshot_page(
     page: Page,
     url: str,
-    wait_ms: int = 2000,
-    timeout_ms: int = 20000,
+    wait_ms: int = 5000,
+    timeout_ms: int = 30000,
     retry_timeout_ms: int | None = None,  # kept for backward compat, no longer used
 ) -> str | None:
     """Navigate to URL and return inlined HTML, or None on failure. No retry."""
