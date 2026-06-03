@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import shutil
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 import sys
 
@@ -28,6 +29,49 @@ from WebCoding_Data.construct.construct_common import (
 )
 
 
+def _process_one(project_dir: Path, args, synthesizer, all_task_types) -> dict:
+    """Process a single project. Returns manifest record."""
+    bucket = infer_page_bucket(project_dir)
+    instance_dir = args.output_dir / bucket / project_dir.name
+    if instance_dir.exists():
+        if not args.overwrite:
+            return {"instance_id": project_dir.name, "bucket": bucket, "status": "skip_existing"}
+        shutil.rmtree(instance_dir)
+    instance_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        generation_data = build_generation_data(project_dir)
+        task_types = choose_task_types(all_task_types, (args.min_tasks, args.max_tasks), args.seed, project_dir.name, allow_repeat=True)
+        task = synthesizer.generate_defect_task(generation_data, task_types)
+        if not task:
+            raise RuntimeError("repair generation returned None")
+
+        info = base_info(project_dir.name, "repair")
+        info["task_type"] = task_types
+        info["description"] = task["description"]
+        info["dst_code"] = read_code_bundle(project_dir, code_only=True)  # clean original
+        info["file_manifest"] = build_file_manifest(project_dir)
+        info["label_modified_files"] = task["label_modified_files"]
+        info["resources"] = collect_resources(project_dir)
+        info["meta"] = {
+            "source_project": str(project_dir),
+            "patch_xml": serialize_patch_xml(task["label_modified_files"]),
+            "llm_metadata": task.get("llm_metadata", {}),
+        }
+
+        safe_write_json(instance_dir / "info.json", info)
+        safe_write_json(
+            instance_dir / "llm_log.json",
+            {
+                "llm_raw_response": task.get("llm_raw_response", ""),
+                "llm_metadata": task.get("llm_metadata", {}),
+            },
+        )
+        return {"instance_id": project_dir.name, "bucket": bucket, "status": "ok", "task_type": task_types}
+    except Exception as exc:  # noqa: BLE001
+        shutil.rmtree(instance_dir, ignore_errors=True)
+        return {"instance_id": project_dir.name, "bucket": bucket, "status": "error", "error": f"{type(exc).__name__}: {exc}"}
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--input-dir", type=Path, required=True)
@@ -37,6 +81,7 @@ def main() -> None:
     parser.add_argument("--max-tasks", type=int, default=12)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--max-retries", type=int, default=3)
+    parser.add_argument("--workers", type=int, default=1)
     parser.add_argument("--overwrite", action="store_true")
     args = parser.parse_args()
 
@@ -45,48 +90,31 @@ def main() -> None:
     api_key, base_url, model = ensure_api_env(prefer_vision=False)
     synthesizer = build_repair_synthesizer(api_key, base_url, model, max_retries=args.max_retries)
     all_task_types, _ = load_repair_catalog()
+    projects = iter_project_dirs(args.input_dir, args.limit)
+    total = len(projects)
+    print(f"text-repair: {total} projects, {args.workers} worker(s)")
 
-    for project_dir in iter_project_dirs(args.input_dir, args.limit):
-        bucket = infer_page_bucket(project_dir)
-        instance_dir = args.output_dir / bucket / project_dir.name
-        if instance_dir.exists():
-            if not args.overwrite:
-                append_jsonl(manifest, {"instance_id": project_dir.name, "bucket": bucket, "status": "skip_existing"})
-                continue
-            shutil.rmtree(instance_dir)
-        instance_dir.mkdir(parents=True, exist_ok=True)
-        try:
-            generation_data = build_generation_data(project_dir)
-            task_types = choose_task_types(all_task_types, (args.min_tasks, args.max_tasks), args.seed, project_dir.name, allow_repeat=True)
-            task = synthesizer.generate_defect_task(generation_data, task_types)
-            if not task:
-                raise RuntimeError("repair generation returned None")
-
-            info = base_info(project_dir.name, "repair")
-            info["task_type"] = task_types
-            info["description"] = task["description"]
-            info["dst_code"] = read_code_bundle(project_dir, code_only=True)  # clean original
-            info["file_manifest"] = build_file_manifest(project_dir)
-            info["label_modified_files"] = task["label_modified_files"]
-            info["resources"] = collect_resources(project_dir)
-            info["meta"] = {
-                "source_project": str(project_dir),
-                "patch_xml": serialize_patch_xml(task["label_modified_files"]),
-                "llm_metadata": task.get("llm_metadata", {}),
-            }
-
-            safe_write_json(instance_dir / "info.json", info)
-            safe_write_json(
-                instance_dir / "llm_log.json",
-                {
-                    "llm_raw_response": task.get("llm_raw_response", ""),
-                    "llm_metadata": task.get("llm_metadata", {}),
-                },
-            )
-            append_jsonl(manifest, {"instance_id": project_dir.name, "bucket": bucket, "status": "ok", "task_type": task_types})
-        except Exception as exc:  # noqa: BLE001
-            shutil.rmtree(instance_dir, ignore_errors=True)
-            append_jsonl(manifest, {"instance_id": project_dir.name, "bucket": bucket, "status": "error", "error": f"{type(exc).__name__}: {exc}"})
+    done = 0
+    ok = 0
+    errors = 0
+    with ThreadPoolExecutor(max_workers=args.workers) as pool:
+        futures = {pool.submit(_process_one, p, args, synthesizer, all_task_types): p for p in projects}
+        for future in as_completed(futures):
+            project_dir = futures[future]
+            try:
+                result = future.result()
+            except Exception as exc:  # noqa: BLE001
+                result = {"instance_id": project_dir.name, "bucket": "sp", "status": "error", "error": f"Worker crash: {exc}"}
+            append_jsonl(manifest, result)
+            done += 1
+            status = result["status"]
+            if status == "ok":
+                ok += 1
+            elif status == "error":
+                errors += 1
+            tag = f" — {result['error'][:80]}" if status == "error" else ""
+            print(f"  [{done}/{total}] {result['instance_id']}: {status}{tag}")
+    print(f"text-repair done: {ok} ok, {errors} errors, {done - ok - errors} skipped")
 
 
 if __name__ == "__main__":
