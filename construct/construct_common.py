@@ -101,6 +101,40 @@ Batch notes:
 ---
 """
 
+CODE_PRD_PROMPT = """You are writing a complete implementation brief for a developer who must recreate an entire website project from scratch.
+You will be shown the full source code (HTML, CSS, JavaScript) of a web project.
+
+Write a detailed PRD-style instruction that covers everything needed to rebuild this site from zero.
+
+Requirements:
+- Cover the full project — if there are multiple HTML pages, describe each one.
+- Explain the shared site shell first (header, navigation, footer), then page-specific content.
+- Describe the information architecture: navigation hierarchy, page flow, content sections in visual order.
+- Detail every major UI component: hero areas, cards, lists, forms, media blocks, CTAs, sidebars, tables.
+- Describe all interaction behavior implemented in JavaScript: menus, tabs, sliders, modals, form validation, hover effects, animations, expandable sections, scroll effects.
+- Note responsive design patterns from CSS media queries or flexible layouts — describe how layout changes across breakpoints.
+- Capture the website's tone, industry, audience, visual density, and content character.
+- Be specific about colors, typography, spacing patterns, and layout structures visible in the code.
+- Describe the visual appearance that the CSS produces, not the CSS properties themselves.
+
+Hard constraints:
+- Do not mention source code, reverse engineering, code analysis, or any internal process.
+- Do not reference CSS selectors, class names, variable names, or implementation details.
+- Write as if you are a product manager describing what to build, not a developer reading code.
+- Do not produce vague filler like "build a modern website" — ground every statement in the actual project content.
+- Do not invent backend behavior not evidenced in the code.
+- If patterns repeat across pages, describe once and note per-page variations.
+- If placeholder or boilerplate text appears (e.g. "lorem ipsum", "demo page"), describe the structural role without reproducing the boilerplate.
+
+Output exactly these sections:
+# Project overview
+# Global structure and navigation
+# Page-by-page requirements
+# Interaction and state requirements
+# Responsive behavior
+# Visual language and content details
+"""
+
 
 def maybe_load_env() -> None:
     try:
@@ -541,6 +575,61 @@ def generate_prd(project_dir: Path, screenshots_dir: Path) -> tuple[str, list[di
         )
     )
     return instruction, screenshots
+
+
+def generate_prd_from_code(project_dir: Path) -> str:
+    """Generate PRD instruction from source code only (no screenshots/VLM)."""
+    from openai import OpenAI
+
+    maybe_load_env()
+    api_key, base_url, model = ensure_api_env(prefer_vision=False)
+    client = OpenAI(api_key=api_key, base_url=base_url, timeout=300.0)
+
+    code_items = read_code_bundle(project_dir, code_only=True)
+    # Reserve tokens for prompt template + output.
+    # 1 token ≈ 3 chars for HTML/CSS (conservative). Default 200K tokens.
+    # Override via OPENAI_MAX_INPUT_TOKENS env var for smaller-context models.
+    max_input_tokens = int(os.environ.get("OPENAI_MAX_INPUT_TOKENS", "200000"))
+    prompt_overhead = len(CODE_PRD_PROMPT) + 200
+    max_chars = max(max_input_tokens * 3 - prompt_overhead, 20_000)
+    # Prioritise HTML > JS > CSS (CSS is largest but least informative for PRD)
+    priority = {".html": 0, ".htm": 0, ".js": 1, ".jsx": 1, ".ts": 1, ".tsx": 1, ".css": 2}
+    sorted_items = sorted(code_items, key=lambda it: (priority.get(Path(it["path"]).suffix.lower(), 9), it["path"]))
+    context = "<code_context>\n"
+    remaining = max_chars
+    for item in sorted_items:
+        if remaining <= 0:
+            break
+        code = _truncate_text(item["code"], remaining)
+        context += f'<file path="{item["path"]}">\n{code}\n</file>\n'
+        remaining -= len(code)
+    context += "</code_context>"
+
+    prompt = CODE_PRD_PROMPT + "\n\n" + context
+
+    last_error: Exception | None = None
+    for attempt in range(1, 4):
+        try:
+            response = client.chat.completions.create(
+                model=model,
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=4096,
+            )
+            result = response.choices[0].message.content or ""
+            if result.strip():
+                print(f"  PRD generated (attempt {attempt}, {len(result)} chars)")
+                return result
+            raise ValueError("Empty response from LLM")
+        except Exception as e:
+            last_error = e
+            err_lower = str(e).lower()
+            if any(kw in err_lower for kw in ["invalid api key", "authentication", "model not found"]):
+                raise
+            if attempt < 3:
+                delay = 10 * attempt
+                print(f"  PRD generation error (attempt {attempt}): {e} — retrying in {delay}s")
+                time.sleep(delay)
+    raise Exception(f"PRD generation failed after 3 attempts: {last_error}") from last_error
 
 
 def description_to_text(description: Any) -> str:

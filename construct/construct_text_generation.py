@@ -17,7 +17,7 @@ from WebCoding_Data.construct.construct_common import (
     build_file_manifest,
     collect_resources,
     copy_project,
-    generate_prd,
+    generate_prd_from_code,
     iter_project_dirs,
     read_code_bundle,
     safe_write_json,
@@ -33,8 +33,7 @@ def _process_one(project_dir: Path, args) -> dict:
         shutil.rmtree(instance_dir)
     instance_dir.mkdir(parents=True, exist_ok=True)
     try:
-        input_screenshots_dir = instance_dir / "input_screenshots"
-        instruction, screenshots = generate_prd(project_dir, input_screenshots_dir)
+        instruction = generate_prd_from_code(project_dir)
         copy_project(project_dir, instance_dir / "dst")
 
         info = base_info(project_dir.name, "text-generation")
@@ -42,7 +41,6 @@ def _process_one(project_dir: Path, args) -> dict:
         info["dst_code"] = read_code_bundle(project_dir, code_only=True)
         info["file_manifest"] = build_file_manifest(project_dir)
         info["resources"] = collect_resources(project_dir)
-        info["input_screenshots"] = screenshots
         info["meta"] = {"source_project": str(project_dir)}
         safe_write_json(instance_dir / "info.json", info)
         return {"instance_id": project_dir.name, "status": "ok"}
