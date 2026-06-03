@@ -17,13 +17,13 @@ from WebCoding_Data.construct.construct_common import (
     build_generation_data,
     build_repair_synthesizer,
     choose_task_types,
+    collect_resources,
     ensure_api_env,
     infer_page_bucket,
     load_repair_catalog,
     read_code_bundle,
     safe_write_json,
     serialize_patch_xml,
-    write_pair_instance,
     iter_project_dirs,
 )
 
@@ -54,6 +54,7 @@ def main() -> None:
                 append_jsonl(manifest, {"instance_id": project_dir.name, "bucket": bucket, "status": "skip_existing"})
                 continue
             shutil.rmtree(instance_dir)
+        instance_dir.mkdir(parents=True, exist_ok=True)
         try:
             generation_data = build_generation_data(project_dir)
             task_types = choose_task_types(all_task_types, (args.min_tasks, args.max_tasks), args.seed, project_dir.name)
@@ -63,27 +64,23 @@ def main() -> None:
 
             info = base_info(project_dir.name, "repair")
             info["task_type"] = task_types
-            info["description"] = task["description"]  # [{task_type, description}, ...] array
-            # Filter src_code to code-only files (html/css/js), matching dst_code
-            src_code_only = [f for f in task["src_code"] if any(f["path"].endswith(ext) for ext in (".html", ".htm", ".css", ".js", ".jsx", ".ts", ".tsx"))]
-            info["src_code"] = src_code_only  # defective code (code files only)
+            info["description"] = task["description"]
             info["dst_code"] = read_code_bundle(project_dir, code_only=True)  # clean original
             info["file_manifest"] = build_file_manifest(project_dir)
             info["label_modified_files"] = task["label_modified_files"]
-            info["resources"] = task["resources"]
+            info["resources"] = collect_resources(project_dir)
             info["meta"] = {
                 "source_project": str(project_dir),
                 "patch_xml": serialize_patch_xml(task["label_modified_files"]),
                 "llm_metadata": task.get("llm_metadata", {}),
             }
 
-            instance_dir = write_pair_instance(args.output_dir, bucket, project_dir, task["src_code"], task["dst_code"], info)
+            safe_write_json(instance_dir / "info.json", info)
             safe_write_json(
                 instance_dir / "llm_log.json",
                 {
                     "llm_raw_response": task.get("llm_raw_response", ""),
                     "llm_metadata": task.get("llm_metadata", {}),
-                    "synthetic_modified_files": task.get("synthetic_modified_files", []),
                 },
             )
             append_jsonl(manifest, {"instance_id": project_dir.name, "bucket": bucket, "status": "ok", "task_type": task_types})

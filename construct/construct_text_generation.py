@@ -13,6 +13,7 @@ if str(REPO_ROOT) not in sys.path:
 from WebCoding_Data.construct.construct_common import (
     append_jsonl,
     base_info,
+    build_file_manifest,
     collect_resources,
     copy_project,
     generate_prd,
@@ -47,9 +48,10 @@ def main() -> None:
             instruction, screenshots = generate_prd(project_dir, input_screenshots_dir)
             copy_project(project_dir, instance_dir / "dst")
 
-            info = base_info(project_dir.name, "text-generation", "generation")
+            info = base_info(project_dir.name, "text-generation")
             info["instruction"] = instruction
-            info["dst_code"] = read_code_bundle(project_dir)
+            info["dst_code"] = read_code_bundle(project_dir, code_only=True)
+            info["file_manifest"] = build_file_manifest(project_dir)
             info["resources"] = collect_resources(project_dir)
             info["input_screenshots"] = screenshots
             info["meta"] = {"source_project": str(project_dir)}

@@ -56,6 +56,17 @@ local_trials/webrenderbench_30_raw/
 local_trials/webrenderbench_js_test/
 local_trials/webrenderbench_with_js/
 local_trials/test_samples.jsonl
+local_trials/pipeline_a_test_30/
+local_trials/pipeline_a_test_output/
+local_trials/pipeline_a_test_timing/
+local_trials/pipeline_b_fix_test/
+local_trials/pipeline_b_full/
+local_trials/pipeline_b_test/
+local_trials/pipeline_b_unified_test/
+local_trials/test_edit_v*/
+local_trials/test_repair_v*/
+local_trials/test_phase1*/
+local_trials/webrenderbench_clean_test/
 
 # Local OS/editor files
 .DS_Store

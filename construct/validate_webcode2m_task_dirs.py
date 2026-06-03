@@ -9,14 +9,15 @@ import re
 from typing import Any
 
 
+# dir_name -> expected info.json "task" field
 TASK_DIRS = {
     "text-generation": "text-generation",
     "image-generation": "image-generation",
     "video-generation": "video-generation",
-    "text-editing": "text-editing",
-    "image-editing": "image-editing",
-    "text-repair": "text-repair",
-    "image-repair": "image-repair",
+    "text-editing": "edit",
+    "image-editing": "edit",
+    "text-repair": "repair",
+    "image-repair": "repair",
 }
 REMOTE_RE = re.compile(r"https?://|(?<![A-Za-z0-9+/=])//[A-Za-z0-9][A-Za-z0-9.-]*(?:[/:]|$)", re.I)
 REMOTE_LOAD_RE = re.compile(
@@ -49,12 +50,12 @@ def validate(root: Path, expected_per_task: int = 0) -> dict[str, Any]:
     warnings: list[str] = []
     task_counts: Counter[str] = Counter()
 
-    for task, dirname in TASK_DIRS.items():
+    for dirname, expected_task in TASK_DIRS.items():
         task_root = root / dirname
         infos = iter_info_files(task_root)
-        task_counts[task] = len(infos)
+        task_counts[dirname] = len(infos)
         if expected_per_task and len(infos) != expected_per_task:
-            errors.append(f"{task}: expected {expected_per_task} info.json files, found {len(infos)}")
+            errors.append(f"{dirname}: expected {expected_per_task} info.json files, found {len(infos)}")
 
         for info_path in infos:
             try:
@@ -62,9 +63,9 @@ def validate(root: Path, expected_per_task: int = 0) -> dict[str, Any]:
             except Exception as exc:  # noqa: BLE001
                 errors.append(f"{info_path}: invalid json: {type(exc).__name__}: {exc}")
                 continue
-            if info.get("task") != task:
-                errors.append(f"{info_path}: task field is {info.get('task')!r}, expected {task!r}")
-            if task == "text-generation":
+            if info.get("task") != expected_task:
+                errors.append(f"{info_path}: task field is {info.get('task')!r}, expected {expected_task!r}")
+            if dirname == "text-generation":
                 instruction = str(info.get("instruction") or "")
                 if len(instruction) < 800:
                     errors.append(f"{info_path}: PRD instruction too short")
@@ -79,26 +80,36 @@ def validate(root: Path, expected_per_task: int = 0) -> dict[str, Any]:
                     errors.append(f"{info_path}: PRD leaks construction/source wording")
                 if not info.get("input_screenshots"):
                     errors.append(f"{info_path}: text-generation missing PRD source screenshots")
-            if task == "image-generation" and not info.get("input_screenshots"):
+            if dirname == "image-generation" and not info.get("input_screenshots"):
                 errors.append(f"{info_path}: image-generation missing input_screenshots")
-            if task == "video-generation" and not info.get("input_videos"):
+            if dirname == "video-generation" and not info.get("input_videos"):
                 errors.append(f"{info_path}: video-generation missing input_videos")
-            if task.endswith("editing"):
-                if not info.get("src_code") or not info.get("dst_code"):
-                    errors.append(f"{info_path}: editing pair missing src_code or dst_code")
+            # text-editing: has src_code + label_modified_files (no dst_code, apply removed)
+            if dirname == "text-editing":
+                if not info.get("src_code"):
+                    errors.append(f"{info_path}: text-editing missing src_code")
                 if not info.get("label_modified_files"):
-                    errors.append(f"{info_path}: editing pair missing label_modified_files")
-            if task.endswith("repair"):
-                if not info.get("src_code") or not info.get("dst_code"):
-                    errors.append(f"{info_path}: repair pair missing src_code or dst_code")
-                patches = info.get("label_modified_files") or []
-                if not patches:
-                    errors.append(f"{info_path}: repair pair missing reverse label_modified_files")
-            if task.startswith("image-"):
-                if not info.get("src_screenshot") and task in {"image-editing", "image-repair"}:
-                    errors.append(f"{info_path}: visual edit/repair missing src_screenshot")
-                if not info.get("dst_screenshot") and task in {"image-editing", "image-repair"}:
-                    errors.append(f"{info_path}: visual edit/repair missing dst_screenshot")
+                    errors.append(f"{info_path}: text-editing missing label_modified_files")
+            # text-repair: has dst_code + label_modified_files (no src_code, apply removed)
+            if dirname == "text-repair":
+                if not info.get("dst_code"):
+                    errors.append(f"{info_path}: text-repair missing dst_code")
+                if not info.get("label_modified_files"):
+                    errors.append(f"{info_path}: text-repair missing label_modified_files")
+            # image-editing: inherits text-editing + adds src_screenshot (no dst_screenshot per WebCompass)
+            if dirname == "image-editing":
+                if not info.get("src_screenshot"):
+                    errors.append(f"{info_path}: image-editing missing src_screenshot")
+                if not info.get("label_modified_files"):
+                    errors.append(f"{info_path}: image-editing missing label_modified_files")
+            # image-repair: inherits text-repair + adds src_screenshot (defective) and dst_screenshot (clean)
+            if dirname == "image-repair":
+                if not info.get("src_screenshot"):
+                    errors.append(f"{info_path}: image-repair missing src_screenshot")
+                if not info.get("dst_screenshot"):
+                    errors.append(f"{info_path}: image-repair missing dst_screenshot")
+                if not info.get("label_modified_files"):
+                    errors.append(f"{info_path}: image-repair missing label_modified_files")
 
     html_hits = []
     provenance_hits = []

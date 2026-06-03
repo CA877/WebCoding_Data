@@ -176,7 +176,7 @@ def collect_resources(project_dir: Path) -> list[dict[str, Any]]:
             kind = "font"
         elif path.suffix.lower() in {".mp4", ".webm"}:
             kind = "video"
-        resources.append({"path": rel, "type": kind, "size_bytes": path.stat().st_size})
+        resources.append({"type": kind, "path": rel, "description": "", "size_bytes": path.stat().st_size})
     return resources
 
 
@@ -555,7 +555,7 @@ def description_to_text(description: Any) -> str:
     return str(description or "").strip()
 
 
-def base_info(instance_id: str, task: str, _task_family: str = "") -> dict[str, Any]:
+def base_info(instance_id: str, task: str) -> dict[str, Any]:
     return {
         "instance_id": instance_id,
         "task": task,
@@ -897,17 +897,22 @@ class LocalSearchReplaceSynthesizer:
         self.max_tokens = max_tokens
         self.max_retries = max_retries
 
-    def format_code_context(self, code_list: list[dict[str, str]], max_chars: int = 60000) -> str:
+    def format_code_context(self, code_list: list[dict[str, str]], max_tokens: int = 200_000) -> str:
+        """Build XML context for LLM — only HTML files.
+
+        CSS/JS are kept in src_code/info.json but not sent to LLM.
+        Token estimation: ~1 token per 4 chars for ASCII code.
+        """
+        max_chars = max_tokens * 4
+        html_exts = {".html", ".htm"}
+        html_items = [it for it in code_list if Path(it["path"]).suffix.lower() in html_exts]
+
         context = "<code_context>\n"
         remaining = max_chars
-        priority = {".html": 0, ".htm": 0, ".css": 1, ".js": 2, ".jsx": 2, ".ts": 2, ".tsx": 2}
-        ordered = sorted(code_list, key=lambda item: (priority.get(Path(item["path"]).suffix.lower(), 9), item["path"]))
-        for item in ordered:
+        for item in sorted(html_items, key=lambda it: it["path"]):
             if remaining <= 0:
                 break
-            suffix = Path(item["path"]).suffix.lower()
-            per_file_limit = 30000 if suffix in {".html", ".htm"} else 15000
-            code = _truncate_text(item["code"], min(remaining, per_file_limit))
+            code = _truncate_text(item["code"], remaining)
             context += f'<file path="{item["path"]}">\n{code}\n</file>\n'
             remaining -= len(code)
         context += "</code_context>"
@@ -952,20 +957,16 @@ class LocalSearchReplaceSynthesizer:
         if Counter(actual_task_types) != Counter(expected_task_types):
             raise ValueError(f"Task types do not match expected list. got={actual_task_types}, expected={expected_task_types}")
 
-    def _generate_and_apply_with_retry(
+    def _generate(
         self,
         messages: list[dict[str, Any]],
-        code_list: list[dict[str, str]],
         max_retries: int = 3,
         backoff_base: int = 2,
-        expected_task_types: list[str] | None = None,
     ) -> dict[str, Any]:
+        """Call LLM and parse response. No patch application."""
         last_error: Exception | None = None
-        all_attempts = []
         for attempt in range(1, max_retries + 1):
-            attempt_record = {"attempt": attempt, "raw_response": None, "success": False, "error": None, "stage": None}
             try:
-                attempt_record["stage"] = "llm_call"
                 response = self.client.chat.completions.create(
                     model=self.model,
                     messages=messages,
@@ -974,51 +975,24 @@ class LocalSearchReplaceSynthesizer:
                 response_text = response.choices[0].message.content if response and response.choices else None
                 if not response_text:
                     raise ValueError("Empty response content from LLM.")
-                print(f"LLM Response (Attempt {attempt})")
-                attempt_record["raw_response"] = response_text
+                print(f"LLM response received (attempt {attempt})")
 
-                attempt_record["stage"] = "parse"
                 parsed = self.parse_llm_response(response_text)
                 if not parsed.get("modified_files"):
                     raise ValueError("Parsed LLM response has no modified_files.")
 
-                attempt_record["stage"] = "validate_task_types"
-                self._validate_task_types(parsed.get("description", []), expected_task_types)
-
-                attempt_record["stage"] = "apply"
-                modified_code, _ = apply_search_replace_local(code_list, parsed["modified_files"])
-
-                attempt_record["success"] = True
-                all_attempts.append(attempt_record)
                 return {
-                    "description": parsed["description"],
+                    "description": parsed.get("description", []),
                     "modified_files": parsed["modified_files"],
-                    "modified_code": modified_code,
                     "raw_response": response_text,
-                    "llm_metadata": {
-                        "model": self.model,
-                        "total_attempts": attempt,
-                        "all_attempts": all_attempts,
-                    },
+                    "llm_metadata": {"model": self.model, "attempt": attempt},
                 }
             except Exception as exc:
                 last_error = exc
-                attempt_record["error"] = str(exc)
-                all_attempts.append(attempt_record)
-                if attempt == max_retries:
-                    snippet = attempt_record["raw_response"]
-                    if snippet and len(snippet) > 200:
-                        snippet = snippet[:200] + "..."
-                    print(
-                        f"Generation and application failed after {attempt} attempts. "
-                        f"Last error at stage '{attempt_record['stage']}': {exc}\n"
-                        f"Last raw response snippet: {snippet}"
-                    )
-                    raise Exception(f"Failed after {max_retries} attempts. Last error: {exc}") from last_error
-                wait_time = backoff_base**attempt
-                print(f"Attempt {attempt}/{max_retries} failed at stage '{attempt_record['stage']}': {exc}. Retrying in {wait_time}s...")
-                time.sleep(wait_time)
-        raise last_error or RuntimeError("Unknown synthesis failure")
+                print(f"Attempt {attempt}/{max_retries} failed: {exc}")
+                if attempt < max_retries:
+                    time.sleep(backoff_base**attempt)
+        raise Exception(f"Failed after {max_retries} attempts. Last error: {last_error}") from last_error
 
 
 def build_forward_edit_synthesizer(api_key: str, base_url: str | None, model: str, max_retries: int = 3):
@@ -1032,66 +1006,34 @@ def build_forward_edit_synthesizer(api_key: str, base_url: str | None, model: st
             for idx, task_type in enumerate(task_types, 1):
                 task_descriptions_str += f"Task {idx}: {task_type}\n  Guideline: {task_descriptions[task_type]}\n\n"
             task_types_json = json.dumps(task_types, ensure_ascii=False)
-            prompt = f"""You are an expert web developer creating high-quality web editing benchmark pairs.
+            prompt = f"""Generate {len(task_types)} editing tasks for the webpage below. Output ONLY XML, no explanation.
 
-I have an existing webpage codebase. Based on this code, generate {len(task_types)} context-aware editing request(s), and then implement all requested edits using strict search/replace blocks.
-
-Tasks to implement:
+Tasks:
 {task_descriptions_str}
+task_type values: {task_types_json}
 
-IMPORTANT GUIDELINES:
-1. Each request must fit the website's existing theme, structure, and assets.
-2. The request must describe user-facing behavior and visible outcomes, not low-level implementation details.
-3. The edits must be substantial but realistic for the current repository.
-4. Do not invent missing pages or external services that the current project cannot support.
-5. The search text must come exactly from the current code and match uniquely.
-6. Keep the implementation compact: prefer one or two focused edits in files shown below rather than broad rewrites.
+Output format (nothing else):
+<description>[{{"task_type": "...", "description": "..."}}]</description>
+<search_replace path="path/to/file"><search>exact source text</search><replace>edited text</replace></search_replace>
 
-Return XML with:
-<description>
-[
-  {{"task_type": "ExactTaskType", "description": "Concrete editing request"}}
-]
-</description>
-<search_replace path="path/to/file">
-<search>
-exact source text
-</search>
-<replace>
-edited target text
-</replace>
-</search_replace>
-
-**CRITICAL - task_type MUST be EXACTLY one of these values (copy verbatim):**
-{task_types_json}
-
-Your response is invalid unless it contains BOTH the <description> block and at least one <search_replace path="..."> block.
-Do not stop after writing requirements. Do not say the code should be changed later. Implement the change in the same response.
-
-Here is the existing source code to edit:
 {src_code_context}"""
 
-            result = self._generate_and_apply_with_retry(
+            result = self._generate(
                 messages=[
                     {
                         "role": "system",
-                        "content": "You generate web editing benchmark pairs in XML using exact search/replace edits.",
+                        "content": "Output ONLY XML. No explanations, no markdown fences, no commentary.",
                     },
                     {"role": "user", "content": prompt},
                 ],
-                code_list=src_code,
                 max_retries=self.max_retries,
-                expected_task_types=task_types,
             )
             return {
                 "task": "edit",
                 "task_type": task_types,
                 "description": result["description"],
-                "src_code": src_code,
-                "dst_code": result["modified_code"],
                 "resources": generation_data.get("resources", []),
                 "label_modified_files": result.get("modified_files", []),
-                "synthetic_modified_files": result.get("modified_files", []),
                 "llm_raw_response": result.get("raw_response"),
                 "llm_metadata": result.get("llm_metadata"),
             }
@@ -1113,74 +1055,29 @@ def build_repair_synthesizer(api_key: str, base_url: str | None, model: str, max
             for idx, defect_type in enumerate(defect_types, 1):
                 defect_descriptions_str += f"Defect {idx}: {defect_type}\n  Guideline: {defect_descriptions[defect_type]}\n\n"
             defect_types_json = json.dumps(defect_types, ensure_ascii=False)
-            prompt = f"""You are an expert web developer. I have a clean, high-quality codebase for a webpage.
-I want to generate a dataset for web repair/debugging tasks.
+            prompt = f"""Inject {len(defect_types)} defects into the webpage below. Output ONLY XML, no explanation.
 
-You need to inject {len(defect_types)} defect(s) in total:
-
+Defects:
 {defect_descriptions_str}
+task_type values: {defect_types_json}
 
-Please analyze the provided code and inject specific defects for EACH defect type listed above.
-The defects should be realistic and something that could occur during development.
-Then, implement ALL the defect injections using search/replace blocks.
+Output format (nothing else):
+<description>[{{"task_type": "...", "description": "repair instruction"}}]</description>
+<search_replace path="path/to/file"><search>exact clean text</search><replace>defective text</replace></search_replace>
 
-Return XML format with the following structure:
-<description>
-[
-  {{"task_type": "ExactDefectTypeName1", "description": "Description for Defect 1"}},
-  {{"task_type": "ExactDefectTypeName2", "description": "Description for Defect 2"}}
-]
-</description>
-<search_replace path="path/to/file">
-<search>
-exact text to find in the original file
-</search>
-<replace>
-replacement text with the defect injected
-</replace>
-</search_replace>
-
-**CRITICAL - task_type values MUST be EXACTLY from this list (copy verbatim, preserve exact spelling and case):**
-{defect_types_json}
-
-Your response is invalid unless it contains BOTH the <description> block and at least one <search_replace path="..."> block.
-Do not stop after describing the defects. Inject the defects in the same response.
-
-Do NOT use:
-- Placeholder names like "Defect Type 1", "Task Type 2", "Type 1"
-- Synonyms or variations (e.g., "Z-Index Issue" instead of "Occlusion")
-- Different capitalization (e.g., "occlusion" instead of "Occlusion")
-
-Each task_type in your response MUST exactly match one of the defect types listed above.
-
-Important for <description>:
-- Provide a JSON array with ONE object for EACH defect (total {len(defect_types)} objects).
-- Each object must have exactly two fields: "task_type" and "description".
-- The "description" must be a repair instruction that clearly identifies the issue or target element.
-- Do not reveal exact code implementation details such as class names, IDs, or exact CSS property values unless they are visible content.
-
-Important for <search_replace>:
-- You MUST implement defect injections for ALL {len(defect_types)} defect types.
-- The <search> block must contain the EXACT text from the original file.
-- The <search> text MUST be unique and match exactly once in the file.
-- One <search_replace> block can only contain one pair of <search> and <replace>.
-- Keep the injection compact: prefer one focused defect edit in files shown below.
-
-Here is the clean code (which will be the Goal/Dst state after repair):
 {dst_code_context}"""
-            result = self._generate_and_apply_with_retry(
+            result = self._generate(
                 messages=[
                     {
                         "role": "system",
-                        "content": "You are a helpful assistant that generates web development debugging datasets in XML format using search/replace blocks.",
+                        "content": "Output ONLY XML. No explanations, no markdown fences, no commentary.",
                     },
                     {"role": "user", "content": prompt},
                 ],
-                code_list=dst_code,
                 max_retries=self.max_retries,
-                expected_task_types=defect_types,
             )
-            src_code = result["modified_code"]
+            # For repair: LLM's search = clean code, replace = defective code
+            # label is the *fix* direction: search = defective, replace = clean
             label_modified_files = [
                 {"path": mod["path"], "search": mod["replace"], "replace": mod["search"]}
                 for mod in result.get("modified_files", [])
@@ -1189,11 +1086,8 @@ Here is the clean code (which will be the Goal/Dst state after repair):
                 "task": "repair",
                 "task_type": defect_types,
                 "description": result["description"],
-                "src_code": src_code,
-                "dst_code": dst_code,
                 "resources": generation_data.get("resources", []),
                 "label_modified_files": label_modified_files,
-                "synthetic_modified_files": result.get("modified_files", []),
                 "llm_raw_response": result.get("raw_response"),
                 "llm_metadata": result.get("llm_metadata"),
             }

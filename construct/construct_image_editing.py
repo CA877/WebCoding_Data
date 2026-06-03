@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+"""image-editing: text-editing + src_screenshot.
+
+Reads text-editing output, screenshots the original project as src_screenshot.
+"""
 from __future__ import annotations
 
 import argparse
@@ -50,12 +54,16 @@ def main() -> None:
         try:
             shutil.copytree(src_instance_dir, dst_instance_dir)
             info = json.loads((dst_instance_dir / "info.json").read_text(encoding="utf-8"))
-            src_screens = screenshot_project_to_dir(dst_instance_dir / "src", dst_instance_dir / "src_screenshots")
-            dst_screens = screenshot_project_to_dir(dst_instance_dir / "dst", dst_instance_dir / "dst_screenshots")
-            info["task"] = "edit"
-            info.pop("instruction", None)
+
+            source_project = Path(info["meta"]["source_project"])
+            if not source_project.exists():
+                raise FileNotFoundError(f"source project not found: {source_project}")
+
+            # src_screenshot: original project (before editing)
+            src_screens = screenshot_project_to_dir(source_project, dst_instance_dir / "src_screenshots")
+
             info["src_screenshot"] = src_screens
-            info["dst_screenshot"] = dst_screens
+            # dst_screenshot stays empty for edit tasks (WebCompass format)
             safe_write_json(dst_instance_dir / "info.json", info)
             append_jsonl(manifest, {"instance_id": src_instance_dir.name, "bucket": bucket, "status": "ok"})
         except Exception as exc:  # noqa: BLE001
