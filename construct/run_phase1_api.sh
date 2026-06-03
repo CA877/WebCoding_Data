@@ -4,8 +4,8 @@
 set -euo pipefail
 
 # ============ 必须配置 ============
-INPUT_DIR="${INPUT_DIR:?请设置 INPUT_DIR（清洗后的项目目录）}"
-OUTPUT_DIR="${OUTPUT_DIR:?请设置 OUTPUT_DIR（输出目录）}"
+INPUT_DIR="${INPUT_DIR:-./single_page}"
+OUTPUT_DIR="${OUTPUT_DIR:-./output}"
 
 # API 配置
 export OPENAI_API_KEY="0356831d861695f2622f50025b9ee465"
