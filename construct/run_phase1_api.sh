@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Phase 1: 需要 API 的任务（text-editing, text-repair, text-generation）
+# Phase 1: 需要 API 的任务（text-editing, text-repair）
 # 给有 API 的人跑，跑完把 OUTPUT_DIR 传回来
 set -euo pipefail
 
@@ -11,11 +11,6 @@ OUTPUT_DIR="${OUTPUT_DIR:-./output}"
 export OPENAI_API_KEY="${OPENAI_API_KEY:?请设置 OPENAI_API_KEY}"
 export OPENAI_BASE_URL="${OPENAI_BASE_URL:?请设置 OPENAI_BASE_URL}"
 export OPENAI_MODEL="${OPENAI_MODEL:-kimi-k2.6}"
-
-# 视觉模型（text-generation 的 PRD 需要）
-export VISION_OPENAI_API_KEY="${VISION_OPENAI_API_KEY:-$OPENAI_API_KEY}"
-export VISION_OPENAI_BASE_URL="${VISION_OPENAI_BASE_URL:-$OPENAI_BASE_URL}"
-export VISION_MODEL="${VISION_MODEL:-$OPENAI_MODEL}"
 
 # ============ 可选配置 ============
 LIMIT="${LIMIT:-0}"                    # 0=不限制
@@ -44,12 +39,11 @@ OVERWRITE_FLAG=""
 LIMIT_FLAG=""
 [ "$LIMIT" -gt 0 ] 2>/dev/null && LIMIT_FLAG="--limit $LIMIT"
 
-# ============ 分区：edit 10K / repair 10K / generation 10K ============
+# ============ 简单分区：前 10K edit，后 10K repair ============
 EDIT_LIMIT="${EDIT_LIMIT:-10000}"
 REPAIR_LIMIT="${REPAIR_LIMIT:-10000}"
-GEN_LIMIT="${GEN_LIMIT:-10000}"
 
-echo "=== 项目分区（edit ${EDIT_LIMIT} + repair ${REPAIR_LIMIT} + generation ${GEN_LIMIT}）==="
+echo "=== 项目分区（前${EDIT_LIMIT} edit + 后${REPAIR_LIMIT} repair）==="
 python3 -c "
 from pathlib import Path
 import os
@@ -60,15 +54,13 @@ src_dir = output_dir / '_src'
 
 edit_src = src_dir / 'text-editing'
 repair_src = src_dir / 'text-repair'
-gen_src = src_dir / 'text-generation'
-for d in (edit_src, repair_src, gen_src):
+for d in (edit_src, repair_src):
     d.mkdir(parents=True, exist_ok=True)
 
 projects = sorted(d for d in input_dir.iterdir() if d.is_dir() and (d/'index.html').exists())
 
 edit_projs = projects[:$EDIT_LIMIT]
 repair_projs = projects[$EDIT_LIMIT:$EDIT_LIMIT+$REPAIR_LIMIT]
-gen_projs = projects[$EDIT_LIMIT+$REPAIR_LIMIT:$EDIT_LIMIT+$REPAIR_LIMIT+$GEN_LIMIT]
 
 for proj in edit_projs:
     dst = edit_src / proj.name
@@ -80,14 +72,8 @@ for proj in repair_projs:
     if not dst.exists():
         os.symlink(proj.resolve(), str(dst), target_is_directory=True)
 
-for proj in gen_projs:
-    dst = gen_src / proj.name
-    if not dst.exists():
-        os.symlink(proj.resolve(), str(dst), target_is_directory=True)
-
-print(f'  text-editing:    {len(edit_projs)} projects')
-print(f'  text-repair:     {len(repair_projs)} projects')
-print(f'  text-generation: {len(gen_projs)} projects')
+print(f'  text-editing: {len(edit_projs)} projects')
+print(f'  text-repair:  {len(repair_projs)} projects')
 "
 
 # ============ text-editing（需要 LLM API）============
@@ -116,17 +102,7 @@ python3 WebCoding_Data/construct/construct_text_repair.py \
     --workers "$WORKERS" \
     $LIMIT_FLAG $OVERWRITE_FLAG
 
-# ============ text-generation（需要 VLM API + playwright）============
-echo ""
-echo "=== text-generation (workers=$WORKERS) ==="
-python3 WebCoding_Data/construct/construct_text_generation.py \
-    --input-dir "$OUTPUT_DIR/_src/text-generation" \
-    --output-dir "$OUTPUT_DIR/text-generation" \
-    --workers "$WORKERS" \
-    $LIMIT_FLAG $OVERWRITE_FLAG
-
 echo ""
 echo "=== Phase 1 完成 ==="
-echo "text-editing:    $OUTPUT_DIR/text-editing/"
-echo "text-repair:     $OUTPUT_DIR/text-repair/"
-echo "text-generation: $OUTPUT_DIR/text-generation/"
+echo "text-editing: $OUTPUT_DIR/text-editing/"
+echo "text-repair:  $OUTPUT_DIR/text-repair/"
