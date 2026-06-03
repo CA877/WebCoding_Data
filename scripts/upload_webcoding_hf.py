@@ -1,21 +1,12 @@
 """
-Upload project folders to HuggingFace Hub.
+Upload compressed tarball to HuggingFace Hub.
 
 Usage:
     # 最简用法（需要先设置下面的配置区）
-    python3 scripts/upload_to_hf.py
+    python3 scripts/upload_webcoding_hf.py
 
     # 覆盖默认参数
-    python3 scripts/upload_to_hf.py --data-dir /other/path --repo other/repo
-
-    # 预览不上传
-    python3 scripts/upload_to_hf.py --dry-run
-
-    # 传所有文件（含图片字体）
-    python3 scripts/upload_to_hf.py --all-files
-
-    # 指定文件类型
-    python3 scripts/upload_to_hf.py --patterns "*.html" "*.json"
+    python3 scripts/upload_webcoding_hf.py --file /path/to/file.tar.gz --repo other/repo
 """
 
 import argparse
@@ -34,51 +25,31 @@ logging.basicConfig(stream=sys.stderr, level=logging.INFO)
 os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "0"
 
 # ============ 配置区（改这里就够了）============
-DEFAULT_DATA_DIR = "/mnt/shared-storage-user/colab-share/liujiaheng/workspace/xieqianqian/webcoding_data/datasets/pipeline_a/runs/run_a_fast/output"
+DEFAULT_FILE = "/mnt/shared-storage-user/colab-share/liujiaheng/workspace/xieqianqian/webcoding_data/repair_sp.tar.gz"
 DEFAULT_REPO = "mistletoe111/webcoding1"
 DEFAULT_HF_ENDPOINT = "https://hf-mirror.com"
 # HF_TOKEN 从环境变量读，或者取消下面的注释直接写
 # DEFAULT_HF_TOKEN = "hf_xxx"
 # ================================================
 
-CODE_PATTERNS = ["*.html", "*.js", "*.css"]
-
-
-def _match_pattern(filepath: str, pattern: str) -> bool:
-    """简单的 glob pattern 匹配（支持 *, ** 和 folder/*.ext）。"""
-    from fnmatch import fnmatch
-    # "dir/*.html" → 匹配 "dir/index.html"
-    # "*.html" → 匹配 "index.html" 或 "dir/index.html"（按文件名）
-    if "/" in pattern:
-        return fnmatch(filepath, pattern)
-    return fnmatch(filepath.rsplit("/", 1)[-1], pattern)
-
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Upload files from subfolders to HuggingFace Hub"
+        description="Upload a tarball file to HuggingFace Hub"
     )
-    parser.add_argument("--data-dir", type=str, default=DEFAULT_DATA_DIR,
-                        help=f"Local directory (default: {DEFAULT_DATA_DIR})")
+    parser.add_argument("--file", type=str, default=DEFAULT_FILE,
+                        help=f"Tarball file path (default: {DEFAULT_FILE})")
     parser.add_argument("--repo", type=str, default=DEFAULT_REPO,
                         help=f"HuggingFace repo ID (default: {DEFAULT_REPO})")
     parser.add_argument("--repo-type", type=str, default="dataset",
                         choices=["dataset", "model", "space"])
     parser.add_argument("--repo-prefix", type=str, default="",
-                        help="Path prefix in HF repo (e.g. 'data/')")
+                        help="Path in HF repo (e.g. 'data/file.tar.gz')")
     parser.add_argument("--token", type=str, default=None,
                         help="HF token (default: HF_TOKEN env var)")
     parser.add_argument("--endpoint", type=str, default=None,
                         help="HF endpoint override")
     parser.add_argument("--max-retries", type=int, default=3)
-    parser.add_argument("--limit", type=int, default=10000,
-                        help="Max number of subfolders to upload (default: 10000)")
-    parser.add_argument("--patterns", type=str, nargs="+", default=None,
-                        help="File patterns to upload (e.g. '*.html' '*.json'). Overrides default.")
-    parser.add_argument("--all-files", action="store_true",
-                        help="Upload all files, not just html/js/css")
-    parser.add_argument("--dry-run", action="store_true",
-                        help="Preview only, don't upload")
     args = parser.parse_args()
 
     # Endpoint: CLI > env > default mirror
@@ -92,58 +63,15 @@ def main():
     token = args.token or os.environ.get("HF_TOKEN") or globals().get("DEFAULT_HF_TOKEN")
 
     # Validate
-    data_dir = Path(args.data_dir).resolve()
-    if not data_dir.exists():
-        print(f"Error: data directory not found: {data_dir}")
+    file_path = Path(args.file).resolve()
+    if not file_path.exists():
+        print(f"Error: file not found: {file_path}")
+        sys.exit(1)
+    if not file_path.is_file():
+        print(f"Error: not a file: {file_path}")
         sys.exit(1)
 
-    # Pattern priority: --all-files > --patterns > CODE_PATTERNS default
-    if args.all_files:
-        allow_patterns = None
-    elif args.patterns:
-        allow_patterns = args.patterns
-    else:
-        allow_patterns = CODE_PATTERNS
-
-    # 筛选前 N 个子文件夹
-    subdirs = sorted(d.name for d in data_dir.iterdir() if d.is_dir())
-    if args.limit > 0 and len(subdirs) > args.limit:
-        selected = set(subdirs[:args.limit])
-        # 只上传 selected 文件夹下的匹配文件
-        if allow_patterns:
-            allow_patterns = [f"{name}/{p}" for name in selected for p in allow_patterns]
-        else:
-            allow_patterns = [f"{name}/**" for name in selected]
-        print(f"Limit:     前 {args.limit} 个文件夹（共 {len(subdirs)}）")
-    else:
-        print(f"Folders:   {len(subdirs)}")
-
-    print(f"Endpoint:  {hf_endpoint}")
-    print(f"Data dir:  {data_dir}")
-    print(f"Repo:      {args.repo}")
-    filter_desc = "all files" if args.all_files and args.limit <= 0 else f"{len(allow_patterns)} patterns"
-    if not args.all_files and args.limit <= 0:
-        filter_desc = ", ".join(CODE_PATTERNS if not args.patterns else args.patterns)
-    print(f"Filter:    {filter_desc}")
-    if args.repo_prefix:
-        print(f"Prefix:    {args.repo_prefix}")
-
-    if args.dry_run:
-        # 统计要上传的文件
-        total_files = 0
-        total_size = 0
-        for f in data_dir.rglob("*"):
-            if not f.is_file():
-                continue
-            if allow_patterns:
-                rel = str(f.relative_to(data_dir))
-                if not any(_match_pattern(rel, p) for p in allow_patterns):
-                    continue
-            total_files += 1
-            total_size += f.stat().st_size
-        print(f"\n  {total_files} files, {total_size / 1024 / 1024:.1f} MB")
-        print("Dry run — nothing uploaded.")
-        return
+    file_size_mb = file_path.stat().st_size / 1024 / 1024
 
     # Auth check
     if not token:
@@ -156,21 +84,30 @@ def main():
         print("Error: pip install huggingface_hub")
         sys.exit(1)
 
+    # 确定 repo 中的文件路径
+    repo_path = args.repo_prefix.rstrip("/") if args.repo_prefix else file_path.name
+    if repo_path.endswith("/"):
+        repo_path += file_path.name
+
+    print(f"Endpoint:  {hf_endpoint}")
+    print(f"File:      {file_path}")
+    print(f"Size:      {file_size_mb:.1f} MB")
+    print(f"Repo:      {args.repo}")
+    print(f"Path:      {repo_path}")
+
     api = HfApi(token=token)
-    path_in_repo = args.repo_prefix.rstrip("/") if args.repo_prefix else ""
 
     print(f"\nUploading to {args.repo} ...")
 
     last_error = None
     for attempt in range(1, args.max_retries + 1):
         try:
-            api.upload_folder(
-                folder_path=str(data_dir),
-                path_in_repo=path_in_repo or None,
+            api.upload_file(
+                path_or_fileobj=str(file_path),
+                path_in_repo=repo_path,
                 repo_id=args.repo,
                 repo_type=args.repo_type,
-                allow_patterns=allow_patterns,
-                commit_message=f"Upload from {data_dir.name}",
+                commit_message=f"Upload {file_path.name}",
             )
             print("Done!")
             print(f"View: {hf_endpoint}/datasets/{args.repo}")

@@ -34,9 +34,9 @@ logging.basicConfig(stream=sys.stderr, level=logging.INFO)
 os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "0"
 
 # ============ 配置区（改这里就够了）============
-DEFAULT_DATA_DIR = "/mnt/shared-storage-user/colab-share/liujiaheng/workspace/xieqianqian/webcoding_data/repair/sp"
-DEFAULT_REPO = "mistletoe111/webcoding1"
-DEFAULT_REPO_PREFIX = "repair/sp"
+DEFAULT_DATA_DIR = "/mnt/shared-storage-user/colab-share/liujiaheng/workspace/xieqianqian/webcoding_data/edit/sp"
+DEFAULT_REPO = "mistletoe111/webcoding3"
+DEFAULT_REPO_PREFIX = "edit/sp"
 DEFAULT_HF_ENDPOINT = "https://huggingface.co"
 DEFAULT_HF_TOKEN = "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"
 # K8s 集群内部 HTTP 代理（参照 xuqiankai/upload_env_proxy.sh）
@@ -110,9 +110,17 @@ def main():
         print(f"Prefix:    {args.repo_prefix}")
 
     if args.dry_run:
-        # 快速统计目录数（避免网络文件系统递归扫描卡顿）
-        subdirs = [d for d in data_dir.iterdir() if d.is_dir()]
-        print(f"\n  {len(subdirs)} project folders")
+        # 统计要上传的文件
+        total_files = 0
+        total_size = 0
+        for f in data_dir.rglob("*"):
+            if not f.is_file():
+                continue
+            if allow_patterns and not any(f.name.endswith(p.lstrip("*")) for p in allow_patterns):
+                continue
+            total_files += 1
+            total_size += f.stat().st_size
+        print(f"\n  {total_files} files, {total_size / 1024 / 1024:.1f} MB")
         print("Dry run — nothing uploaded.")
         return
 

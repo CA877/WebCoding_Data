@@ -34,9 +34,9 @@ logging.basicConfig(stream=sys.stderr, level=logging.INFO)
 os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "0"
 
 # ============ 配置区（改这里就够了）============
-DEFAULT_DATA_DIR = "/mnt/shared-storage-user/colab-share/liujiaheng/workspace/xieqianqian/webcoding_data/repair/sp"
-DEFAULT_REPO = "mistletoe111/webcoding1"
-DEFAULT_REPO_PREFIX = "repair/sp"
+DEFAULT_DATA_DIR = "/mnt/shared-storage-user/colab-share/liujiaheng/workspace/xieqianqian/webcoding_data/generate/sp"
+DEFAULT_REPO = "mistletoe111/webcoding2"
+DEFAULT_REPO_PREFIX = "generate/sp"
 DEFAULT_HF_ENDPOINT = "https://huggingface.co"
 DEFAULT_HF_TOKEN = "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"
 # K8s 集群内部 HTTP 代理（参照 xuqiankai/upload_env_proxy.sh）
