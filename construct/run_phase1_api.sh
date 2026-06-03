@@ -8,9 +8,9 @@ INPUT_DIR="${INPUT_DIR:-./single_page}"
 OUTPUT_DIR="${OUTPUT_DIR:-./output}"
 
 # API 配置
-export OPENAI_API_KEY="0356831d861695f2622f50025b9ee465"
-export OPENAI_BASE_URL="https://idealab.alibaba-inc.com/api/openai/v1"
-export OPENAI_MODEL="kimi-k2.6"
+export OPENAI_API_KEY="${OPENAI_API_KEY:?请设置 OPENAI_API_KEY}"
+export OPENAI_BASE_URL="${OPENAI_BASE_URL:?请设置 OPENAI_BASE_URL}"
+export OPENAI_MODEL="${OPENAI_MODEL:-kimi-k2.6}"
 
 # 视觉模型（text-generation 的 PRD 需要，同一套 API）
 export VISION_OPENAI_API_KEY="$OPENAI_API_KEY"
@@ -20,7 +20,7 @@ export VISION_MODEL="Qwen3-235B-A22B"
 # ============ 可选配置 ============
 LIMIT="${LIMIT:-0}"                    # 0=不限制
 SEED="${SEED:-0}"
-PARTITION="${PARTITION:-2:2:1:2:2}"    # text-gen:image-gen:video-gen:text-edit:text-repair
+PARTITION="${PARTITION:-4:4:3:10:10}"  # text-gen:image-gen:video-gen:text-edit:text-repair (31K → ~10K each for edit & repair)
 EDIT_MIN_TASKS="${EDIT_MIN_TASKS:-4}"
 EDIT_MAX_TASKS="${EDIT_MAX_TASKS:-12}"
 REPAIR_MIN_TASKS="${REPAIR_MIN_TASKS:-4}"
