@@ -4,8 +4,8 @@
 set -euo pipefail
 
 # ============ 必须配置 ============
-INPUT_DIR="${INPUT_DIR:?请设置 INPUT_DIR（清洗后的项目目录）}"
-OUTPUT_DIR="${OUTPUT_DIR:?请设置 OUTPUT_DIR（输出目录）}"
+INPUT_DIR="${INPUT_DIR:-./single_page}"
+OUTPUT_DIR="${OUTPUT_DIR:-./output}"
 
 # API 配置
 export OPENAI_API_KEY="${OPENAI_API_KEY:?请设置 OPENAI_API_KEY}"
@@ -20,7 +20,6 @@ export VISION_MODEL="${VISION_MODEL:-$OPENAI_MODEL}"
 # ============ 可选配置 ============
 LIMIT="${LIMIT:-0}"                    # 0=不限制
 SEED="${SEED:-0}"
-PARTITION="${PARTITION:-2:2:1:2:2}"    # text-gen:image-gen:video-gen:text-edit:text-repair
 EDIT_MIN_TASKS="${EDIT_MIN_TASKS:-4}"
 EDIT_MAX_TASKS="${EDIT_MAX_TASKS:-12}"
 REPAIR_MIN_TASKS="${REPAIR_MIN_TASKS:-4}"
@@ -44,94 +43,66 @@ OVERWRITE_FLAG=""
 LIMIT_FLAG=""
 [ "$LIMIT" -gt 0 ] 2>/dev/null && LIMIT_FLAG="--limit $LIMIT"
 
-PARTITIONS="$OUTPUT_DIR/.partitions"
+# ============ 简单分区：前 10K edit，后 10K repair ============
+EDIT_LIMIT="${EDIT_LIMIT:-10000}"
+REPAIR_LIMIT="${REPAIR_LIMIT:-10000}"
 
-# ============ 统一分区（与 Phase 2a 共享） ============
-if [ ! -d "$PARTITIONS" ]; then
-    echo "=== 项目分区 ==="
-    python3 -c "
-import sys; sys.path.insert(0, '.')
-from WebCoding_Data.construct.construct_webcode2m_dataset import resolve_projects_dir, partition_projects, create_partition_dir
+echo "=== 项目分区（前${EDIT_LIMIT} edit + 后${REPAIR_LIMIT} repair）==="
+python3 -c "
 from pathlib import Path
-import json
+import os, shutil
 
 input_dir = Path('$INPUT_DIR')
 output_dir = Path('$OUTPUT_DIR')
-output_dir.mkdir(parents=True, exist_ok=True)
+edit_dir = output_dir / 'text-editing'
+repair_dir = output_dir / 'text-repair'
+edit_dir.mkdir(parents=True, exist_ok=True)
+repair_dir.mkdir(parents=True, exist_ok=True)
 
-projects_dir = resolve_projects_dir(input_dir)
-groups = partition_projects(projects_dir, '$PARTITION', $SEED)
-for task, projs in groups.items():
-    print(f'  {task}: {len(projs)} projects')
-    if projs:
-        create_partition_dir(output_dir, task, projs)
-print(f'  total: {sum(len(p) for p in groups.values())} projects')
+projects = sorted(d for d in input_dir.iterdir() if d.is_dir() and (d/'index.html').exists())
 
-info = {task: len(projs) for task, projs in groups.items()}
-(output_dir / 'partition_info.json').write_text(json.dumps(info, indent=2))
+edit_projs = projects[:$EDIT_LIMIT]
+repair_projs = projects[$EDIT_LIMIT:$EDIT_LIMIT+$REPAIR_LIMIT]
+
+for proj in edit_projs:
+    dst = edit_dir / proj.name
+    if not dst.exists():
+        os.symlink(proj.resolve(), str(dst), target_is_directory=True)
+
+for proj in repair_projs:
+    dst = repair_dir / proj.name
+    if not dst.exists():
+        os.symlink(proj.resolve(), str(dst), target_is_directory=True)
+
+print(f'  text-editing: {len(edit_projs)} projects')
+print(f'  text-repair:   {len(repair_projs)} projects')
 "
-else
-    echo "=== 分区已存在，跳过 ==="
-    cat "$OUTPUT_DIR/partition_info.json" 2>/dev/null || true
-fi
-
-# ============ text-generation（需要 VLM API）============
-echo ""
-echo "=== Phase 1a: text-generation ==="
-if [ -d "$PARTITIONS/text-generation" ]; then
-    python3 WebCoding_Data/construct/construct_text_generation.py \
-        --input-dir "$PARTITIONS/text-generation" \
-        --output-dir "$OUTPUT_DIR/text-generation" \
-        $LIMIT_FLAG $OVERWRITE_FLAG
-else
-    echo "  跳过（无分区）"
-fi
 
 # ============ text-editing（需要 LLM API）============
 echo ""
-echo "=== Phase 1b: text-editing ==="
-if [ -d "$PARTITIONS/text-editing" ]; then
-    python3 WebCoding_Data/construct/construct_text_editing.py \
-        --input-dir "$PARTITIONS/text-editing" \
-        --output-dir "$OUTPUT_DIR/text-editing" \
-        --min-tasks "$EDIT_MIN_TASKS" \
-        --max-tasks "$EDIT_MAX_TASKS" \
-        --seed "$SEED" \
-        --max-retries "$MAX_RETRIES" \
-        $LIMIT_FLAG $OVERWRITE_FLAG
-else
-    echo "  跳过（无分区）"
-fi
+echo "=== Phase 1: text-editing ==="
+python3 WebCoding_Data/construct/construct_text_editing.py \
+    --input-dir "$OUTPUT_DIR/text-editing" \
+    --output-dir "$OUTPUT_DIR/editing" \
+    --min-tasks "$EDIT_MIN_TASKS" \
+    --max-tasks "$EDIT_MAX_TASKS" \
+    --seed "$SEED" \
+    --max-retries "$MAX_RETRIES" \
+    $LIMIT_FLAG $OVERWRITE_FLAG
 
 # ============ text-repair（需要 LLM API）============
 echo ""
-echo "=== Phase 1c: text-repair ==="
-if [ -d "$PARTITIONS/text-repair" ]; then
-    python3 WebCoding_Data/construct/construct_text_repair.py \
-        --input-dir "$PARTITIONS/text-repair" \
-        --output-dir "$OUTPUT_DIR/text-repair" \
-        --min-tasks "$REPAIR_MIN_TASKS" \
-        --max-tasks "$REPAIR_MAX_TASKS" \
-        --seed "$SEED" \
-        --max-retries "$MAX_RETRIES" \
-        $LIMIT_FLAG $OVERWRITE_FLAG
-else
-    echo "  跳过（无分区）"
-fi
+echo "=== Phase 2: text-repair ==="
+python3 WebCoding_Data/construct/construct_text_repair.py \
+    --input-dir "$OUTPUT_DIR/text-repair" \
+    --output-dir "$OUTPUT_DIR/repair" \
+    --min-tasks "$REPAIR_MIN_TASKS" \
+    --max-tasks "$REPAIR_MAX_TASKS" \
+    --seed "$SEED" \
+    --max-retries "$MAX_RETRIES" \
+    $LIMIT_FLAG $OVERWRITE_FLAG
 
 echo ""
 echo "=== Phase 1 完成 ==="
-echo "输出目录: $OUTPUT_DIR"
-echo "请将此目录传给 Phase 2b 执行截图任务"
-
-# 统计
-echo ""
-echo "=== 产出统计 ==="
-for task in text-generation text-editing text-repair; do
-    manifest="$OUTPUT_DIR/$task/manifest_${task//-/_}.jsonl"
-    if [ -f "$manifest" ]; then
-        ok=$(grep -c '"status": "ok"' "$manifest" 2>/dev/null || echo 0)
-        err=$(grep -c '"status": "error"' "$manifest" 2>/dev/null || echo 0)
-        printf "  %-20s ok=%-6s error=%-6s\n" "$task" "$ok" "$err"
-    fi
-done
+echo "editing: $OUTPUT_DIR/editing/"
+echo "repair:  $OUTPUT_DIR/repair/"
