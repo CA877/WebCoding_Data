@@ -276,17 +276,24 @@ def choose_task_types(
     count: int | tuple[int, int],
     seed: int | None,
     instance_id: str,
+    allow_repeat: bool = False,
 ) -> list[str]:
     """Select task types for an instance.
 
     count: either a fixed int or (min, max) tuple for random range.
+    allow_repeat: if True, use choices (with replacement) instead of sample.
+        Needed for repair tasks where type pool (11) < max count (12).
     """
     rng = random.Random(f"{seed}:{instance_id}" if seed is not None else instance_id)
     if isinstance(count, tuple):
         min_c, max_c = count
-        n = rng.randint(min_c, min(max_c, len(all_task_types)))
+        if not allow_repeat:
+            max_c = min(max_c, len(all_task_types))
+        n = rng.randint(min_c, max_c)
     else:
         n = count
+    if allow_repeat:
+        return rng.choices(all_task_types, k=n)
     if n > len(all_task_types):
         raise ValueError(f"Requested {n} task types, only {len(all_task_types)} available")
     return rng.sample(all_task_types, n)

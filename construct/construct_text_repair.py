@@ -57,7 +57,7 @@ def main() -> None:
         instance_dir.mkdir(parents=True, exist_ok=True)
         try:
             generation_data = build_generation_data(project_dir)
-            task_types = choose_task_types(all_task_types, (args.min_tasks, args.max_tasks), args.seed, project_dir.name)
+            task_types = choose_task_types(all_task_types, (args.min_tasks, args.max_tasks), args.seed, project_dir.name, allow_repeat=True)
             task = synthesizer.generate_defect_task(generation_data, task_types)
             if not task:
                 raise RuntimeError("repair generation returned None")
