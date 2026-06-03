@@ -439,6 +439,8 @@ def main() -> None:
                         help="Fraction of projects to add JS (0.0-1.0, default: 1.0 = all)")
     parser.add_argument("--no-expand", action="store_true",
                         help="Skip expand step, only produce single-page samples")
+    parser.add_argument("--fast-clean", action="store_true",
+                        help="Skip image downloads during clean, only download CSS/JS")
     args = parser.parse_args()
 
     args.output_dir.mkdir(parents=True, exist_ok=True)

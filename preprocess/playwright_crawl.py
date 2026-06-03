@@ -580,33 +580,28 @@ def localize_resources(html: str, page_url: str, resources_dir: Path,
     _NON_IMAGE_EXTS = {".woff", ".woff2", ".ttf", ".otf", ".eot", ".css", ".js", ".json", ".xml", ".svg"}
 
     # Process CSS background-image url() in style attributes
+    # Skip image downloads — keep original URLs for background images
     def replace_bg_url(match):
-        nonlocal fallback_idx, download_count
+        nonlocal download_count
         img_url = match.group(1).strip("\"'")
         if img_url.startswith("data:") or img_url.startswith("./resources/") or "picsum.photos" in img_url:
             return match.group(0)
         abs_url = urljoin(page_url, img_url)
         if not abs_url.startswith("http"):
             return match.group(0)
-        # Detect non-image resources (fonts, CSS, etc.) — no picsum fallback for these
+        # Only download non-image resources (fonts); skip images
         url_path = urlparse(abs_url).path.lower()
         ext = Path(url_path).suffix if url_path else ""
         is_non_image = ext in _NON_IMAGE_EXTS
-        if download_count >= MAX_RESOURCES_PER_PAGE:
-            if is_non_image:
-                return 'url("")'
-            fb = _fallback_url(fallback_idx)
-            fallback_idx += 1
-            return f"url('{fb}')"
-        local = download_resource(session, abs_url, resources_dir,
-                                  fallback_index=-1 if is_non_image else fallback_idx)
-        download_count += 1
-        if not is_non_image:
-            fallback_idx += 1
-        if local:
-            return f"url({local})"
         if is_non_image:
+            if download_count >= MAX_RESOURCES_PER_PAGE:
+                return 'url("")'
+            local = download_resource(session, abs_url, resources_dir, fallback_index=-1)
+            download_count += 1
+            if local:
+                return f"url({local})"
             return 'url("")'
+        # Keep original image URL — don't download
         return match.group(0)
 
     for tag in soup.find_all(style=True):
