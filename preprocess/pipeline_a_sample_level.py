@@ -36,7 +36,7 @@ from typing import Any
 
 from playwright.sync_api import sync_playwright
 
-from playwright_crawl import build_requests_session, clean_project, expand_project
+from playwright_crawl import build_requests_session, clean_project, clean_project_fast, expand_project
 
 # Add repo root to path so we can import from construct/
 _REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -62,14 +62,20 @@ def _add_js_to_project(project_out: Path, add_js_config: dict) -> dict[str, Any]
     seed = add_js_config.get("seed", 42)
 
     from openai import OpenAI
-    client = OpenAI(
-        api_key=add_js_config["api_key"],
-        base_url=add_js_config.get("base_url"),
-        timeout=40.0,
-    )
-
-    features = select_features(project_out.name, seed=seed)
-    js_content = generate_js(project_out, model, client, features)
+    # Temporarily clear proxy env vars so API calls go direct (internal network)
+    _proxy_keys = ("ALL_PROXY", "all_proxy", "HTTPS_PROXY", "https_proxy",
+                   "HTTP_PROXY", "http_proxy")
+    _saved_proxy = {k: os.environ.pop(k) for k in _proxy_keys if k in os.environ}
+    try:
+        client = OpenAI(
+            api_key=add_js_config["api_key"],
+            base_url=add_js_config.get("base_url"),
+            timeout=40.0,
+        )
+        features = select_features(project_out.name, seed=seed)
+        js_content = generate_js(project_out, model, client, features)
+    finally:
+        os.environ.update(_saved_proxy)
     if not js_content:
         return {"status": "generation_failed", "features": features}
 
@@ -127,7 +133,8 @@ def _add_js_single(add_js_config: dict | None, result: dict[str, Any],
 
 def process_sample(payload: tuple[str, str, str, str, int, int],
                     add_js_config: dict | None = None,
-                    no_expand: bool = False) -> dict[str, Any]:
+                    no_expand: bool = False,
+                    fast_clean: bool = False) -> dict[str, Any]:
     project_path, output_root, browser_proxy, requests_proxy, max_pages, wait_ms = payload
     project_dir = Path(project_path)
     output_dir = Path(output_root)
@@ -148,6 +155,7 @@ def process_sample(payload: tuple[str, str, str, str, int, int],
     }
 
     session = build_requests_session(requests_proxy)
+    _clean = clean_project_fast if fast_clean else clean_project
 
     # ============================================================
     # Step 1: Clean original → single_page sample (ALWAYS, no Playwright)
@@ -155,7 +163,7 @@ def process_sample(payload: tuple[str, str, str, str, int, int],
     single_out = single_root / project_dir.name
     try:
         _copy_fresh(project_dir, single_out)
-        clean_result = clean_project(single_out, session)
+        clean_result = _clean(single_out, session)
         result["outputs"].append(
             {
                 "variant": "single",
@@ -256,7 +264,7 @@ def process_sample(payload: tuple[str, str, str, str, int, int],
             multi_out = multi_root / project_dir.name
             try:
                 _copy_fresh(expanded_project, multi_out)
-                clean_result = clean_project(multi_out, session)
+                clean_result = _clean(multi_out, session)
                 result["outputs"].append(
                     {
                         "variant": "multi",
@@ -316,8 +324,10 @@ def process_sample(payload: tuple[str, str, str, str, int, int],
 
 
 def process_sample_entry(payload: tuple[str, str, str, str, int, int], result_queue: mp.Queue,
-                         add_js_config: dict | None = None, no_expand: bool = False) -> None:
-    result_queue.put(process_sample(payload, add_js_config=add_js_config, no_expand=no_expand))
+                         add_js_config: dict | None = None, no_expand: bool = False,
+                         fast_clean: bool = False) -> None:
+    result_queue.put(process_sample(payload, add_js_config=add_js_config, no_expand=no_expand,
+                                    fast_clean=fast_clean))
 
 
 def timeout_result(payload: tuple[str, str, str, str, int, int], elapsed: float, site_timeout: int) -> dict[str, Any]:
@@ -437,6 +447,8 @@ def main() -> None:
                         help="Fraction of projects to add JS (0.0-1.0, default: 1.0 = all)")
     parser.add_argument("--no-expand", action="store_true",
                         help="Skip expand step, only produce single-page samples")
+    parser.add_argument("--fast-clean", action="store_true",
+                        help="Zero-network clean: replace remote URLs with picsum.photos placeholders instead of downloading")
     args = parser.parse_args()
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
@@ -507,9 +519,11 @@ def main() -> None:
 
     total_inputs = len(projects)
     initial_done = len(done_projects)
+    clean_mode = "fast-clean (picsum placeholders)" if args.fast_clean else "normal-clean (download resources)"
     print(
         f"Processing {len(payloads)} samples with concurrency={args.concurrency}"
         f"{' (with add-js)' if add_js_config else ' (no-js)'}; "
+        f"clean={clean_mode}; "
         f"resume_done={initial_done}, total_inputs={total_inputs}",
         flush=True,
     )
@@ -551,7 +565,7 @@ def main() -> None:
         def start_next() -> None:
             payload = pending.pop(0)
             result_queue = ctx.Queue(maxsize=1)
-            proc = ctx.Process(target=process_sample_entry, args=(payload, result_queue, add_js_config, args.no_expand))
+            proc = ctx.Process(target=process_sample_entry, args=(payload, result_queue, add_js_config, args.no_expand, args.fast_clean))
             proc.start()
             active[proc] = (payload, time.time(), result_queue)
 
@@ -612,7 +626,7 @@ def main() -> None:
             time.sleep(0.5)
     else:
         with ProcessPoolExecutor(max_workers=args.concurrency) as executor:
-            futures = {executor.submit(process_sample, payload, add_js_config, args.no_expand): payload for payload in payloads}
+            futures = {executor.submit(process_sample, payload, add_js_config, args.no_expand, args.fast_clean): payload for payload in payloads}
             for i, future in enumerate(as_completed(futures), 1):
                 try:
                     result = future.result(timeout=600 if add_js_config else 300)

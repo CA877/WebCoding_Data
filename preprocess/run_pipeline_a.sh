@@ -199,10 +199,11 @@ $PYTHON preprocess/pipeline_a_sample_level.py \
     --limit "$PIPELINE_A_LIMIT" \
     --browser-proxy "$BROWSER_PROXY" \
     --requests-proxy "$REQUESTS_PROXY" \
+    --fast-clean \
     $JS_ARGS \
     2>&1 | tee "$PIPELINE_A_LOG_DIR/pipeline_a.log"
 
-PIPELINE_EXIT=$?
+PIPELINE_EXIT=${PIPESTATUS[0]}
 
 # ======================== 汇总 ========================
 

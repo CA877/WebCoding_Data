@@ -7,7 +7,8 @@
 #   export OPENAI_API_KEY=... OPENAI_BASE_URL=... OPENAI_MODEL=...
 #   bash preprocess/run_pipeline_a_test.sh
 # =============================================================================
-set -euo pipefail
+# 不用 set -e，防止 tee 管道导致脚本提前退出
+set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DEFAULT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -138,10 +139,11 @@ $PYTHON preprocess/pipeline_a_sample_level.py \
     --limit "$TEST_LIMIT" \
     --browser-proxy "$BROWSER_PROXY" \
     --requests-proxy "$REQUESTS_PROXY" \
+    --fast-clean \
     $JS_ARGS \
     2>&1 | tee "$PIPELINE_A_LOG_DIR/pipeline_a.log"
 
-PIPELINE_EXIT=$?
+PIPELINE_EXIT=${PIPESTATUS[0]}
 
 # ======================== 汇总 ========================
 

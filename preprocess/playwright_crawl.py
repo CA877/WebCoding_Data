@@ -218,6 +218,45 @@ def _download_js(session: requests.Session, url: str, resources_dir: Path) -> st
     return None
 
 
+def _download_css(session: requests.Session, url: str, resources_dir: Path,
+                   _sanitize_urls: bool = True) -> str | None:
+    """Download a remote CSS file to resources/ dir. Returns relative path or None.
+
+    When _sanitize_urls is True (default in fast-clean mode), replaces remote
+    url() references inside the CSS with placeholders so the CSS doesn't depend
+    on any external resources.
+    """
+    try:
+        resp = session.get(url, timeout=(5, 10), allow_redirects=True)
+        if resp.status_code == 200 and len(resp.content) >= 10:
+            h = hashlib.md5(url.encode()).hexdigest()[:8]
+            name = Path(urlparse(url).path).name or "style.css"
+            name = f"{h}_{name}"
+            name = re.sub(r"[^A-Za-z0-9._-]", "_", name)[:80]
+            if not name.endswith(".css"):
+                name += ".css"
+            target = resources_dir / name
+            css_text = resp.content.decode("utf-8", errors="replace")
+            if _sanitize_urls:
+                _font_exts = (".woff", ".woff2", ".ttf", ".otf", ".eot")
+                _counter = [0]
+                def _replace_css_remote_url(m):
+                    inner = m.group(1).strip("'\"")
+                    if not (inner.startswith("http") or inner.startswith("//")):
+                        return m.group(0)
+                    if any(inner.lower().endswith(ext) for ext in _font_exts):
+                        return "url()"  # drop remote font — browser falls back
+                    placeholder = _picsum_url(_counter[0])
+                    _counter[0] += 1
+                    return f"url({placeholder})"
+                css_text = re.sub(r'url\(["\']?([^)]+?)["\']?\)', _replace_css_remote_url, css_text)
+            target.write_text(css_text, encoding="utf-8")
+            return f"./resources/{name}"
+    except Exception:
+        pass
+    return None
+
+
 def download_resource(session: requests.Session, url: str, resources_dir: Path,
                       fallback_index: int = -1) -> str | None:
     """Download a resource to resources/ dir. Returns relative path or None.
@@ -271,6 +310,74 @@ def _guess_ext(content_type: str) -> str:
     if "woff" in content_type:
         return ".woff"
     return ""
+
+
+def rewrite_to_existing_resources(html: str, page_url: str, resources_dir: Path) -> str:
+    """Rewrite remote URLs in HTML to point to already-downloaded resources.
+
+    No new downloads — only rewrites URLs whose file already exists in resources/.
+    Used by expand sub-pages to share resources with the index page.
+    """
+    if not resources_dir.exists():
+        return html
+    # Build lookup: md5_hash_prefix -> local filename
+    existing = {}
+    for f in resources_dir.iterdir():
+        if f.is_file() and "_" in f.name:
+            prefix = f.name.split("_", 1)[0]
+            existing[prefix] = f"./resources/{f.name}"
+
+    soup = BeautifulSoup(html, "html.parser")
+
+    # Rewrite <img>, <source>, <input type="image">
+    for tag in soup.find_all(["img", "source", "input"]):
+        if tag.name == "input" and (tag.get("type") or "").lower() != "image":
+            continue
+        for attr in ("src", "data-src", "data-lazy-src"):
+            val = tag.get(attr)
+            if not val or val.startswith("data:") or val.startswith("./resources/"):
+                continue
+            abs_url = urljoin(page_url, val)
+            if abs_url.startswith("http"):
+                h = hashlib.md5(abs_url.encode()).hexdigest()[:8]
+                if h in existing:
+                    tag[attr] = existing[h]
+
+    # Rewrite CSS background-image url()
+    for style_tag in soup.find_all("style"):
+        if style_tag.string:
+            def _rewrite_bg(m):
+                url = m.group(1).strip("'\"")
+                abs_url = urljoin(page_url, url)
+                if abs_url.startswith("http"):
+                    h = hashlib.md5(abs_url.encode()).hexdigest()[:8]
+                    if h in existing:
+                        return f"url({existing[h]})"
+                return m.group(0)
+            style_tag.string = re.sub(r'url\(([^)]+)\)', _rewrite_bg, style_tag.string)
+
+    # Rewrite <link rel="stylesheet"> to existing local CSS
+    for link in soup.find_all("link"):
+        rel = " ".join(link.get("rel") or []).lower()
+        href = link.get("href", "")
+        if "stylesheet" in rel and href.startswith("http"):
+            h = hashlib.md5(href.encode()).hexdigest()[:8]
+            if h in existing:
+                link["href"] = existing[h]
+            else:
+                link.decompose()
+
+    # Rewrite <script src>
+    for script in soup.find_all("script"):
+        src = script.get("src", "")
+        if src and src.startswith("http"):
+            h = hashlib.md5(src.encode()).hexdigest()[:8]
+            if h in existing:
+                script["src"] = existing[h]
+            else:
+                script.decompose()
+
+    return str(soup)
 
 
 def localize_resources(html: str, page_url: str, resources_dir: Path,
@@ -1155,8 +1262,8 @@ def expand_project(project_dir: Path, output_dir: Path, browser: Browser,
 
         # Success — keep going, no fail limit on successes
 
-        # Localize images
-        sub_html = localize_resources(sub_html, sub_url, resources_dir, session)
+        # Rewrite remote URLs to existing local resources (no new downloads)
+        sub_html = rewrite_to_existing_resources(sub_html, sub_url, resources_dir)
 
         # Save
         filename = safe_filename(sub_url, i + 1, used_names)
@@ -1211,6 +1318,341 @@ def expand_one_process(payload: tuple[str, str, str, str, int, int]) -> tuple[st
 def expand_one_process_entry(payload: tuple[str, str, str, str, int, int], result_queue: mp.Queue) -> None:
     """mp.Process entry point for expand with site-timeout support."""
     result_queue.put(expand_one_process(payload))
+
+
+# Placeholder image config — picsum.photos/id/{id}/{w}/{h} returns real photos
+# IDs 1-200 cover diverse subjects; sizes match common web image dimensions
+# picsum.photos valid IDs: 0-1084, excluding known 404s/timeouts
+_PICSUM_UNAVAILABLE = {
+    86, 97, 105, 138, 148, 150, 188, 200, 205, 207, 210, 224, 226, 245, 246,
+    262, 285, 286, 298, 303, 332, 333, 346, 359, 394, 414, 422, 438, 449,
+    462, 463, 470, 489, 540, 561, 578, 587, 589, 592, 595, 597, 601, 624,
+    632, 636, 644, 647, 673, 697, 706, 707, 708, 709, 710, 711, 712, 713,
+    714, 720, 725, 734, 745, 746, 747, 748, 749, 750, 751, 752, 753, 754,
+    759, 761, 762, 763, 771, 792, 801, 812, 843, 850, 854, 895, 897, 899,
+    917, 920, 934, 947, 956, 963, 968, 1007, 1017, 1030, 1034, 1046,
+}
+_PICSUM_IDS = [i for i in range(0, 1085) if i not in _PICSUM_UNAVAILABLE]  # 988 unique photos
+_PICSUM_SIZES = [
+    (300, 200), (400, 300), (350, 250), (250, 250),
+    (200, 150), (150, 150), (320, 240), (280, 180),
+    (360, 240), (200, 200), (240, 160), (180, 180),
+    (300, 300), (400, 250), (350, 200), (260, 200),
+]
+PLACEHOLDER_ICON = "https://picsum.photos/id/1/32/32"
+
+# Placeholder CSS — only lightweight/non-invasive CSS that won't break inline layouts
+_PLACEHOLDER_CSS = [
+    "https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css",
+    "https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css",
+    "https://cdnjs.cloudflare.com/ajax/libs/hover.css/2.3.1/css/hover-min.css",
+    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css",
+    "https://cdnjs.cloudflare.com/ajax/libs/hint.css/2.7.0/hint.min.css",
+    "https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css",
+    "https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css",
+    "https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.css",
+]
+
+# Placeholder JS — common CDN scripts (real, stable URLs)
+_PLACEHOLDER_JS = [
+    "https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.2/axios.min.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.4/gsap.min.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js",
+]
+
+# Placeholder fonts — Google Fonts (real, stable URLs)
+_PLACEHOLDER_FONTS = [
+    "https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap",
+    "https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap",
+    "https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap",
+    "https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap",
+    "https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap",
+    "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap",
+    "https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap",
+    "https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap",
+]
+
+
+def _picsum_url(idx: int, w: int = 0, h: int = 0) -> str:
+    """Return a picsum.photos URL with deterministic photo ID.
+
+    If w/h are given (from original tag attributes), use them.
+    Otherwise cycle through default sizes.
+    """
+    photo_id = _PICSUM_IDS[idx % len(_PICSUM_IDS)]
+    if w > 0 and h > 0:
+        # Clamp to reasonable range for picsum
+        w = max(50, min(w, 2000))
+        h = max(50, min(h, 2000))
+    else:
+        w, h = _PICSUM_SIZES[idx % len(_PICSUM_SIZES)]
+    return f"https://picsum.photos/id/{photo_id}/{w}/{h}"
+
+
+def _parse_img_dimensions(tag) -> tuple[int, int]:
+    """Try to extract width/height from an HTML tag's attributes, inline style, or CSS class hints."""
+    w, h = 0, 0
+    try:
+        w_raw = tag.get("width", "")
+        h_raw = tag.get("height", "")
+        # Handle "100%" or "auto"
+        if str(w_raw).isdigit():
+            w = int(w_raw)
+        if str(h_raw).isdigit():
+            h = int(h_raw)
+    except (ValueError, TypeError):
+        pass
+    # Try inline style
+    if (w == 0 or h == 0) and tag.get("style"):
+        style = tag["style"]
+        wm = re.search(r'width:\s*(\d+)px', style)
+        hm = re.search(r'height:\s*(\d+)px', style)
+        if wm:
+            w = int(wm.group(1))
+        if hm:
+            h = int(hm.group(1))
+    # Try CSS class hints for common patterns like "size-thumbnail", "wp-image-150x150"
+    if w == 0 or h == 0:
+        cls = " ".join(tag.get("class") or [])
+        dim_m = re.search(r'(\d{2,4})x(\d{2,4})', cls)
+        if dim_m:
+            w, h = int(dim_m.group(1)), int(dim_m.group(2))
+    return w, h
+
+
+def clean_project_fast(project_dir: Path, session: requests.Session | None = None) -> dict:
+    """Clean project with minimal network — download CSS/JS, placeholder everything else.
+
+    CSS/JS → download to resources/ and reference locally
+    Images → picsum.photos real photos (198 unique IDs × 12 sizes)
+    Fonts → Google Fonts placeholder URLs
+    """
+    index_html_path = project_dir / "index.html"
+    if not index_html_path.exists():
+        return {"status": "no_index", "project": project_dir.name}
+
+    # Remove only image/video files from resources/ — keep CSS, JS, and fonts
+    resources_dir = project_dir / "resources"
+    resources_dir.mkdir(exist_ok=True)
+    _keep_exts = {".css", ".js", ".jsx", ".ts", ".tsx",
+                  ".woff", ".woff2", ".ttf", ".otf", ".eot"}
+    for f in list(resources_dir.iterdir()) if resources_dir.exists() else []:
+        if f.is_file() and f.suffix.lower() not in _keep_exts:
+            f.unlink()
+
+    img_idx = 0
+    css_idx = 0
+    js_idx = 0
+    font_idx = 0
+
+    for html_file in project_dir.glob("*.html"):
+        html = html_file.read_text(encoding="utf-8", errors="replace")
+
+        # Remove IE conditional comments and HTML comments
+        html = re.sub(r'<!--\[if[^\]]*\]>.*?<!\[endif\]-->', '', html, flags=re.DOTALL)
+        html = re.sub(r'<!--.*?-->', '', html, flags=re.DOTALL)
+
+        soup = BeautifulSoup(html, "html.parser")
+
+        # Ensure charset
+        head = soup.find("head")
+        if head and not soup.find("meta", attrs={"charset": True}):
+            meta = soup.new_tag("meta", charset="UTF-8")
+            head.insert(0, meta)
+
+        # Remote CSS → download to resources/; fonts/icons → placeholder URL
+        for link in list(soup.find_all("link")):
+            rel = " ".join(link.get("rel") or []).lower()
+            href = link.get("href", "")
+            if not (href.startswith("http") or href.startswith("//")):
+                continue  # keep all local links (./resources/*.css etc.)
+            href_lower = href.lower()
+            if "stylesheet" in rel or href_lower.endswith(".css"):
+                if "font" in href_lower:
+                    link["href"] = _PLACEHOLDER_FONTS[font_idx % len(_PLACEHOLDER_FONTS)]
+                    font_idx += 1
+                elif session:
+                    local = _download_css(session, href, resources_dir)
+                    if local:
+                        link["href"] = local
+                        css_idx += 1
+                    else:
+                        link["href"] = _PLACEHOLDER_CSS[css_idx % len(_PLACEHOLDER_CSS)]
+                        css_idx += 1
+                else:
+                    link["href"] = _PLACEHOLDER_CSS[css_idx % len(_PLACEHOLDER_CSS)]
+                    css_idx += 1
+            elif "font" in href_lower:
+                link["href"] = _PLACEHOLDER_FONTS[font_idx % len(_PLACEHOLDER_FONTS)]
+                font_idx += 1
+            elif "icon" in rel:
+                link["href"] = PLACEHOLDER_ICON
+            elif "preconnect" in rel or "dns-prefetch" in rel:
+                link.decompose()
+            else:
+                link.decompose()
+
+        # Remote JS → download to resources/; fallback to CDN placeholder
+        for script in list(soup.find_all("script")):
+            src = script.get("src", "")
+            if src.startswith("http") or src.startswith("//"):
+                if session:
+                    local = _download_js(session, src, resources_dir)
+                    if local:
+                        script["src"] = local
+                        js_idx += 1
+                    else:
+                        script["src"] = _PLACEHOLDER_JS[js_idx % len(_PLACEHOLDER_JS)]
+                        js_idx += 1
+                else:
+                    script["src"] = _PLACEHOLDER_JS[js_idx % len(_PLACEHOLDER_JS)]
+                    js_idx += 1
+            elif src.startswith("cid:"):
+                script.decompose()
+
+        # Replace remote URLs in <meta> tags (og:image, twitter:image, etc.)
+        for meta in soup.find_all("meta"):
+            content = meta.get("content", "")
+            if content.startswith("http") or content.startswith("//"):
+                prop = (meta.get("property") or meta.get("name") or "").lower()
+                if "image" in prop:
+                    meta["content"] = _picsum_url(img_idx)
+                    img_idx += 1
+
+        # Replace remote <video>/<audio> src with placeholder
+        for tag in soup.find_all(["video", "audio"]):
+            src = tag.get("src", "")
+            if src.startswith("http") or src.startswith("//"):
+                tag["src"] = _picsum_url(img_idx)
+                img_idx += 1
+            poster = tag.get("poster", "")
+            if poster.startswith("http") or poster.startswith("//"):
+                tag["poster"] = _picsum_url(img_idx)
+                img_idx += 1
+
+        # Replace ALL images with placeholders (preserving original dimensions)
+        # Includes remote URLs AND local ./resources/ paths (since resources dir is deleted)
+        for tag in soup.find_all(["img", "source", "input"]):
+            if tag.name == "input" and (tag.get("type") or "").lower() != "image":
+                continue
+            w, h = _parse_img_dimensions(tag)
+            # Also try to parse dimensions from URL (e.g. ?width=720&height=480 or filename-655x533.jpg)
+            first_url = tag.get("src") or tag.get("data-src") or ""
+            if w == 0 or h == 0:
+                wm = re.search(r'[?&](?:width|w)=(\d+)', first_url)
+                hm = re.search(r'[?&](?:height|h)=(\d+)', first_url)
+                if wm: w = int(wm.group(1))
+                if hm: h = int(hm.group(1))
+            # Try filename pattern like image-655x533.jpg
+            if w == 0 or h == 0:
+                dim_m = re.search(r'(\d{2,4})x(\d{2,4})\.\w+$', first_url)
+                if dim_m:
+                    w, h = int(dim_m.group(1)), int(dim_m.group(2))
+
+            for attr in ("src", "data-src", "data-lazy-src", "data-cke-saved-src",
+                         "nitro-lazy-src", "data-original", "data-lazy"):
+                val = tag.get(attr)
+                if not val or val.startswith("data:"):
+                    continue
+                # Replace remote URLs AND local resource paths
+                if val.startswith("http") or val.startswith("//") or val.startswith("./resources/"):
+                    tag[attr] = _picsum_url(img_idx, w, h)
+                    img_idx += 1
+
+            # Also handle srcset
+            srcset = tag.get("srcset", "")
+            if srcset and ("http" in srcset or "//" in srcset):
+                tag["srcset"] = _picsum_url(img_idx, w, h)
+                img_idx += 1
+
+        # Replace remote CSS url() — images → picsum, fonts → placeholder font URL
+        _font_exts = {".woff", ".woff2", ".ttf", ".otf", ".eot"}
+        for style_tag in soup.find_all("style"):
+            if style_tag.string:
+                def _replace_css_url(m):
+                    nonlocal img_idx, font_idx
+                    url = m.group(1).strip("'\"")
+                    if not (url.startswith("http") or url.startswith("//")):
+                        return m.group(0)  # keep local paths
+                    # Font files → placeholder font CSS
+                    if any(url.lower().endswith(ext) for ext in _font_exts):
+                        placeholder = _PLACEHOLDER_FONTS[font_idx % len(_PLACEHOLDER_FONTS)]
+                        font_idx += 1
+                        return f"url({placeholder})"
+                    # Everything else (images, SVG, etc.) → picsum
+                    placeholder = _picsum_url(img_idx)
+                    img_idx += 1
+                    return f"url({placeholder})"
+                style_tag.string = re.sub(r'url\(([^)]+)\)', _replace_css_url, style_tag.string)
+
+        # Replace inline style url() — handle url("...") with nested quotes
+        for tag in soup.find_all(style=True):
+            style = tag["style"]
+            if "url(" in style and ("http" in style or "//" in style):
+                _box = [img_idx]
+                def _do_replace(m):
+                    url = m.group(1)
+                    if url.startswith("http") or url.startswith("//"):
+                        placeholder = _picsum_url(_box[0])
+                        _box[0] += 1
+                        return f"url({placeholder})"
+                    return m.group(0)
+                tag["style"] = re.sub(r'url\(["\']?(https?://[^\s)\"\']+)["\']?\)', _do_replace, style)
+                img_idx = _box[0]
+
+        # Fallback: replace any remaining remote src/poster on ANY tag
+        _already_handled = {"img", "source", "input", "script", "link", "video", "audio"}
+        for tag in soup.find_all(True):
+            if tag.name in _already_handled:
+                continue
+            for attr in ("src", "poster"):
+                val = tag.get(attr, "")
+                if val and (val.startswith("http") or val.startswith("//")):
+                    tag[attr] = _picsum_url(img_idx)
+                    img_idx += 1
+
+        html_file.write_text(str(soup), encoding="utf-8")
+
+    # Sanitize remote url() inside ALL CSS files in resources/
+    _font_exts_set = {".woff", ".woff2", ".ttf", ".otf", ".eot"}
+    for css_file in list(resources_dir.glob("*.css")):
+        try:
+            css_text = css_file.read_text(encoding="utf-8", errors="replace")
+            if not re.search(r'url\([^)]*https?://', css_text):
+                continue
+            _css_box = [img_idx]
+            def _sanitize_css_url(m, _b=_css_box):
+                inner = m.group(1).strip("'\"")
+                if not (inner.startswith("http") or inner.startswith("//")):
+                    return m.group(0)
+                if any(inner.lower().endswith(ext) for ext in _font_exts_set):
+                    return "url()"
+                placeholder = _picsum_url(_b[0])
+                _b[0] += 1
+                return f"url({placeholder})"
+            css_text = re.sub(r'url\(["\']?([^)]+?)["\']?\)', _sanitize_css_url, css_text)
+            css_file.write_text(css_text, encoding="utf-8")
+            img_idx = _css_box[0]
+        except Exception:
+            pass
+
+    # Neutralize external links
+    neutralize_external_links(project_dir)
+
+    return {
+        "status": "cleaned",
+        "project": project_dir.name,
+        "remaining_remote_refs": 0,
+        "images_replaced": img_idx,
+        "css_replaced": css_idx,
+        "js_replaced": js_idx,
+        "fonts_replaced": font_idx,
+    }
 
 
 def clean_project(project_dir: Path, session: requests.Session) -> dict:

@@ -6,7 +6,8 @@
 #   export HTTP_PROXY_URL=http://your-proxy:port
 #   bash preprocess/run_pipeline_b_test.sh
 # =============================================================================
-set -euo pipefail
+# 不用 set -e，防止 tee 管道导致脚本提前退出
+set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DEFAULT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -117,7 +118,7 @@ $PYTHON preprocess/pipeline_b_sample_level.py \
     --requests-proxy "$REQUESTS_PROXY" \
     2>&1 | tee "$PIPELINE_B_LOG_DIR/pipeline_b.log"
 
-PIPELINE_EXIT=$?
+PIPELINE_EXIT=${PIPESTATUS[0]}
 
 # ======================== 汇总 ========================
 

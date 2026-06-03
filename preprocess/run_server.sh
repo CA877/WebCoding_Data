@@ -280,6 +280,7 @@ if [ -z "$SKIP_PIPELINE_A" ]; then
             --limit "$PIPELINE_A_LIMIT" \
             --browser-proxy "$BROWSER_PROXY" \
             --requests-proxy "$REQUESTS_PROXY" \
+            --fast-clean \
             $JS_ARGS \
             2>&1 | tee "$PIPELINE_A_LOG_DIR/pipeline_a.log"
     ) &
