@@ -1,0 +1,50 @@
+### LLaMA-Factory LoRA 微调配置
+### 模型: Qwen/Qwen3-VL-8B-Instruct
+### 硬件: 4 × GPU, DeepSpeed ZeRO-2
+
+### ============ 模型 ============
+model_name_or_path: Qwen/Qwen3-VL-8B-Instruct
+trust_remote_code: true
+
+### ============ 训练方式 ============
+stage: sft
+do_train: true
+finetuning_type: lora
+
+### ============ LoRA 参数 ============
+lora_target: all
+lora_rank: 64
+lora_alpha: 128
+lora_dropout: 0.05
+
+### ============ 数据 ============
+dataset: webcoding_train
+dataset_dir: ./data
+template: qwen3_vl
+cutoff_len: 8192
+preprocessing_num_workers: 8
+tokenized_path: ./tokenized_cache
+
+### ============ 训练超参 ============
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 8
+learning_rate: 1.0e-4
+num_train_epochs: 3
+lr_scheduler_type: cosine
+warmup_ratio: 0.05
+bf16: true
+gradient_checkpointing: true
+
+### ============ DeepSpeed ============
+deepspeed: examples/deepspeed/ds_z2_config.json
+
+### ============ 输出 ============
+output_dir: ./output/qwen3_vl_8b_lora
+logging_steps: 10
+save_steps: 500
+save_total_limit: 3
+report_to: tensorboard
+
+### ============ 其他 ============
+overwrite_output_dir: true
+seed: 42
