@@ -13,6 +13,9 @@ Usage:
 
     # 传所有文件（含图片字体）
     python3 scripts/upload_to_hf.py --all-files
+
+    # 指定文件类型
+    python3 scripts/upload_to_hf.py --patterns "*.html" "*.json"
 """
 
 import argparse
@@ -23,7 +26,7 @@ from pathlib import Path
 
 # ============ 配置区（改这里就够了）============
 DEFAULT_DATA_DIR = "/mnt/shared-storage-user/colab-share/liujiaheng/workspace/xieqianqian/webcoding_data/datasets/pipeline_a/runs/run_a_fast/output"
-DEFAULT_REPO = "mistletoe111/webcoding"
+DEFAULT_REPO = "mistletoe111/webcoding1"
 DEFAULT_HF_ENDPOINT = "https://hf-mirror.com"
 # HF_TOKEN 从环境变量读，或者取消下面的注释直接写
 # DEFAULT_HF_TOKEN = "hf_xxx"
@@ -49,6 +52,8 @@ def main():
     parser.add_argument("--endpoint", type=str, default=None,
                         help="HF endpoint override")
     parser.add_argument("--max-retries", type=int, default=3)
+    parser.add_argument("--patterns", type=str, nargs="+", default=None,
+                        help="File patterns to upload (e.g. '*.html' '*.json'). Overrides default.")
     parser.add_argument("--all-files", action="store_true",
                         help="Upload all files, not just html/js/css")
     parser.add_argument("--dry-run", action="store_true",
@@ -71,12 +76,18 @@ def main():
         print(f"Error: data directory not found: {data_dir}")
         sys.exit(1)
 
-    allow_patterns = None if args.all_files else CODE_PATTERNS
+    # Pattern priority: --all-files > --patterns > CODE_PATTERNS default
+    if args.all_files:
+        allow_patterns = None
+    elif args.patterns:
+        allow_patterns = args.patterns
+    else:
+        allow_patterns = CODE_PATTERNS
 
     print(f"Endpoint:  {hf_endpoint}")
     print(f"Data dir:  {data_dir}")
     print(f"Repo:      {args.repo}")
-    print(f"Filter:    {'all files' if args.all_files else ', '.join(CODE_PATTERNS)}")
+    print(f"Filter:    {'all files' if not allow_patterns else ', '.join(allow_patterns)}")
     if args.repo_prefix:
         print(f"Prefix:    {args.repo_prefix}")
 
