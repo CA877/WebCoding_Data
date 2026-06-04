@@ -20,7 +20,7 @@ from WebCoding_Data.construct.construct_common import (
     choose_task_types,
     collect_resources,
     ensure_api_env,
-
+    info_to_training_record,
     load_repair_catalog,
     read_code_bundle,
     safe_write_json,
@@ -65,10 +65,10 @@ def _process_one(project_dir: Path, args, synthesizer, all_task_types) -> dict:
                 "llm_metadata": task.get("llm_metadata", {}),
             },
         )
-        return {"instance_id": project_dir.name, "status": "ok", "task_type": task_types}
+        return {"instance_id": project_dir.name, "status": "ok", "task_type": task_types, "_info": info}
     except Exception as exc:  # noqa: BLE001
         shutil.rmtree(instance_dir, ignore_errors=True)
-        return {"instance_id": project_dir.name, "bucket": bucket, "status": "error", "error": f"{type(exc).__name__}: {exc}"}
+        return {"instance_id": project_dir.name, "status": "error", "error": f"{type(exc).__name__}: {exc}"}
 
 
 def main() -> None:
@@ -86,6 +86,7 @@ def main() -> None:
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
     manifest = args.output_dir / "manifest_text_repair.jsonl"
+    train_jsonl = args.output_dir / "text-repair.jsonl"
     api_key, base_url, model = ensure_api_env(prefer_vision=False)
     synthesizer = build_repair_synthesizer(api_key, base_url, model, max_retries=args.max_retries)
     all_task_types, _ = load_repair_catalog()
@@ -104,7 +105,12 @@ def main() -> None:
                 result = future.result()
             except Exception as exc:  # noqa: BLE001
                 result = {"instance_id": project_dir.name, "status": "error", "error": f"Worker crash: {exc}"}
-            append_jsonl(manifest, result)
+            manifest_record = {k: v for k, v in result.items() if k != "_info"}
+            append_jsonl(manifest, manifest_record)
+            if result.get("_info"):
+                record = info_to_training_record(result["_info"])
+                if record:
+                    append_jsonl(train_jsonl, record)
             done += 1
             status = result["status"]
             if status == "ok":

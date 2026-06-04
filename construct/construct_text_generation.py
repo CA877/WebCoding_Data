@@ -18,6 +18,7 @@ from WebCoding_Data.construct.construct_common import (
     collect_resources,
     copy_project,
     generate_prd_from_code,
+    info_to_training_record,
     iter_project_dirs,
     read_code_bundle,
     safe_write_json,
@@ -43,7 +44,7 @@ def _process_one(project_dir: Path, args) -> dict:
         info["resources"] = collect_resources(project_dir)
         info["meta"] = {"source_project": str(project_dir)}
         safe_write_json(instance_dir / "info.json", info)
-        return {"instance_id": project_dir.name, "status": "ok"}
+        return {"instance_id": project_dir.name, "status": "ok", "_info": info}
     except Exception as exc:  # noqa: BLE001
         shutil.rmtree(instance_dir, ignore_errors=True)
         return {"instance_id": project_dir.name, "status": "error", "error": f"{type(exc).__name__}: {exc}"}
@@ -60,6 +61,7 @@ def main() -> None:
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
     manifest = args.output_dir / "manifest_text_generation.jsonl"
+    train_jsonl = args.output_dir / "text-generation.jsonl"
     projects = iter_project_dirs(args.input_dir, args.limit)
     total = len(projects)
     print(f"text-generation: {total} projects, {args.workers} worker(s)")
@@ -75,7 +77,14 @@ def main() -> None:
                 result = future.result()
             except Exception as exc:  # noqa: BLE001
                 result = {"instance_id": project_dir.name, "status": "error", "error": f"Worker crash: {exc}"}
-            append_jsonl(manifest, result)
+            # 写 manifest（不含 _info）
+            manifest_record = {k: v for k, v in result.items() if k != "_info"}
+            append_jsonl(manifest, manifest_record)
+            # 写训练 JSONL
+            if result.get("_info"):
+                record = info_to_training_record(result["_info"])
+                if record:
+                    append_jsonl(train_jsonl, record)
             done += 1
             status = result["status"]
             if status == "ok":

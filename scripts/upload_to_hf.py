@@ -43,12 +43,17 @@ DEFAULT_HF_TOKEN = "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"
 HTTP_PROXY = "http://httpproxy-headless.kubebrain.svc.pjlab.local:3128"
 # ================================================
 
-# 走代理访问 huggingface.co（参照 xuqiankai/upload_env_proxy.sh）
-# 强制覆盖，清除可能存在的 SOCKS 代理
-os.environ.pop("all_proxy", None)
-os.environ.pop("ALL_PROXY", None)
-os.environ["http_proxy"] = HTTP_PROXY
-os.environ["https_proxy"] = HTTP_PROXY
+# 走代理访问 huggingface.co
+# 仅在 K8s 集群内（能解析内网代理域名）时使用服务器代理，否则保留已有代理设置
+import socket
+try:
+    socket.getaddrinfo("httpproxy-headless.kubebrain.svc.pjlab.local", 3128)
+    os.environ.pop("all_proxy", None)
+    os.environ.pop("ALL_PROXY", None)
+    os.environ["http_proxy"] = HTTP_PROXY
+    os.environ["https_proxy"] = HTTP_PROXY
+except socket.gaierror:
+    pass  # 本地环境，使用已有的代理设置
 
 CODE_PATTERNS = ["*.html", "*.js", "*.css"]
 
@@ -130,9 +135,12 @@ def main():
     print(f"Endpoint:  {hf_endpoint}")
     print(f"Data dir:  {data_dir}")
     print(f"Repo:      {args.repo}")
-    filter_desc = "all files" if args.all_files and args.limit <= 0 else f"{len(allow_patterns)} patterns"
-    if not args.all_files and args.limit <= 0:
+    if allow_patterns is None:
+        filter_desc = "all files"
+    elif not args.all_files and args.limit <= 0:
         filter_desc = ", ".join(CODE_PATTERNS if not args.patterns else args.patterns)
+    else:
+        filter_desc = f"{len(allow_patterns)} patterns"
     print(f"Filter:    {filter_desc}")
     if args.repo_prefix:
         print(f"Prefix:    {args.repo_prefix}")

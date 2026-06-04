@@ -157,6 +157,59 @@ def append_jsonl(path: Path, payload: dict[str, Any]) -> None:
         f.write(json.dumps(payload, ensure_ascii=False) + "\n")
 
 
+# ============ info.json → 统一 JSONL 训练格式转换 ============
+
+def _apply_patches_reverse(dst_code: list[dict], patches: list[dict]) -> list[dict]:
+    """对 dst_code 反向应用 patch，得到有缺陷的 src_code。
+
+    repair 的 label_modified_files: search=缺陷代码, replace=干净代码
+    反向应用: 在 dst_code(干净) 中把 replace 替换为 search → 得到缺陷代码
+    """
+    code_map = {item["path"]: item["code"] for item in dst_code}
+    for patch in patches:
+        path = patch["path"]
+        if path in code_map:
+            code_map[path] = code_map[path].replace(patch["replace"], patch["search"])
+    return [{"path": item["path"], "code": code_map.get(item["path"], item["code"])}
+            for item in dst_code]
+
+
+def info_to_training_record(info: dict) -> dict | None:
+    """将 info.json 字典转换为统一的 instruction+response 训练记录。
+
+    返回 None 表示未知 task 类型。
+    """
+    task = info.get("task", "")
+    base = {
+        "instance_id": info["instance_id"],
+        "task_type": info.get("task_type", []),
+        "file_manifest": info.get("file_manifest", []),
+        "resources": info.get("resources", []),
+    }
+
+    if task == "text-generation":
+        base["task"] = "text-generation"
+        base["instruction"] = info["instruction"]
+        base["response"] = info["dst_code"]
+    elif task == "repair":
+        base["task"] = "text-repair"
+        patches = info.get("label_modified_files", [])
+        dst_code = info.get("dst_code", [])
+        base["instruction"] = _apply_patches_reverse(dst_code, patches)
+        base["response"] = patches
+    elif task == "edit":
+        base["task"] = "text-editing"
+        base["instruction"] = {
+            "src_code": info.get("src_code", []),
+            "description": info.get("description", []),
+        }
+        base["response"] = info.get("label_modified_files", [])
+    else:
+        return None
+
+    return base
+
+
 def iter_project_dirs(root: Path, limit: int = 0) -> list[Path]:
     projects = sorted(p for p in root.iterdir() if p.is_dir())
     return projects[:limit] if limit > 0 else projects
