@@ -2,23 +2,17 @@
 Upload project folders to HuggingFace Hub (only .html/.js/.css files).
 
 Usage:
-    # Basic usage (uses hf-mirror.com by default)
-    HF_TOKEN=hf_xxx python scripts/upload_to_hf.py --repo CA877/WebCoding_Data --data-dir /path/to/data
+    # 最简用法（需要先设置下面的配置区）
+    python3 scripts/upload_to_hf.py
 
-    # With proxy
-    HTTPS_PROXY=socks5://127.0.0.1:13659 HF_TOKEN=hf_xxx python scripts/upload_to_hf.py \
-        --repo CA877/WebCoding_Data --data-dir /path/to/data
+    # 覆盖默认参数
+    python3 scripts/upload_to_hf.py --data-dir /other/path --repo other/repo
 
-    # Dry run to preview
-    python scripts/upload_to_hf.py --repo CA877/WebCoding_Data --data-dir /path/to/data --dry-run
+    # 预览不上传
+    python3 scripts/upload_to_hf.py --dry-run
 
-    # Upload to a subdirectory in the repo
-    HF_TOKEN=hf_xxx python scripts/upload_to_hf.py --repo CA877/WebCoding_Data \
-        --data-dir /path/to/data --repo-prefix data/
-
-    # Include all files (images, fonts, etc.)
-    HF_TOKEN=hf_xxx python scripts/upload_to_hf.py --repo CA877/WebCoding_Data \
-        --data-dir /path/to/data --all-files
+    # 传所有文件（含图片字体）
+    python3 scripts/upload_to_hf.py --all-files
 """
 
 import argparse
@@ -26,7 +20,16 @@ import os
 import sys
 import tempfile
 import shutil
+import time
 from pathlib import Path
+
+# ============ 配置区（改这里就够了）============
+DEFAULT_DATA_DIR = "/mnt/shared-storage-user/colab-share/liujiaheng/workspace/xieqianqian/webcoding_data/datasets/pipeline_a/runs/run_a_fast/output"
+DEFAULT_REPO = "mistletoe111/webcoding"
+DEFAULT_HF_ENDPOINT = "https://hf-mirror.com"
+# HF_TOKEN 从环境变量读，或者取消下面的注释直接写
+# DEFAULT_HF_TOKEN = "hf_xxx"
+# ================================================
 
 ALLOWED_EXTENSIONS = {".html", ".js", ".css"}
 
@@ -35,60 +38,58 @@ def main():
     parser = argparse.ArgumentParser(
         description="Upload html/js/css files from subfolders to HuggingFace Hub"
     )
-    parser.add_argument("--data-dir", type=str, required=True,
-                        help="Local directory containing subfolders to upload")
-    parser.add_argument("--repo", type=str, required=True,
-                        help="HuggingFace repo ID (e.g. CA877/WebCoding_Data)")
+    parser.add_argument("--data-dir", type=str, default=DEFAULT_DATA_DIR,
+                        help=f"Local directory (default: {DEFAULT_DATA_DIR})")
+    parser.add_argument("--repo", type=str, default=DEFAULT_REPO,
+                        help=f"HuggingFace repo ID (default: {DEFAULT_REPO})")
     parser.add_argument("--repo-type", type=str, default="dataset",
-                        choices=["dataset", "model", "space"],
-                        help="HuggingFace repo type (default: dataset)")
+                        choices=["dataset", "model", "space"])
     parser.add_argument("--repo-prefix", type=str, default="",
-                        help="Path prefix in the HF repo (e.g. 'data/')")
+                        help="Path prefix in HF repo (e.g. 'data/')")
     parser.add_argument("--token", type=str, default=None,
-                        help="HF token (or set HF_TOKEN env var)")
+                        help="HF token (default: HF_TOKEN env var)")
     parser.add_argument("--endpoint", type=str, default=None,
                         help="HF endpoint override")
-    parser.add_argument("--max-retries", type=int, default=3,
-                        help="Max retries for upload (default: 3)")
+    parser.add_argument("--max-retries", type=int, default=3)
     parser.add_argument("--all-files", action="store_true",
                         help="Upload all files, not just html/js/css")
     parser.add_argument("--dry-run", action="store_true",
-                        help="Preview what would be uploaded without uploading")
+                        help="Preview only, don't upload")
     args = parser.parse_args()
 
-    # Setup endpoint: CLI > env > default mirror
+    # Endpoint: CLI > env > default mirror
     if args.endpoint:
         os.environ["HF_ENDPOINT"] = args.endpoint
     elif "HF_ENDPOINT" not in os.environ:
-        os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
+        os.environ["HF_ENDPOINT"] = DEFAULT_HF_ENDPOINT
     hf_endpoint = os.environ["HF_ENDPOINT"]
-    print(f"HF endpoint: {hf_endpoint}")
 
-    # Validate data dir
+    # Token: CLI > env > hardcoded
+    token = args.token or os.environ.get("HF_TOKEN") or globals().get("DEFAULT_HF_TOKEN")
+
+    # Validate
     data_dir = Path(args.data_dir).resolve()
     if not data_dir.exists():
         print(f"Error: data directory not found: {data_dir}")
         sys.exit(1)
 
-    # Collect subfolders
     subdirs = sorted([d for d in data_dir.iterdir() if d.is_dir() and not d.name.startswith(".")])
     if not subdirs:
         print(f"Error: no subfolders found in {data_dir}")
         sys.exit(1)
 
-    print(f"Data dir: {data_dir}")
-    print(f"Found {len(subdirs)} subfolders")
-    print(f"Repo: {args.repo} (type: {args.repo_type})")
-    print(f"Filter: {'all files' if args.all_files else 'html/js/css only'}")
+    print(f"Endpoint:  {hf_endpoint}")
+    print(f"Data dir:  {data_dir}")
+    print(f"Repo:      {args.repo}")
+    print(f"Filter:    {'all files' if args.all_files else 'html/js/css only'}")
+    print(f"Folders:   {len(subdirs)}")
     if args.repo_prefix:
-        print(f"Repo prefix: {args.repo_prefix}")
+        print(f"Prefix:    {args.repo_prefix}")
 
     def should_include(f: Path) -> bool:
-        if args.all_files:
-            return True
-        return f.suffix.lower() in ALLOWED_EXTENSIONS
+        return args.all_files or f.suffix.lower() in ALLOWED_EXTENSIONS
 
-    # Build staging directory with all subfolders at once
+    # Stage all files into temp dir
     print("\nStaging files...")
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)
@@ -120,21 +121,20 @@ def main():
             print("No files to upload.")
             return
 
-        # Auth
-        token = args.token or os.environ.get("HF_TOKEN")
+        # Auth check
         if not token:
-            print("Error: HF token required. Set --token or HF_TOKEN env var.")
+            print("Error: HF token required. Set HF_TOKEN env var or DEFAULT_HF_TOKEN in script.")
             sys.exit(1)
 
         try:
             from huggingface_hub import HfApi
         except ImportError:
-            print("Error: huggingface_hub not installed. Run: pip install huggingface_hub")
+            print("Error: pip install huggingface_hub")
             sys.exit(1)
 
         api = HfApi(token=token)
 
-        # Single upload for the entire directory
+        # Single upload
         path_in_repo = args.repo_prefix.rstrip("/") if args.repo_prefix else ""
         print(f"\nUploading {total_files} files to {args.repo} ...")
 
@@ -149,7 +149,7 @@ def main():
                     commit_message=f"Upload {len(subdirs) - skipped_dirs} projects ({total_files} files)",
                 )
                 print("Done!")
-                print(f"View at: {hf_endpoint}/datasets/{args.repo}")
+                print(f"View: {hf_endpoint}/datasets/{args.repo}")
                 return
             except Exception as e:
                 last_error = e
@@ -157,7 +157,6 @@ def main():
                     wait = 30 * attempt
                     print(f"  Attempt {attempt} failed: {e}")
                     print(f"  Retrying in {wait}s...")
-                    import time
                     time.sleep(wait)
 
         print(f"FAILED after {args.max_retries} attempts: {last_error}")
