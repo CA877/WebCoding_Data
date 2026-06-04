@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Phase 1: 需要 API 的任务（text-editing, text-repair）
-# 给有 API 的人跑，跑完把 OUTPUT_DIR 传回来
-set -euo pipefail
+# Phase 1: repair + generate 并行跑（edit 暂不跑）
+set -uo pipefail
 
 # ============ 必须配置 ============
 INPUT_DIR="${INPUT_DIR:-./single_page}"
-OUTPUT_DIR="${OUTPUT_DIR:-./output}"
+# 服务器端存数据的根路径
+DATA_ROOT="${DATA_ROOT:-/mnt/shared-storage-user/colab-share/liujiaheng/workspace/xieqianqian/webcoding_data}"
 
 # API 配置
 export OPENAI_API_KEY="${OPENAI_API_KEY:?请设置 OPENAI_API_KEY}"
@@ -16,8 +16,6 @@ export OPENAI_MODEL="${OPENAI_MODEL:-kimi-k2.6}"
 LIMIT="${LIMIT:-0}"                    # 0=不限制
 SEED="${SEED:-0}"
 WORKERS="${WORKERS:-1}"               # 并发线程数
-EDIT_MIN_TASKS="${EDIT_MIN_TASKS:-4}"
-EDIT_MAX_TASKS="${EDIT_MAX_TASKS:-12}"
 REPAIR_MIN_TASKS="${REPAIR_MIN_TASKS:-4}"
 REPAIR_MAX_TASKS="${REPAIR_MAX_TASKS:-12}"
 MAX_RETRIES="${MAX_RETRIES:-3}"
@@ -39,70 +37,89 @@ OVERWRITE_FLAG=""
 LIMIT_FLAG=""
 [ "$LIMIT" -gt 0 ] 2>/dev/null && LIMIT_FLAG="--limit $LIMIT"
 
-# ============ 简单分区：前 10K edit，后 10K repair ============
-EDIT_LIMIT="${EDIT_LIMIT:-10000}"
-REPAIR_LIMIT="${REPAIR_LIMIT:-10000}"
+# 输出路径（对应数量安排.md）
+REPAIR_OUTPUT="$DATA_ROOT/repair/sp"    # 单页 repair 5k
+GEN_OUTPUT="$DATA_ROOT/generate/sp"     # 单页 generate 5k
 
-echo "=== 项目分区（前${EDIT_LIMIT} edit + 后${REPAIR_LIMIT} repair）==="
+# ============ 分区：前 5K repair，后 5K generate ============
+REPAIR_LIMIT="${REPAIR_LIMIT:-5000}"
+GEN_LIMIT="${GEN_LIMIT:-5000}"
+
+echo "=== 项目分区（前${REPAIR_LIMIT} repair + 后${GEN_LIMIT} generate）==="
 python3 -c "
 from pathlib import Path
 import os
 
 input_dir = Path('$INPUT_DIR')
-output_dir = Path('$OUTPUT_DIR')
-src_dir = output_dir / '_src'
+src_dir = Path('$DATA_ROOT') / '_src'
 
-edit_src = src_dir / 'text-editing'
 repair_src = src_dir / 'text-repair'
-for d in (edit_src, repair_src):
+gen_src = src_dir / 'text-generation'
+for d in (repair_src, gen_src):
     d.mkdir(parents=True, exist_ok=True)
 
 projects = sorted(d for d in input_dir.iterdir() if d.is_dir() and (d/'index.html').exists())
 
-edit_projs = projects[:$EDIT_LIMIT]
-repair_projs = projects[$EDIT_LIMIT:$EDIT_LIMIT+$REPAIR_LIMIT]
-
-for proj in edit_projs:
-    dst = edit_src / proj.name
-    if not dst.exists():
-        os.symlink(proj.resolve(), str(dst), target_is_directory=True)
+repair_projs = projects[:$REPAIR_LIMIT]
+gen_projs = projects[$REPAIR_LIMIT:$REPAIR_LIMIT+$GEN_LIMIT]
 
 for proj in repair_projs:
     dst = repair_src / proj.name
     if not dst.exists():
         os.symlink(proj.resolve(), str(dst), target_is_directory=True)
 
-print(f'  text-editing: {len(edit_projs)} projects')
-print(f'  text-repair:  {len(repair_projs)} projects')
+for proj in gen_projs:
+    dst = gen_src / proj.name
+    if not dst.exists():
+        os.symlink(proj.resolve(), str(dst), target_is_directory=True)
+
+print(f'  text-repair:     {len(repair_projs)} projects')
+print(f'  text-generation: {len(gen_projs)} projects')
 "
 
-# ============ text-editing（需要 LLM API）============
-echo ""
-echo "=== text-editing (workers=$WORKERS) ==="
-python3 WebCoding_Data/construct/construct_text_editing.py \
-    --input-dir "$OUTPUT_DIR/_src/text-editing" \
-    --output-dir "$OUTPUT_DIR/text-editing" \
-    --min-tasks "$EDIT_MIN_TASKS" \
-    --max-tasks "$EDIT_MAX_TASKS" \
-    --seed "$SEED" \
-    --max-retries "$MAX_RETRIES" \
-    --workers "$WORKERS" \
-    $LIMIT_FLAG $OVERWRITE_FLAG
+LOG_DIR="$DATA_ROOT/_logs"
+mkdir -p "$LOG_DIR"
 
-# ============ text-repair（需要 LLM API）============
+# ============ repair + generate 并行 ============
 echo ""
-echo "=== text-repair (workers=$WORKERS) ==="
+echo "=== text-repair + text-generation 并行启动 (workers=$WORKERS) ==="
+
 python3 WebCoding_Data/construct/construct_text_repair.py \
-    --input-dir "$OUTPUT_DIR/_src/text-repair" \
-    --output-dir "$OUTPUT_DIR/text-repair" \
+    --input-dir "$DATA_ROOT/_src/text-repair" \
+    --output-dir "$REPAIR_OUTPUT" \
     --min-tasks "$REPAIR_MIN_TASKS" \
     --max-tasks "$REPAIR_MAX_TASKS" \
     --seed "$SEED" \
     --max-retries "$MAX_RETRIES" \
     --workers "$WORKERS" \
-    $LIMIT_FLAG $OVERWRITE_FLAG
+    $LIMIT_FLAG $OVERWRITE_FLAG \
+    >"$LOG_DIR/repair.log" 2>&1 &
+PID_REPAIR=$!
+
+python3 WebCoding_Data/construct/construct_text_generation.py \
+    --input-dir "$DATA_ROOT/_src/text-generation" \
+    --output-dir "$GEN_OUTPUT" \
+    --workers "$WORKERS" \
+    $LIMIT_FLAG $OVERWRITE_FLAG \
+    >"$LOG_DIR/generate.log" 2>&1 &
+PID_GEN=$!
+
+echo "  repair   PID=$PID_REPAIR → $REPAIR_OUTPUT"
+echo "  generate PID=$PID_GEN → $GEN_OUTPUT"
+echo "  日志: $LOG_DIR/repair.log"
+echo "        $LOG_DIR/generate.log"
+echo ""
+echo "等待两个任务完成…（可用 tail -f $LOG_DIR/*.log 查看进度）"
+
+# 等待两个任务完成
+wait $PID_REPAIR
+RC_REPAIR=$?
+wait $PID_GEN
+RC_GEN=$?
 
 echo ""
 echo "=== Phase 1 完成 ==="
-echo "text-editing: $OUTPUT_DIR/text-editing/"
-echo "text-repair:  $OUTPUT_DIR/text-repair/"
+echo "text-repair:     $REPAIR_OUTPUT (exit=$RC_REPAIR)"
+echo "text-generation: $GEN_OUTPUT (exit=$RC_GEN)"
+echo "text-editing:    (暂未执行)"
+echo "完整日志: $LOG_DIR/{repair,generate}.log"

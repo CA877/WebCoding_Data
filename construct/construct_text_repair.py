@@ -20,7 +20,7 @@ from WebCoding_Data.construct.construct_common import (
     choose_task_types,
     collect_resources,
     ensure_api_env,
-    infer_page_bucket,
+
     load_repair_catalog,
     read_code_bundle,
     safe_write_json,
@@ -31,11 +31,10 @@ from WebCoding_Data.construct.construct_common import (
 
 def _process_one(project_dir: Path, args, synthesizer, all_task_types) -> dict:
     """Process a single project. Returns manifest record."""
-    bucket = infer_page_bucket(project_dir)
-    instance_dir = args.output_dir / bucket / project_dir.name
+    instance_dir = args.output_dir / project_dir.name
     if instance_dir.exists():
         if not args.overwrite:
-            return {"instance_id": project_dir.name, "bucket": bucket, "status": "skip_existing"}
+            return {"instance_id": project_dir.name, "status": "skip_existing"}
         shutil.rmtree(instance_dir)
     instance_dir.mkdir(parents=True, exist_ok=True)
     try:
@@ -66,7 +65,7 @@ def _process_one(project_dir: Path, args, synthesizer, all_task_types) -> dict:
                 "llm_metadata": task.get("llm_metadata", {}),
             },
         )
-        return {"instance_id": project_dir.name, "bucket": bucket, "status": "ok", "task_type": task_types}
+        return {"instance_id": project_dir.name, "status": "ok", "task_type": task_types}
     except Exception as exc:  # noqa: BLE001
         shutil.rmtree(instance_dir, ignore_errors=True)
         return {"instance_id": project_dir.name, "bucket": bucket, "status": "error", "error": f"{type(exc).__name__}: {exc}"}
@@ -104,7 +103,7 @@ def main() -> None:
             try:
                 result = future.result()
             except Exception as exc:  # noqa: BLE001
-                result = {"instance_id": project_dir.name, "bucket": "sp", "status": "error", "error": f"Worker crash: {exc}"}
+                result = {"instance_id": project_dir.name, "status": "error", "error": f"Worker crash: {exc}"}
             append_jsonl(manifest, result)
             done += 1
             status = result["status"]

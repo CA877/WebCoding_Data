@@ -53,6 +53,16 @@ os.environ["https_proxy"] = HTTP_PROXY
 CODE_PATTERNS = ["*.html", "*.js", "*.css"]
 
 
+def _match_pattern(filepath: str, pattern: str) -> bool:
+    """简单的 glob pattern 匹配（支持 *, ** 和 folder/*.ext）。"""
+    from fnmatch import fnmatch
+    # "dir/*.html" → 匹配 "dir/index.html"
+    # "*.html" → 匹配 "index.html" 或 "dir/index.html"（按文件名）
+    if "/" in pattern:
+        return fnmatch(filepath, pattern)
+    return fnmatch(filepath.rsplit("/", 1)[-1], pattern)
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Upload files from subfolders to HuggingFace Hub"
@@ -70,6 +80,8 @@ def main():
     parser.add_argument("--endpoint", type=str, default=None,
                         help="HF endpoint override")
     parser.add_argument("--max-retries", type=int, default=3)
+    parser.add_argument("--limit", type=int, default=10000,
+                        help="Max number of subfolders to upload (default: 10000)")
     parser.add_argument("--patterns", type=str, nargs="+", default=None,
                         help="File patterns to upload (e.g. '*.html' '*.json'). Overrides default.")
     parser.add_argument("--all-files", action="store_true",
@@ -102,10 +114,26 @@ def main():
     else:
         allow_patterns = CODE_PATTERNS
 
+    # 筛选前 N 个子文件夹
+    subdirs = sorted(d.name for d in data_dir.iterdir() if d.is_dir())
+    if args.limit > 0 and len(subdirs) > args.limit:
+        selected = set(subdirs[:args.limit])
+        # 只上传 selected 文件夹下的匹配文件
+        if allow_patterns:
+            allow_patterns = [f"{name}/{p}" for name in selected for p in allow_patterns]
+        else:
+            allow_patterns = [f"{name}/**" for name in selected]
+        print(f"Limit:     前 {args.limit} 个文件夹（共 {len(subdirs)}）")
+    else:
+        print(f"Folders:   {len(subdirs)}")
+
     print(f"Endpoint:  {hf_endpoint}")
     print(f"Data dir:  {data_dir}")
     print(f"Repo:      {args.repo}")
-    print(f"Filter:    {'all files' if not allow_patterns else ', '.join(allow_patterns)}")
+    filter_desc = "all files" if args.all_files and args.limit <= 0 else f"{len(allow_patterns)} patterns"
+    if not args.all_files and args.limit <= 0:
+        filter_desc = ", ".join(CODE_PATTERNS if not args.patterns else args.patterns)
+    print(f"Filter:    {filter_desc}")
     if args.repo_prefix:
         print(f"Prefix:    {args.repo_prefix}")
 
