@@ -19,10 +19,19 @@ Usage:
 """
 
 import argparse
+import functools
+import logging
 import os
 import sys
 import time
 from pathlib import Path
+
+# 强制 print 实时刷新
+print = functools.partial(print, flush=True)
+
+# 确保 huggingface_hub 日志和进度条输出到终端
+logging.basicConfig(stream=sys.stderr, level=logging.INFO)
+os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "0"
 
 # ============ 配置区（改这里就够了）============
 DEFAULT_DATA_DIR = "/mnt/shared-storage-user/colab-share/liujiaheng/workspace/xieqianqian/webcoding_data/datasets/pipeline_a/runs/run_a_fast/output"
@@ -132,6 +141,8 @@ def main():
                 repo_type=args.repo_type,
                 allow_patterns=allow_patterns,
                 commit_message=f"Upload from {data_dir.name}",
+                multi_commits=True,
+                multi_commits_verbose=True,
             )
             print("Done!")
             print(f"View: {hf_endpoint}/datasets/{args.repo}")
