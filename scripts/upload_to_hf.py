@@ -1,5 +1,5 @@
 """
-Upload project folders to HuggingFace Hub (only .html/.js/.css files).
+Upload project folders to HuggingFace Hub.
 
 Usage:
     # 最简用法（需要先设置下面的配置区）
@@ -18,8 +18,6 @@ Usage:
 import argparse
 import os
 import sys
-import tempfile
-import shutil
 import time
 from pathlib import Path
 
@@ -31,12 +29,12 @@ DEFAULT_HF_ENDPOINT = "https://hf-mirror.com"
 # DEFAULT_HF_TOKEN = "hf_xxx"
 # ================================================
 
-ALLOWED_EXTENSIONS = {".html", ".js", ".css"}
+CODE_PATTERNS = ["*.html", "*.js", "*.css"]
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Upload html/js/css files from subfolders to HuggingFace Hub"
+        description="Upload files from subfolders to HuggingFace Hub"
     )
     parser.add_argument("--data-dir", type=str, default=DEFAULT_DATA_DIR,
                         help=f"Local directory (default: {DEFAULT_DATA_DIR})")
@@ -73,94 +71,70 @@ def main():
         print(f"Error: data directory not found: {data_dir}")
         sys.exit(1)
 
-    subdirs = sorted([d for d in data_dir.iterdir() if d.is_dir() and not d.name.startswith(".")])
-    if not subdirs:
-        print(f"Error: no subfolders found in {data_dir}")
-        sys.exit(1)
+    allow_patterns = None if args.all_files else CODE_PATTERNS
 
     print(f"Endpoint:  {hf_endpoint}")
     print(f"Data dir:  {data_dir}")
     print(f"Repo:      {args.repo}")
-    print(f"Filter:    {'all files' if args.all_files else 'html/js/css only'}")
-    print(f"Folders:   {len(subdirs)}")
+    print(f"Filter:    {'all files' if args.all_files else ', '.join(CODE_PATTERNS)}")
     if args.repo_prefix:
         print(f"Prefix:    {args.repo_prefix}")
 
-    def should_include(f: Path) -> bool:
-        return args.all_files or f.suffix.lower() in ALLOWED_EXTENSIONS
-
-    # Stage all files into temp dir
-    print("\nStaging files...")
-    with tempfile.TemporaryDirectory() as tmp:
-        tmp_path = Path(tmp)
+    if args.dry_run:
+        # 统计要上传的文件
         total_files = 0
         total_size = 0
-        skipped_dirs = 0
-
-        for subdir in subdirs:
-            files = [f for f in subdir.rglob("*") if f.is_file() and should_include(f)]
-            if not files:
-                skipped_dirs += 1
+        for f in data_dir.rglob("*"):
+            if not f.is_file():
                 continue
-            for f in files:
-                rel = f.relative_to(data_dir)
-                dest = tmp_path / rel
-                dest.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(f, dest)
-                total_files += 1
-                total_size += f.stat().st_size
+            if allow_patterns and not any(f.name.endswith(p.lstrip("*")) for p in allow_patterns):
+                continue
+            total_files += 1
+            total_size += f.stat().st_size
+        print(f"\n  {total_files} files, {total_size / 1024 / 1024:.1f} MB")
+        print("Dry run — nothing uploaded.")
+        return
 
-        print(f"  {total_files} files, {total_size / 1024 / 1024:.1f} MB "
-              f"({len(subdirs) - skipped_dirs} folders, {skipped_dirs} skipped)")
-
-        if args.dry_run:
-            print("\nDry run — nothing uploaded.")
-            return
-
-        if total_files == 0:
-            print("No files to upload.")
-            return
-
-        # Auth check
-        if not token:
-            print("Error: HF token required. Set HF_TOKEN env var or DEFAULT_HF_TOKEN in script.")
-            sys.exit(1)
-
-        try:
-            from huggingface_hub import HfApi
-        except ImportError:
-            print("Error: pip install huggingface_hub")
-            sys.exit(1)
-
-        api = HfApi(token=token)
-
-        # Single upload
-        path_in_repo = args.repo_prefix.rstrip("/") if args.repo_prefix else ""
-        print(f"\nUploading {total_files} files to {args.repo} ...")
-
-        last_error = None
-        for attempt in range(1, args.max_retries + 1):
-            try:
-                api.upload_folder(
-                    folder_path=str(tmp_path),
-                    path_in_repo=path_in_repo or None,
-                    repo_id=args.repo,
-                    repo_type=args.repo_type,
-                    commit_message=f"Upload {len(subdirs) - skipped_dirs} projects ({total_files} files)",
-                )
-                print("Done!")
-                print(f"View: {hf_endpoint}/datasets/{args.repo}")
-                return
-            except Exception as e:
-                last_error = e
-                if attempt < args.max_retries:
-                    wait = 30 * attempt
-                    print(f"  Attempt {attempt} failed: {e}")
-                    print(f"  Retrying in {wait}s...")
-                    time.sleep(wait)
-
-        print(f"FAILED after {args.max_retries} attempts: {last_error}")
+    # Auth check
+    if not token:
+        print("Error: HF token required. Set HF_TOKEN env var or DEFAULT_HF_TOKEN in script.")
         sys.exit(1)
+
+    try:
+        from huggingface_hub import HfApi
+    except ImportError:
+        print("Error: pip install huggingface_hub")
+        sys.exit(1)
+
+    api = HfApi(token=token)
+    path_in_repo = args.repo_prefix.rstrip("/") if args.repo_prefix else ""
+
+    print(f"\nUploading to {args.repo} ...")
+
+    last_error = None
+    for attempt in range(1, args.max_retries + 1):
+        try:
+            api.upload_folder(
+                folder_path=str(data_dir),
+                path_in_repo=path_in_repo or None,
+                repo_id=args.repo,
+                repo_type=args.repo_type,
+                allow_patterns=allow_patterns,
+                commit_message=f"Upload from {data_dir.name}",
+            )
+            print("Done!")
+            print(f"View: {hf_endpoint}/datasets/{args.repo}")
+            return
+        except Exception as e:
+            last_error = e
+            if attempt < args.max_retries:
+                wait = 30 * attempt
+                print(f"  Attempt {attempt} failed: {e}")
+                print(f"  Retrying in {wait}s...")
+                time.sleep(wait)
+
+    print(f"FAILED after {args.max_retries} attempts: {last_error}")
+    sys.exit(1)
 
 
 if __name__ == "__main__":
