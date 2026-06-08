@@ -13,7 +13,6 @@ export OPENAI_BASE_URL="${OPENAI_BASE_URL:?请设置 OPENAI_BASE_URL}"
 export OPENAI_MODEL="${OPENAI_MODEL:-kimi-k2.6}"
 
 # ============ 可选配置 ============
-LIMIT="${LIMIT:-0}"                    # 0=不限制
 SEED="${SEED:-0}"
 WORKERS="${WORKERS:-1}"               # 并发线程数
 REPAIR_MIN_TASKS="${REPAIR_MIN_TASKS:-4}"
@@ -34,48 +33,18 @@ cd "$REPO_ROOT"
 
 OVERWRITE_FLAG=""
 [ -n "$OVERWRITE" ] && OVERWRITE_FLAG="--overwrite"
-LIMIT_FLAG=""
-[ "$LIMIT" -gt 0 ] 2>/dev/null && LIMIT_FLAG="--limit $LIMIT"
 
-# 输出路径（对应数量安排.md）
-REPAIR_OUTPUT="$DATA_ROOT/repair/sp"    # 单页 repair 5k
-GEN_OUTPUT="$DATA_ROOT/generate/sp"     # 单页 generate 5k
+# 输出路径
+REPAIR_OUTPUT="$DATA_ROOT/repair"
+GEN_OUTPUT="$DATA_ROOT/generate"
 
 # ============ 分区：前 5K repair，后 5K generate ============
 REPAIR_LIMIT="${REPAIR_LIMIT:-5000}"
+REPAIR_OFFSET="${REPAIR_OFFSET:-0}"
 GEN_LIMIT="${GEN_LIMIT:-5000}"
+GEN_OFFSET="${GEN_OFFSET:-5000}"
 
-echo "=== 项目分区（前${REPAIR_LIMIT} repair + 后${GEN_LIMIT} generate）==="
-python3 -c "
-from pathlib import Path
-import os
-
-input_dir = Path('$INPUT_DIR')
-src_dir = Path('$DATA_ROOT') / '_src'
-
-repair_src = src_dir / 'text-repair'
-gen_src = src_dir / 'text-generation'
-for d in (repair_src, gen_src):
-    d.mkdir(parents=True, exist_ok=True)
-
-projects = sorted(d for d in input_dir.iterdir() if d.is_dir() and (d/'index.html').exists())
-
-repair_projs = projects[:$REPAIR_LIMIT]
-gen_projs = projects[$REPAIR_LIMIT:$REPAIR_LIMIT+$GEN_LIMIT]
-
-for proj in repair_projs:
-    dst = repair_src / proj.name
-    if not dst.exists():
-        os.symlink(proj.resolve(), str(dst), target_is_directory=True)
-
-for proj in gen_projs:
-    dst = gen_src / proj.name
-    if not dst.exists():
-        os.symlink(proj.resolve(), str(dst), target_is_directory=True)
-
-print(f'  text-repair:     {len(repair_projs)} projects')
-print(f'  text-generation: {len(gen_projs)} projects')
-"
+echo "=== 项目分区（offset=$REPAIR_OFFSET limit=$REPAIR_LIMIT repair + offset=$GEN_OFFSET limit=$GEN_LIMIT generate）==="
 
 LOG_DIR="$DATA_ROOT/_logs"
 mkdir -p "$LOG_DIR"
@@ -85,27 +54,31 @@ echo ""
 echo "=== text-repair + text-generation 并行启动 (workers=$WORKERS) ==="
 
 python3 WebCoding_Data/construct/construct_text_repair.py \
-    --input-dir "$DATA_ROOT/_src/text-repair" \
+    --input-dir "$INPUT_DIR" \
     --output-dir "$REPAIR_OUTPUT" \
+    --offset "$REPAIR_OFFSET" \
+    --limit "$REPAIR_LIMIT" \
     --min-tasks "$REPAIR_MIN_TASKS" \
     --max-tasks "$REPAIR_MAX_TASKS" \
     --seed "$SEED" \
     --max-retries "$MAX_RETRIES" \
     --workers "$WORKERS" \
-    $LIMIT_FLAG $OVERWRITE_FLAG \
+    $OVERWRITE_FLAG \
     >"$LOG_DIR/repair.log" 2>&1 &
 PID_REPAIR=$!
 
 python3 WebCoding_Data/construct/construct_text_generation.py \
-    --input-dir "$DATA_ROOT/_src/text-generation" \
+    --input-dir "$INPUT_DIR" \
     --output-dir "$GEN_OUTPUT" \
+    --offset "$GEN_OFFSET" \
+    --limit "$GEN_LIMIT" \
     --workers "$WORKERS" \
-    $LIMIT_FLAG $OVERWRITE_FLAG \
+    $OVERWRITE_FLAG \
     >"$LOG_DIR/generate.log" 2>&1 &
 PID_GEN=$!
 
-echo "  repair   PID=$PID_REPAIR → $REPAIR_OUTPUT"
-echo "  generate PID=$PID_GEN → $GEN_OUTPUT"
+echo "  repair   PID=$PID_REPAIR → $REPAIR_OUTPUT (offset=$REPAIR_OFFSET, limit=$REPAIR_LIMIT)"
+echo "  generate PID=$PID_GEN → $GEN_OUTPUT (offset=$GEN_OFFSET, limit=$GEN_LIMIT)"
 echo "  日志: $LOG_DIR/repair.log"
 echo "        $LOG_DIR/generate.log"
 echo ""
@@ -121,5 +94,4 @@ echo ""
 echo "=== Phase 1 完成 ==="
 echo "text-repair:     $REPAIR_OUTPUT (exit=$RC_REPAIR)"
 echo "text-generation: $GEN_OUTPUT (exit=$RC_GEN)"
-echo "text-editing:    (暂未执行)"
 echo "完整日志: $LOG_DIR/{repair,generate}.log"

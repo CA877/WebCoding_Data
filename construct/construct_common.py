@@ -183,6 +183,7 @@ def info_to_training_record(info: dict) -> dict | None:
     base = {
         "instance_id": info["instance_id"],
         "task_type": info.get("task_type", []),
+        "page_type": info.get("page_type", "sp"),
         "file_manifest": info.get("file_manifest", []),
         "resources": info.get("resources", []),
     }
@@ -210,8 +211,10 @@ def info_to_training_record(info: dict) -> dict | None:
     return base
 
 
-def iter_project_dirs(root: Path, limit: int = 0) -> list[Path]:
+def iter_project_dirs(root: Path, limit: int = 0, offset: int = 0) -> list[Path]:
     projects = sorted(p for p in root.iterdir() if p.is_dir())
+    if offset > 0:
+        projects = projects[offset:]
     return projects[:limit] if limit > 0 else projects
 
 
@@ -639,24 +642,31 @@ def generate_prd_from_code(project_dir: Path) -> str:
     client = OpenAI(api_key=api_key, base_url=base_url, timeout=300.0)
 
     code_items = read_code_bundle(project_dir, code_only=True)
+    resources = collect_resources(project_dir)
     # Reserve tokens for prompt template + output.
     # 1 token ≈ 3 chars for HTML/CSS (conservative). Default 200K tokens.
     # Override via OPENAI_MAX_INPUT_TOKENS env var for smaller-context models.
     max_input_tokens = int(os.environ.get("OPENAI_MAX_INPUT_TOKENS", "200000"))
     prompt_overhead = len(CODE_PRD_PROMPT) + 200
     max_chars = max(max_input_tokens * 3 - prompt_overhead, 20_000)
-    # Prioritise HTML > JS > CSS (CSS is largest but least informative for PRD)
-    priority = {".html": 0, ".htm": 0, ".js": 1, ".jsx": 1, ".ts": 1, ".tsx": 1, ".css": 2}
-    sorted_items = sorted(code_items, key=lambda it: (priority.get(Path(it["path"]).suffix.lower(), 9), it["path"]))
+    # Only send HTML files to LLM
+    html_exts = {".html", ".htm"}
+    html_items = [it for it in code_items if Path(it["path"]).suffix.lower() in html_exts]
     context = "<code_context>\n"
     remaining = max_chars
-    for item in sorted_items:
+    for item in sorted(html_items, key=lambda it: it["path"]):
         if remaining <= 0:
             break
         code = _truncate_text(item["code"], remaining)
         context += f'<file path="{item["path"]}">\n{code}\n</file>\n'
         remaining -= len(code)
     context += "</code_context>"
+
+    if resources:
+        context += "\n<resources>\n"
+        for res in resources:
+            context += f'  <file path="{res["path"]}" type="{res.get("type", "image")}" />\n'
+        context += "</resources>"
 
     prompt = CODE_PRD_PROMPT + "\n\n" + context
 
@@ -1046,8 +1056,13 @@ class LocalSearchReplaceSynthesizer:
         self.max_tokens = max_tokens
         self.max_retries = max_retries
 
-    def format_code_context(self, code_list: list[dict[str, str]], max_tokens: int = 200_000) -> str:
-        """Build XML context for LLM — only HTML files.
+    def format_code_context(
+        self,
+        code_list: list[dict[str, str]],
+        resources: list[dict[str, Any]] | None = None,
+        max_tokens: int = 200_000,
+    ) -> str:
+        """Build XML context for LLM — only HTML files + resources file list.
 
         CSS/JS are kept in src_code/info.json but not sent to LLM.
         Token estimation: ~1 token per 4 chars for ASCII code.
@@ -1065,6 +1080,13 @@ class LocalSearchReplaceSynthesizer:
             context += f'<file path="{item["path"]}">\n{code}\n</file>\n'
             remaining -= len(code)
         context += "</code_context>"
+
+        if resources:
+            context += "\n<resources>\n"
+            for res in resources:
+                context += f'  <file path="{res["path"]}" type="{res.get("type", "image")}" />\n'
+            context += "</resources>"
+
         return context
 
     def parse_llm_response(self, response_text: str) -> dict[str, Any]:
@@ -1150,7 +1172,8 @@ def build_forward_edit_synthesizer(api_key: str, base_url: str | None, model: st
     class ForwardEditPairSynthesizer(LocalSearchReplaceSynthesizer):
         def generate_forward_pair(self, generation_data: dict[str, Any], task_types: list[str]) -> dict[str, Any]:
             src_code = generation_data["dst_code"]
-            src_code_context = self.format_code_context(src_code)
+            resources = generation_data.get("resources", [])
+            src_code_context = self.format_code_context(src_code, resources=resources)
             task_descriptions_str = ""
             for idx, task_type in enumerate(task_types, 1):
                 task_descriptions_str += f"Task {idx}: {task_type}\n  Guideline: {task_descriptions[task_type]}\n\n"
@@ -1199,7 +1222,8 @@ def build_repair_synthesizer(api_key: str, base_url: str | None, model: str, max
     class RepairPairSynthesizer(LocalSearchReplaceSynthesizer):
         def generate_defect_task(self, generation_data: dict[str, Any], defect_types: list[str]) -> dict[str, Any]:
             dst_code = generation_data["dst_code"]
-            dst_code_context = self.format_code_context(dst_code)
+            resources = generation_data.get("resources", [])
+            dst_code_context = self.format_code_context(dst_code, resources=resources)
             defect_descriptions_str = ""
             for idx, defect_type in enumerate(defect_types, 1):
                 defect_descriptions_str += f"Defect {idx}: {defect_type}\n  Guideline: {defect_descriptions[defect_type]}\n\n"

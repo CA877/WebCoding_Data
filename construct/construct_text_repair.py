@@ -20,6 +20,7 @@ from WebCoding_Data.construct.construct_common import (
     choose_task_types,
     collect_resources,
     ensure_api_env,
+    infer_page_bucket,
     info_to_training_record,
     load_repair_catalog,
     read_code_bundle,
@@ -46,6 +47,7 @@ def _process_one(project_dir: Path, args, synthesizer, all_task_types) -> dict:
 
         info = base_info(project_dir.name, "repair")
         info["task_type"] = task_types
+        info["page_type"] = infer_page_bucket(project_dir)
         info["description"] = task["description"]
         info["dst_code"] = read_code_bundle(project_dir, code_only=True)  # clean original
         info["file_manifest"] = build_file_manifest(project_dir)
@@ -76,6 +78,7 @@ def main() -> None:
     parser.add_argument("--input-dir", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--limit", type=int, default=0)
+    parser.add_argument("--offset", type=int, default=0)
     parser.add_argument("--min-tasks", type=int, default=4)
     parser.add_argument("--max-tasks", type=int, default=12)
     parser.add_argument("--seed", type=int, default=0)
@@ -90,7 +93,7 @@ def main() -> None:
     api_key, base_url, model = ensure_api_env(prefer_vision=False)
     synthesizer = build_repair_synthesizer(api_key, base_url, model, max_retries=args.max_retries)
     all_task_types, _ = load_repair_catalog()
-    projects = iter_project_dirs(args.input_dir, args.limit)
+    projects = iter_project_dirs(args.input_dir, args.limit, args.offset)
     total = len(projects)
     print(f"text-repair: {total} projects, {args.workers} worker(s)")
 

@@ -18,6 +18,7 @@ from WebCoding_Data.construct.construct_common import (
     collect_resources,
     copy_project,
     generate_prd_from_code,
+    infer_page_bucket,
     info_to_training_record,
     iter_project_dirs,
     read_code_bundle,
@@ -38,6 +39,7 @@ def _process_one(project_dir: Path, args) -> dict:
         copy_project(project_dir, instance_dir / "dst")
 
         info = base_info(project_dir.name, "text-generation")
+        info["page_type"] = infer_page_bucket(project_dir)
         info["instruction"] = instruction
         info["dst_code"] = read_code_bundle(project_dir, code_only=True)
         info["file_manifest"] = build_file_manifest(project_dir)
@@ -55,6 +57,7 @@ def main() -> None:
     parser.add_argument("--input-dir", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--limit", type=int, default=0)
+    parser.add_argument("--offset", type=int, default=0)
     parser.add_argument("--workers", type=int, default=1)
     parser.add_argument("--overwrite", action="store_true")
     args = parser.parse_args()
@@ -62,7 +65,7 @@ def main() -> None:
     args.output_dir.mkdir(parents=True, exist_ok=True)
     manifest = args.output_dir / "manifest_text_generation.jsonl"
     train_jsonl = args.output_dir / "text-generation.jsonl"
-    projects = iter_project_dirs(args.input_dir, args.limit)
+    projects = iter_project_dirs(args.input_dir, args.limit, args.offset)
     total = len(projects)
     print(f"text-generation: {total} projects, {args.workers} worker(s)")
 
