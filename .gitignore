@@ -85,3 +85,6 @@ build/
 
 # Environment files with non-standard names, e.g. `.task.env`.
 *.env
+
+# Project-specific CLAUDE.md (contains credentials, local only)
+CLAUDE.md

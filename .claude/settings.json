@@ -3,6 +3,7 @@
     "defaultMode": "dontAsk",
     "allow": [
       "Bash(ssh *)",
+      "Bash(sshpass *)",
       "Bash(rsync *)",
       "Bash(scp *)",
       "Bash(git *)",
