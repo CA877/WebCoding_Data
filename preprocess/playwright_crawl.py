@@ -392,7 +392,8 @@ def rewrite_to_existing_resources(html: str, page_url: str, resources_dir: Path)
 
 
 def localize_resources(html: str, page_url: str, resources_dir: Path,
-                       session: requests.Session) -> str:
+                       session: requests.Session,
+                       code_resources_only: bool = False) -> str:
     """Download remote images and inline remaining remote CSS.
 
     Failed image downloads get a fallback placeholder (not removed from DOM).
@@ -463,8 +464,9 @@ def localize_resources(html: str, page_url: str, resources_dir: Path,
     fallback_idx = 0
     download_count = 0
 
-    # Process <img>, <source>, and <input type="image"> tags
-    # NOTE: Skip image downloads — keep original URLs (fast mode)
+    # Process <img>, <source>, and <input type="image"> tags.
+    # Fast mode does not download images. In code-resources-only mode, remote
+    # non-code resources are removed instead of being left for later fetches.
     for tag in list(soup.find_all(["img", "source", "input"])):
         if tag.name == "input" and (tag.get("type") or "").lower() != "image":
             continue
@@ -475,10 +477,9 @@ def localize_resources(html: str, page_url: str, resources_dir: Path,
                 continue
             abs_url = urljoin(page_url, val)
             if abs_url.startswith("http"):
-                # Keep original URL — don't download, don't replace
-                tag[attr] = abs_url
+                tag[attr] = "" if code_resources_only else abs_url
         try:
-            if tag.get("srcset"):
+            if tag.get("srcset") or code_resources_only:
                 del tag["srcset"]
         except (AttributeError, TypeError):
             pass
@@ -490,7 +491,7 @@ def localize_resources(html: str, page_url: str, resources_dir: Path,
             continue
         abs_url = urljoin(page_url, val)
         if abs_url.startswith("http"):
-            tag["data-src"] = abs_url
+            tag["data-src"] = "" if code_resources_only else abs_url
 
     # Clean up lazy attributes — keep original URLs
     LAZY_ATTRS = ("data-lazy-src", "data-src", "nitro-lazy-src", "data-original", "data-lazy")
@@ -589,6 +590,8 @@ def localize_resources(html: str, page_url: str, resources_dir: Path,
         abs_url = urljoin(page_url, img_url)
         if not abs_url.startswith("http"):
             return match.group(0)
+        if code_resources_only:
+            return 'url("")'
         # Only download non-image resources (fonts); skip images
         url_path = urlparse(abs_url).path.lower()
         ext = Path(url_path).suffix if url_path else ""
@@ -618,6 +621,9 @@ def localize_resources(html: str, page_url: str, resources_dir: Path,
             continue
         rel = " ".join(link.get("rel") or []).lower()
         href = link.get("href", "")
+        if code_resources_only and (href.startswith("http") or href.startswith("//")) and "stylesheet" not in rel:
+            link.decompose()
+            continue
         if "stylesheet" in rel and href.startswith("http"):
             try:
                 resp = session.get(href, timeout=(5, 10))
@@ -931,10 +937,39 @@ def snapshot_page(
         return None
 
 
+def _block_non_code_route(route):
+    """Abort heavy non-code resource loads during local Pipeline B crawls."""
+    if route.request.resource_type in {"image", "media", "font"}:
+        route.abort()
+    else:
+        route.continue_()
+
+
+def _purge_non_code_resources(project_dir: Path) -> int:
+    """Remove downloaded files except CSS/JS from resources/."""
+    resources_dir = project_dir / "resources"
+    if not resources_dir.exists():
+        return 0
+    kept_exts = {".css", ".js"}
+    removed = 0
+    for path in list(resources_dir.rglob("*")):
+        if path.is_file() and path.suffix.lower() not in kept_exts:
+            path.unlink()
+            removed += 1
+    for path in sorted(resources_dir.rglob("*"), reverse=True):
+        if path.is_dir():
+            try:
+                path.rmdir()
+            except OSError:
+                pass
+    return removed
+
+
 def crawl_site(url: str, output_dir: Path, browser: Browser,
                session: requests.Session, max_pages: int = 4,
                wait_ms: int = 3000, subpage_wait_ms: int = 2000,
-               timeout_ms: int = 20000) -> dict:
+               timeout_ms: int = 20000,
+               code_resources_only: bool = False) -> dict:
     """Crawl a website: index page + sub-pages.
 
     Returns a result dict with status and metadata.
@@ -944,6 +979,8 @@ def crawl_site(url: str, output_dir: Path, browser: Browser,
     resources_dir.mkdir(exist_ok=True)
 
     page = browser.new_page(viewport={"width": 1280, "height": 800})
+    if code_resources_only:
+        page.route("**/*", _block_non_code_route)
 
     try:
         # Step 1: Snapshot index page
@@ -969,7 +1006,7 @@ def crawl_site(url: str, output_dir: Path, browser: Browser,
             return {"status": "wrong_language", "url": url, "lang": lang}
 
         # Localize images
-        index_html = localize_resources(index_html, url, resources_dir, session)
+        index_html = localize_resources(index_html, url, resources_dir, session, code_resources_only=code_resources_only)
 
         # Save index
         (output_dir / "index.html").write_text(index_html, encoding="utf-8")
@@ -980,6 +1017,7 @@ def crawl_site(url: str, output_dir: Path, browser: Browser,
         if not nav_links:
             # Single page only
             neutralize_external_links(output_dir)
+            purged_non_code_resources = _purge_non_code_resources(output_dir) if code_resources_only else 0
             page.close()
             return {
                 "status": "single_page",
@@ -990,6 +1028,8 @@ def crawl_site(url: str, output_dir: Path, browser: Browser,
                 "has_single_page": True,
                 "has_multi_page": False,
                 "html_size": len(index_html),
+                "code_resources_only": code_resources_only,
+                "purged_non_code_resources": purged_non_code_resources,
             }
 
         # Crawl sub-pages
@@ -1016,7 +1056,7 @@ def crawl_site(url: str, output_dir: Path, browser: Browser,
                 continue
 
             # Localize images
-            sub_html = localize_resources(sub_html, sub_url, resources_dir, session)
+            sub_html = localize_resources(sub_html, sub_url, resources_dir, session, code_resources_only=code_resources_only)
 
             # Save
             filename = safe_filename(sub_url, i + 1, used_names)
@@ -1033,6 +1073,8 @@ def crawl_site(url: str, output_dir: Path, browser: Browser,
         # Step 4: Neutralize remaining external links
         neutralize_external_links(output_dir)
 
+        purged_non_code_resources = _purge_non_code_resources(output_dir) if code_resources_only else 0
+
         page.close()
         return {
             "status": "multi_page" if pages_added > 0 else "single_page",
@@ -1043,6 +1085,8 @@ def crawl_site(url: str, output_dir: Path, browser: Browser,
             "has_single_page": True,
             "has_multi_page": pages_added > 0,
             "html_size": sum(f.stat().st_size for f in output_dir.glob("*.html")),
+            "code_resources_only": code_resources_only,
+            "purged_non_code_resources": purged_non_code_resources,
         }
 
     except Exception as e:

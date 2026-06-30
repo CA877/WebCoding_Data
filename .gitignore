@@ -26,6 +26,10 @@ logs/
 *.mp4
 *.mov
 *.png
+!参考文档/assets/
+!参考文档/assets/agentic_data_pipelines/
+!参考文档/assets/agentic_data_pipelines/figures/
+!参考文档/assets/agentic_data_pipelines/figures/*.png
 *.jpg
 *.jpeg
 *.gif

@@ -1,0 +1,1567 @@
+{
+  "files": {
+    "/data1/xieqianqian/webcoding/release_sft_6tasks_v1/jsonl/image-edit.jsonl": 4333,
+    "/data1/xieqianqian/webcoding/release_sft_6tasks_v1/jsonl/image-repair.jsonl": 4845
+  },
+  "tasks": {
+    "image-editing": {
+      "total": 4333,
+      "issue_counts": {
+        "adult_or_sensitive_keyword:bet": 978,
+        "missing_output_files": 4333,
+        "patch_0_replace_uncheckable_missing_output_code": 4333,
+        "patch_0_search_not_found": 3020,
+        "patch_1_replace_uncheckable_missing_output_code": 1648,
+        "patch_1_search_not_found": 1095,
+        "remote_url_present": 2471,
+        "patch_2_replace_uncheckable_missing_output_code": 864,
+        "patch_3_replace_uncheckable_missing_output_code": 239,
+        "patch_3_search_not_found": 153,
+        "adult_or_sensitive_keyword:casino": 7,
+        "patch_2_search_not_found": 563,
+        "adult_or_sensitive_keyword:porn,sex,xxx": 1,
+        "risky_domain_from_instance_id": 91,
+        "adult_or_sensitive_keyword:bet,cam": 62,
+        "patch_4_replace_uncheckable_missing_output_code": 128,
+        "placeholder_or_parked:placeholder": 1309,
+        "adult_or_sensitive_keyword:cam": 131,
+        "patch_5_replace_uncheckable_missing_output_code": 79,
+        "patch_6_replace_uncheckable_missing_output_code": 52,
+        "patch_4_search_not_found": 71,
+        "challenge_or_captcha:captcha": 954,
+        "adult_or_sensitive_keyword:bet,sex": 10,
+        "adult_or_sensitive_keyword:bet,dating": 61,
+        "patch_5_search_not_found": 46,
+        "patch_7_replace_uncheckable_missing_output_code": 36,
+        "adult_or_sensitive_keyword:adult,bet": 5,
+        "patch_6_search_not_found": 35,
+        "patch_7_search_not_found": 25,
+        "adult_or_sensitive_keyword:adult": 19,
+        "adult_or_sensitive_keyword:sex": 23,
+        "adult_or_sensitive_keyword:adult,bet,cam,cams,dating": 2,
+        "adult_or_sensitive_keyword:bet,casino": 9,
+        "adult_or_sensitive_keyword:dating": 74,
+        "adult_or_sensitive_keyword:erotic": 1,
+        "patch_10_replace_uncheckable_missing_output_code": 9,
+        "patch_10_search_not_found": 4,
+        "patch_8_replace_uncheckable_missing_output_code": 20,
+        "patch_8_search_not_found": 10,
+        "patch_9_replace_uncheckable_missing_output_code": 16,
+        "patch_9_search_not_found": 8,
+        "patch_0_search_ambiguous_2": 2,
+        "adult_or_sensitive_keyword:bet,cam,dating": 3,
+        "adult_or_sensitive_keyword:bet,cam,casino": 1,
+        "adult_or_sensitive_keyword:adult,porn": 1,
+        "adult_or_sensitive_keyword:porn": 2,
+        "adult_or_sensitive_keyword:adult,cam": 1,
+        "adult_or_sensitive_keyword:bet,bets,betting,casino,gambling": 1,
+        "patch_1_search_ambiguous_7": 1,
+        "adult_or_sensitive_keyword:bet,erotic,nude,nudes,porn": 1,
+        "adult_or_sensitive_keyword:cam,casino,sex": 1,
+        "patch_5_search_ambiguous_2": 2,
+        "adult_or_sensitive_keyword:cam,dating": 7,
+        "patch_11_replace_uncheckable_missing_output_code": 7,
+        "patch_12_replace_uncheckable_missing_output_code": 5,
+        "patch_13_replace_uncheckable_missing_output_code": 4,
+        "patch_14_replace_uncheckable_missing_output_code": 4,
+        "patch_15_replace_uncheckable_missing_output_code": 3,
+        "patch_16_replace_uncheckable_missing_output_code": 3,
+        "patch_17_replace_uncheckable_missing_output_code": 3,
+        "patch_18_replace_uncheckable_missing_output_code": 2,
+        "patch_19_replace_uncheckable_missing_output_code": 2,
+        "patch_20_replace_uncheckable_missing_output_code": 2,
+        "patch_21_replace_uncheckable_missing_output_code": 2,
+        "patch_22_replace_uncheckable_missing_output_code": 1,
+        "patch_23_replace_uncheckable_missing_output_code": 1,
+        "patch_24_replace_uncheckable_missing_output_code": 1,
+        "patch_25_replace_uncheckable_missing_output_code": 1,
+        "adult_or_sensitive_keyword:bet,betting,casino,gambling": 1,
+        "adult_or_sensitive_keyword:bet,betting,gambling": 1,
+        "adult_or_sensitive_keyword:bet,betting,casino": 2,
+        "adult_or_sensitive_keyword:xxx": 16,
+        "adult_or_sensitive_keyword:nude": 1,
+        "adult_or_sensitive_keyword:bet,cam,cams": 3,
+        "adult_or_sensitive_keyword:cam,casino": 1,
+        "patch_6_search_ambiguous_2": 1,
+        "patch_7_search_ambiguous_2": 1,
+        "adult_or_sensitive_keyword:adult,bet,cam": 1,
+        "adult_or_sensitive_keyword:bet,cam,hookup": 1,
+        "adult_or_sensitive_keyword:adult,bet,cam,webcam": 1,
+        "adult_or_sensitive_keyword:cam,webcam": 2,
+        "adult_or_sensitive_keyword:bet,hookup,sex": 1,
+        "adult_or_sensitive_keyword:dating,hookup": 2,
+        "challenge_or_captcha:cloudflare": 5,
+        "placeholder_or_parked:under construction": 2,
+        "challenge_or_captcha:enable javascript": 3,
+        "adult_or_sensitive_keyword:cam,cams": 2,
+        "adult_or_sensitive_keyword:adult,dating": 1,
+        "patch_4_search_ambiguous_2": 1,
+        "patch_1_search_ambiguous_2": 1,
+        "adult_or_sensitive_keyword:gambling": 1,
+        "adult_or_sensitive_keyword:dating,hookup,sex": 2,
+        "adult_or_sensitive_keyword:bet,dating,hookup,sex": 1,
+        "patch_20_search_not_found": 1,
+        "patch_21_search_not_found": 1,
+        "placeholder_or_parked:coming soon,placeholder": 1,
+        "adult_or_sensitive_keyword:bet,nude": 2,
+        "placeholder_or_parked:this domain": 3,
+        "adult_or_sensitive_keyword:escort,escorts": 1,
+        "adult_or_sensitive_keyword:adult,bet,sex": 1,
+        "adult_or_sensitive_keyword:adult,bet,dating": 1,
+        "adult_or_sensitive_keyword:bet,cam,sex": 2,
+        "adult_or_sensitive_keyword:escort": 1,
+        "adult_or_sensitive_keyword:bet,xxx": 5,
+        "patch_2_search_ambiguous_2": 1,
+        "patch_3_search_ambiguous_2": 1,
+        "patch_0_search_ambiguous_3": 2,
+        "adult_or_sensitive_keyword:bet,betting": 1,
+        "placeholder_or_parked:placeholder,this domain": 2,
+        "adult_or_sensitive_keyword:bet,betting,casino,dating,gambling": 1,
+        "patch_11_search_not_found": 2,
+        "adult_or_sensitive_keyword:bet,cam,webcam": 1,
+        "adult_or_sensitive_keyword:bet,cam,nude,webcam": 1
+      },
+      "examples": {
+        "adult_or_sensitive_keyword:bet": [
+          "1-keyworddomainnames.com__keyword-domains-for-sale",
+          "10bestbuy.com__travel",
+          "2nvr.org.au",
+          "2x2blog.com__about-us",
+          "3cuvw.de__hornschuch-promenade",
+          "3dchad.com",
+          "44creative.com.au__mount-majura-vineyard",
+          "4thfloorjournal.co.nz__4th-floor-2018",
+          "4thfloorjournal.co.nz__4th-floor-2024",
+          "4thfloorjournal.co.nz__about"
+        ],
+        "missing_output_files": [
+          "1-keyworddomainnames.com__keyword-domains-for-sale",
+          "1-keyworddomainnames.com__keyword-domain-news",
+          "10-twenty.ca__seo",
+          "10-twenty.ca",
+          "10bestbuy.com__travel",
+          "10kcards.com__support",
+          "10legsinthekitchen.com__recipes-2",
+          "1stok.com__bonus-offers",
+          "1teenporn.com",
+          "22fusion.com"
+        ],
+        "patch_0_replace_uncheckable_missing_output_code": [
+          "1-keyworddomainnames.com__keyword-domains-for-sale",
+          "1-keyworddomainnames.com__keyword-domain-news",
+          "10-twenty.ca__seo",
+          "10-twenty.ca",
+          "10bestbuy.com__travel",
+          "10kcards.com__support",
+          "10legsinthekitchen.com__recipes-2",
+          "1stok.com__bonus-offers",
+          "1teenporn.com",
+          "22fusion.com"
+        ],
+        "patch_0_search_not_found": [
+          "10-twenty.ca__seo",
+          "10-twenty.ca",
+          "10kcards.com__support",
+          "10legsinthekitchen.com__recipes-2",
+          "1stok.com__bonus-offers",
+          "24-news.net__sellers",
+          "3-l.org__child-development",
+          "3-l.org__learning-news",
+          "3cuvw.de__hornschuch-promenade",
+          "3dgroup.net__individuals"
+        ],
+        "patch_1_replace_uncheckable_missing_output_code": [
+          "10-twenty.ca__seo",
+          "10bestbuy.com__travel",
+          "10legsinthekitchen.com__recipes-2",
+          "1stok.com__bonus-offers",
+          "1teenporn.com",
+          "22fusion.com",
+          "1upretro.com__blog",
+          "21ilab.com",
+          "24sevenfaith.com__consulting",
+          "2adt.com__about"
+        ],
+        "patch_1_search_not_found": [
+          "10-twenty.ca__seo",
+          "10bestbuy.com__travel",
+          "1stok.com__bonus-offers",
+          "22fusion.com",
+          "1upretro.com__blog",
+          "3-l.org__child-development",
+          "3-l.org__learning-news",
+          "3dgroup.net__individuals",
+          "3mdrivingschool.com.au__reviews",
+          "44creative.com.au__scoa"
+        ],
+        "remote_url_present": [
+          "10-twenty.ca__seo",
+          "10-twenty.ca",
+          "10kcards.com__support",
+          "1stok.com__bonus-offers",
+          "1teenporn.com",
+          "22fusion.com",
+          "24-news.net__sellers",
+          "21ilab.com",
+          "2x2blog.com__about-us",
+          "3-l.org__learning-news"
+        ],
+        "patch_2_replace_uncheckable_missing_output_code": [
+          "10legsinthekitchen.com__recipes-2",
+          "1stok.com__bonus-offers",
+          "22fusion.com",
+          "1upretro.com__blog",
+          "2adt.com__about",
+          "2x2blog.com__about-us",
+          "3-l.org__child-development",
+          "3-l.org__learning-news",
+          "3dchad.com",
+          "44creative.com.au__ata"
+        ],
+        "patch_3_replace_uncheckable_missing_output_code": [
+          "10legsinthekitchen.com__recipes-2",
+          "1upretro.com__blog",
+          "2adt.com__about",
+          "3-l.org__child-development",
+          "3-l.org__learning-news",
+          "DaytonLockAndKeys.com__residential-locksmith",
+          "Garage-Door-Mobile-Service-Repair.com__garage-door-price-list",
+          "VanNuysLocksmithService.net__coupons-locksmith-service",
+          "VancouverLocksmithStore.com__coupons-locksmith-service",
+          "aaglc.com__dickinson"
+        ],
+        "patch_3_search_not_found": [
+          "10legsinthekitchen.com__recipes-2",
+          "1upretro.com__blog",
+          "3-l.org__child-development",
+          "3-l.org__learning-news",
+          "VancouverLocksmithStore.com__coupons-locksmith-service",
+          "aaglc.com__dickinson",
+          "aamotors.co.uk__garage-services",
+          "activehistory.ca__podcasts",
+          "activetraffic.com.au__track-record",
+          "afuneralnotice.com__privacy"
+        ],
+        "adult_or_sensitive_keyword:casino": [
+          "1stok.com__bonus-offers",
+          "bitstarzcasinoaccess.com",
+          "casinoapp.eu__poker-apps",
+          "casinoapp.eu",
+          "heartfeltstamping.com",
+          "heartfeltstamping.com__the-psychology-behind-slot-machines-in-casinos",
+          "heartfeltstamping.com__indias-top-10-online-casino-jackpot-winners"
+        ],
+        "patch_2_search_not_found": [
+          "1stok.com__bonus-offers",
+          "1upretro.com__blog",
+          "3-l.org__child-development",
+          "3-l.org__learning-news",
+          "4cornersfeet.com__applicant-info",
+          "AllThingsAcoustic.org",
+          "DaytonLockAndKeys.com__residential-locksmith",
+          "GoriLaw.Com__trust-funds",
+          "HollywoodEmergencyLocksmith.net__locksmith-terms-and-conditions",
+          "LauraBrownAuthor.com__about"
+        ],
+        "adult_or_sensitive_keyword:porn,sex,xxx": [
+          "1teenporn.com"
+        ],
+        "risky_domain_from_instance_id": [
+          "1teenporn.com",
+          "adoptionformsexpress.com__terms-of-use",
+          "adultchatdatingsites.com__stripchat",
+          "adultliteracybarrow.org__literacy-ball",
+          "agencasinosbobet.net",
+          "agencasinosbobet.net__nagad88-login-easy-access-guide-for-new-users",
+          "alltopdating.com",
+          "aviatrixbet.com__aviatrix-signal",
+          "aviatrixbet.com__download-aviatrix",
+          "besthookupsites.org"
+        ],
+        "adult_or_sensitive_keyword:bet,cam": [
+          "22fusion.com",
+          "adaptistration.com__the-orchestra-website-reviews",
+          "agilemanifesto.org__authors",
+          "agooart.com__page_6",
+          "alchetron.com__privacy-policy",
+          "allaroundexteriors.com",
+          "alok-mishra.net__13-untitled-and-weird-poems-my-new-poetry-collection",
+          "answersresearchjournal.org__evolution-of-apartheid",
+          "ashenburg.com__the-dirt-on-clean",
+          "audiojungle.net__feature"
+        ],
+        "patch_4_replace_uncheckable_missing_output_code": [
+          "1upretro.com__blog",
+          "2adt.com__about",
+          "3-l.org__child-development",
+          "DaytonLockAndKeys.com__residential-locksmith",
+          "VanNuysLocksmithService.net__coupons-locksmith-service",
+          "VancouverLocksmithStore.com__coupons-locksmith-service",
+          "activetraffic.com.au__track-record",
+          "agooart.com__page_6",
+          "algamchina.com__pinfo",
+          "alteredstory.com__whatif"
+        ],
+        "placeholder_or_parked:placeholder": [
+          "1upretro.com__blog",
+          "24-news.net__sellers",
+          "2x2blog.com__about-us",
+          "3-l.org__child-development",
+          "3mdrivingschool.com.au__reviews",
+          "3mdrivingschool.com.au",
+          "4thfloorcreative.com",
+          "66southpearl.com__links",
+          "AlexandriaLocalLocksmith.com",
+          "AlexandriaLocalLocksmith.com__emergency-locksmith"
+        ],
+        "adult_or_sensitive_keyword:cam": [
+          "21ilab.com",
+          "50skyshades.com__video",
+          "aardwerk.org__aardwerk-boot-camp-2016-registratie-registration",
+          "actionskills.co__web-design",
+          "adacrow.com",
+          "adaptistration.com__counting-the-costs-qa",
+          "adaptistration.com__the-negotiation-process-reloaded",
+          "adaptistration.com__orchestra-governance-essays",
+          "aesaprepbarcelona.com__campus",
+          "alditoair.com__clutches"
+        ],
+        "patch_5_replace_uncheckable_missing_output_code": [
+          "2adt.com__about",
+          "DaytonLockAndKeys.com__residential-locksmith",
+          "VanNuysLocksmithService.net__coupons-locksmith-service",
+          "VancouverLocksmithStore.com__coupons-locksmith-service",
+          "activetraffic.com.au__track-record",
+          "agooart.com__page_6",
+          "alteredstory.com__whatif",
+          "amerusfinancial.com__blog",
+          "andys-kawasaki-zxr-zx7r-tribute-site.net",
+          "aushiphop.com.au"
+        ],
+        "patch_6_replace_uncheckable_missing_output_code": [
+          "2adt.com__about",
+          "DaytonLockAndKeys.com__residential-locksmith",
+          "VanNuysLocksmithService.net__coupons-locksmith-service",
+          "activetraffic.com.au__track-record",
+          "agooart.com__page_6",
+          "amerusfinancial.com__blog",
+          "aushiphop.com.au",
+          "avalonbeachslsc.com.au__our-clubhouse",
+          "basilwoodsinternational.in__about-us-2",
+          "basilwoodshyd.in__shamshabad"
+        ],
+        "patch_4_search_not_found": [
+          "3-l.org__child-development",
+          "DaytonLockAndKeys.com__residential-locksmith",
+          "VancouverLocksmithStore.com__coupons-locksmith-service",
+          "activetraffic.com.au__track-record",
+          "agooart.com__page_6",
+          "alzand.com",
+          "amerusfinancial.com__blog",
+          "andys-kawasaki-zxr-zx7r-tribute-site.net",
+          "aushiphop.com.au",
+          "avalonbeachslsc.com.au__our-clubhouse"
+        ],
+        "challenge_or_captcha:captcha": [
+          "3dgroup.net__custom-360-feedback-surveys",
+          "3dgroup.net__individuals",
+          "4thfloorcreative.com",
+          "51deguo.com",
+          "51deguo.com__member",
+          "51deguo.com__search",
+          "51deguo.com__space-username-cote",
+          "51deguo.com__space-username-sofunie",
+          "60seconds.eu",
+          "AlexandriaLocalLocksmith.com"
+        ],
+        "adult_or_sensitive_keyword:bet,sex": [
+          "64gltd.com__outsourced-virtual-office-call-answering-cloud-based-support-for-uk-businesses",
+          "96problems.com__what-is-an-onahole-the-complete-guide-to-onaholes",
+          "americana-for-sale.com__1967-cadillac-deville-3",
+          "bitcointalk.org__page_7",
+          "citylife.chelmsford.gov.uk",
+          "coworkbuffalo.com__policy",
+          "createtheripple.co.uk__nurturing",
+          "createtheripple.co.uk",
+          "frenchamerican.org__mission",
+          "grunzingerphoto.com__families"
+        ],
+        "adult_or_sensitive_keyword:bet,dating": [
+          "7gadgets.com__decor",
+          "abateva.org__officers",
+          "accentusoft.com__case-studies-and-whitepapers",
+          "alabamamga.org__local-associations",
+          "alltopdating.com",
+          "anneribley.com__miraculous-power-of-the-full-moon-ritual",
+          "asianbridesonline.org__indian-brides",
+          "autoglasstysonscorner.com__windshield-replacement",
+          "badoo.com",
+          "bel-inizio.org"
+        ],
+        "patch_5_search_not_found": [
+          "DaytonLockAndKeys.com__residential-locksmith",
+          "VancouverLocksmithStore.com__coupons-locksmith-service",
+          "activetraffic.com.au__track-record",
+          "agooart.com__page_6",
+          "alteredstory.com__whatif",
+          "amerusfinancial.com__blog",
+          "andys-kawasaki-zxr-zx7r-tribute-site.net",
+          "aushiphop.com.au",
+          "avalonbeachslsc.com.au__our-clubhouse",
+          "basilwoodshyd.in__shamshabad"
+        ],
+        "patch_7_replace_uncheckable_missing_output_code": [
+          "DaytonLockAndKeys.com__residential-locksmith",
+          "activetraffic.com.au__track-record",
+          "agooart.com__page_6",
+          "amerusfinancial.com__blog",
+          "basilwoodsinternational.in__about-us-2",
+          "basilwoodshyd.in__shamshabad",
+          "bb-whitening.com",
+          "berkeleytherapist.net__areas-of-expertise",
+          "biotuesdays.com__executive-moves",
+          "birthcaremedina.org__donation-opportunities"
+        ],
+        "adult_or_sensitive_keyword:adult,bet": [
+          "LauraBrownAuthor.com__about",
+          "asdatoz.com__aboutus",
+          "cloudland.net__different-types-of-pipe-benders-and-learning-how-to-use-them",
+          "drstevemd.com",
+          "furaffinity.net"
+        ],
+        "patch_6_search_not_found": [
+          "activetraffic.com.au__track-record",
+          "agooart.com__page_6",
+          "amerusfinancial.com__blog",
+          "aushiphop.com.au",
+          "avalonbeachslsc.com.au__our-clubhouse",
+          "basilwoodsinternational.in__about-us-2",
+          "basilwoodshyd.in__shamshabad",
+          "bb-whitening.com",
+          "beaconmfggroup.com__our-companies",
+          "biotuesdays.com__executive-moves"
+        ],
+        "patch_7_search_not_found": [
+          "activetraffic.com.au__track-record",
+          "agooart.com__page_6",
+          "amerusfinancial.com__blog",
+          "basilwoodshyd.in__shamshabad",
+          "bb-whitening.com",
+          "biotuesdays.com__executive-moves",
+          "birthcaremedina.org__donation-opportunities",
+          "busfinders.com__schools",
+          "caddyserver.com__install",
+          "cherylschuermann.com__books"
+        ],
+        "adult_or_sensitive_keyword:adult": [
+          "adhdclinic.com.au",
+          "adultliteracybarrow.org__literacy-ball",
+          "artistpalettestudio.com",
+          "atlastmsflorida.com",
+          "babywinkz.com__judy",
+          "cannonparkdental.com__comprehensive-family-dentistry",
+          "casadelmarcozumel.com__promotions",
+          "christianneighborschurch.org__young-adult-spiritual-formation-retreats",
+          "cloudland.net__living-in-a-modest-house-is-great-for-raising-families",
+          "coloradoteencounselor.com__feed"
+        ],
+        "adult_or_sensitive_keyword:sex": [
+          "adoptionformsexpress.com__terms-of-use",
+          "akbarsarkiali.com__contact-us",
+          "americana-for-sale.com__1967-chrysler-newport",
+          "balfournursery.com",
+          "bborwv.com__default_4",
+          "blavatnikfoundation.org__about-us",
+          "blavatnikfoundation.org__performing-arts",
+          "blavatnikfoundation.org__art-cultural-institutions",
+          "carpetkingofburlington.com",
+          "centerforadvancedgyn.com__recurrent-utis"
+        ],
+        "adult_or_sensitive_keyword:adult,bet,cam,cams,dating": [
+          "adultchatdatingsites.com__stripchat",
+          "besthookupsites.org"
+        ],
+        "adult_or_sensitive_keyword:bet,casino": [
+          "agencasinosbobet.net",
+          "agencasinosbobet.net__nagad88-login-easy-access-guide-for-new-users",
+          "casinoreviews.nl__online-casino-nederland",
+          "casinoreviews.nl",
+          "dhankesariresults.in__hi",
+          "frische-daten.de",
+          "frische-daten.de__bonus-100",
+          "fxbulksms.com",
+          "gamesany.com__sudoku-html5"
+        ],
+        "adult_or_sensitive_keyword:dating": [
+          "ahsc.org.uk__how-we-work",
+          "alaynecurtiss.com__stop-the-walkouts",
+          "alteradomi.com__altera-domi-nederlands",
+          "andreworlowski.com",
+          "armandonavarro.com__myportfolio",
+          "asclp.org__resources",
+          "ateghana.org__education",
+          "atlantafirstumc.org__meet-our-staff",
+          "avalonpom.com__aromatherapy",
+          "baladprivateschools.com__senior-secondary-school"
+        ],
+        "adult_or_sensitive_keyword:erotic": [
+          "albertwein.com__gallery"
+        ],
+        "patch_10_replace_uncheckable_missing_output_code": [
+          "amerusfinancial.com__blog",
+          "berkeleytherapist.net__areas-of-expertise",
+          "cannonparkdental.com__comprehensive-family-dentistry",
+          "carringtoninc.com__products",
+          "davidabramczyk.com__about-the-author",
+          "givzey.com__integrations",
+          "guywh.com__naked-guy",
+          "havening.org__page_2",
+          "hero173.com__1_5"
+        ],
+        "patch_10_search_not_found": [
+          "amerusfinancial.com__blog",
+          "givzey.com__integrations",
+          "guywh.com__naked-guy",
+          "hero173.com__1_5"
+        ],
+        "patch_8_replace_uncheckable_missing_output_code": [
+          "amerusfinancial.com__blog",
+          "basilwoodsinternational.in__about-us-2",
+          "bb-whitening.com",
+          "berkeleytherapist.net__areas-of-expertise",
+          "budgetodorremoval.com__tobacco-smoke-odor",
+          "busfinders.com__schools",
+          "caddyserver.com__install",
+          "cannonparkdental.com__comprehensive-family-dentistry",
+          "carringtoninc.com__products",
+          "davidabramczyk.com__about-the-author"
+        ],
+        "patch_8_search_not_found": [
+          "amerusfinancial.com__blog",
+          "bb-whitening.com",
+          "busfinders.com__schools",
+          "caddyserver.com__install",
+          "dfwmuslimartists.com__artists-registration-form",
+          "frameworksuk.org__changing-the-story",
+          "galaxydentallaboratory.com__services",
+          "givzey.com__integrations",
+          "guywh.com__naked-guy",
+          "hero173.com__1_5"
+        ],
+        "patch_9_replace_uncheckable_missing_output_code": [
+          "amerusfinancial.com__blog",
+          "basilwoodsinternational.in__about-us-2",
+          "bb-whitening.com",
+          "berkeleytherapist.net__areas-of-expertise",
+          "busfinders.com__schools",
+          "cannonparkdental.com__comprehensive-family-dentistry",
+          "carringtoninc.com__products",
+          "davidabramczyk.com__about-the-author",
+          "eguruji.com__courses",
+          "fancypantscakes.com__weddings"
+        ],
+        "patch_9_search_not_found": [
+          "amerusfinancial.com__blog",
+          "bb-whitening.com",
+          "busfinders.com__schools",
+          "frameworksuk.org__changing-the-story",
+          "galaxydentallaboratory.com__services",
+          "givzey.com__integrations",
+          "guywh.com__naked-guy",
+          "hero173.com__1_5"
+        ],
+        "patch_0_search_ambiguous_2": [
+          "ancestralconstellations.com__writing-blog",
+          "consigmar-hellas.com"
+        ],
+        "adult_or_sensitive_keyword:bet,cam,dating": [
+          "answersresearchjournal.org__early-church-fathers-genesis-debate",
+          "ashenburg.com__the-mourners-dance",
+          "freshfishfanatics.com__our-story"
+        ],
+        "adult_or_sensitive_keyword:bet,cam,casino": [
+          "apppearl.com__kontakt-oss"
+        ],
+        "adult_or_sensitive_keyword:adult,porn": [
+          "arktan.com__ai-videos"
+        ],
+        "adult_or_sensitive_keyword:porn": [
+          "arktan.com__best-ai-porn-generators",
+          "hentaied.com"
+        ],
+        "adult_or_sensitive_keyword:adult,cam": [
+          "astunit.com__astunit_tutorial"
+        ],
+        "adult_or_sensitive_keyword:bet,bets,betting,casino,gambling": [
+          "attitudewalastatus.com__terms"
+        ],
+        "patch_1_search_ambiguous_7": [
+          "auroraevansville.org__find-help"
+        ],
+        "adult_or_sensitive_keyword:bet,erotic,nude,nudes,porn": [
+          "baddieschicks.com__isabelle-eleanore-betrays-her-husband-with-his-buddy"
+        ],
+        "adult_or_sensitive_keyword:cam,casino,sex": [
+          "basicincome.org.uk__coincasino-pro"
+        ],
+        "patch_5_search_ambiguous_2": [
+          "basilwoodsinternational.in__about-us-2",
+          "confluencebrewing.com__about"
+        ],
+        "adult_or_sensitive_keyword:cam,dating": [
+          "bcwriters.ca__About-the-FBCW",
+          "dana.ucc.nau.edu__online-degrees",
+          "datingupdates.org",
+          "datingupdates.org__print-templates",
+          "datingupdates.org__infographics",
+          "edgear.com__solutions",
+          "gilbertcarsforcash.com__feed"
+        ],
+        "patch_11_replace_uncheckable_missing_output_code": [
+          "berkeleytherapist.net__areas-of-expertise",
+          "cannonparkdental.com__comprehensive-family-dentistry",
+          "carringtoninc.com__products",
+          "davidabramczyk.com__about-the-author",
+          "givzey.com__integrations",
+          "guywh.com__naked-guy",
+          "havening.org__page_2"
+        ],
+        "patch_12_replace_uncheckable_missing_output_code": [
+          "berkeleytherapist.net__areas-of-expertise",
+          "cannonparkdental.com__comprehensive-family-dentistry",
+          "carringtoninc.com__products",
+          "davidabramczyk.com__about-the-author",
+          "havening.org__page_2"
+        ],
+        "patch_13_replace_uncheckable_missing_output_code": [
+          "berkeleytherapist.net__areas-of-expertise",
+          "carringtoninc.com__products",
+          "davidabramczyk.com__about-the-author",
+          "havening.org__page_2"
+        ],
+        "patch_14_replace_uncheckable_missing_output_code": [
+          "berkeleytherapist.net__areas-of-expertise",
+          "carringtoninc.com__products",
+          "davidabramczyk.com__about-the-author",
+          "havening.org__page_2"
+        ],
+        "patch_15_replace_uncheckable_missing_output_code": [
+          "berkeleytherapist.net__areas-of-expertise",
+          "carringtoninc.com__products",
+          "davidabramczyk.com__about-the-author"
+        ],
+        "patch_16_replace_uncheckable_missing_output_code": [
+          "berkeleytherapist.net__areas-of-expertise",
+          "carringtoninc.com__products",
+          "davidabramczyk.com__about-the-author"
+        ],
+        "patch_17_replace_uncheckable_missing_output_code": [
+          "berkeleytherapist.net__areas-of-expertise",
+          "carringtoninc.com__products",
+          "davidabramczyk.com__about-the-author"
+        ],
+        "patch_18_replace_uncheckable_missing_output_code": [
+          "berkeleytherapist.net__areas-of-expertise",
+          "davidabramczyk.com__about-the-author"
+        ],
+        "patch_19_replace_uncheckable_missing_output_code": [
+          "berkeleytherapist.net__areas-of-expertise",
+          "davidabramczyk.com__about-the-author"
+        ],
+        "patch_20_replace_uncheckable_missing_output_code": [
+          "berkeleytherapist.net__areas-of-expertise",
+          "davidabramczyk.com__about-the-author"
+        ],
+        "patch_21_replace_uncheckable_missing_output_code": [
+          "berkeleytherapist.net__areas-of-expertise",
+          "davidabramczyk.com__about-the-author"
+        ],
+        "patch_22_replace_uncheckable_missing_output_code": [
+          "berkeleytherapist.net__areas-of-expertise"
+        ],
+        "patch_23_replace_uncheckable_missing_output_code": [
+          "berkeleytherapist.net__areas-of-expertise"
+        ],
+        "patch_24_replace_uncheckable_missing_output_code": [
+          "berkeleytherapist.net__areas-of-expertise"
+        ],
+        "patch_25_replace_uncheckable_missing_output_code": [
+          "berkeleytherapist.net__areas-of-expertise"
+        ],
+        "adult_or_sensitive_keyword:bet,betting,casino,gambling": [
+          "betmeister.net__about"
+        ],
+        "adult_or_sensitive_keyword:bet,betting,gambling": [
+          "betmeister.net__nba-player-props-betting-guide"
+        ],
+        "adult_or_sensitive_keyword:bet,betting,casino": [
+          "betwinner-bd.com__login",
+          "betwinner-bd.com__promotions"
+        ],
+        "adult_or_sensitive_keyword:xxx": [
+          "birthdaycakephoto.net__happy-birthday-wishes-c8",
+          "birthdaycakephoto.net__birthday-cards-with-photos-c2",
+          "birthdaycakephoto.net__love-photo-frame-c5",
+          "birthdaycakephoto.net",
+          "brittenslogs.co.uk__pricingcontact",
+          "carstereowiring.net__safety-tech",
+          "carstereowiring.net__speed-upgrades",
+          "cheesecakesworld.com__baking-tips-and-tricks",
+          "cheesecakesworld.com__interesting-facts",
+          "cheesecakesworld.com__nutrition"
+        ],
+        "adult_or_sensitive_keyword:nude": [
+          "blog.dearsundays.com__best-nude-nail-polish-shades-for-every-skin-tone-a-clean-beauty-guide"
+        ],
+        "adult_or_sensitive_keyword:bet,cam,cams": [
+          "blog.travelvictoria.com.au__accommodation-booking-scams",
+          "camstudio.org",
+          "camstudio.org__documentation"
+        ],
+        "adult_or_sensitive_keyword:cam,casino": [
+          "blogfinger.net__feed"
+        ],
+        "patch_6_search_ambiguous_2": [
+          "budgetodorremoval.com__tobacco-smoke-odor"
+        ],
+        "patch_7_search_ambiguous_2": [
+          "budgetodorremoval.com__tobacco-smoke-odor"
+        ],
+        "adult_or_sensitive_keyword:adult,bet,cam": [
+          "campostonline.com__adult-game-sites"
+        ],
+        "adult_or_sensitive_keyword:bet,cam,hookup": [
+          "campostonline.com__hookup-sites"
+        ],
+        "adult_or_sensitive_keyword:adult,bet,cam,webcam": [
+          "campostonline.com__adult-webcam-sites"
+        ],
+        "adult_or_sensitive_keyword:cam,webcam": [
+          "camtect.com",
+          "camtect.com__webcam-hijacking"
+        ],
+        "adult_or_sensitive_keyword:bet,hookup,sex": [
+          "casualrelationships.net__hookup-near-me"
+        ],
+        "adult_or_sensitive_keyword:dating,hookup": [
+          "casualrelationships.net__near-me",
+          "datingrating.net"
+        ],
+        "challenge_or_captcha:cloudflare": [
+          "cherylschuermann.com__farmhouse-devotions",
+          "cherylschuermann.com__books",
+          "decoholic.org__beach-houses",
+          "decoholic.org__industrial-houses",
+          "decoholic.org__loft"
+        ],
+        "placeholder_or_parked:under construction": [
+          "cinni.net__books",
+          "gzlandsons.com__under-construction"
+        ],
+        "challenge_or_captcha:enable javascript": [
+          "codeswithsam.com__contact",
+          "enable-javascript.com__en",
+          "exponentwptheme.com"
+        ],
+        "adult_or_sensitive_keyword:cam,cams": [
+          "collegeadmissionsmadesimple.com__college-application-essays",
+          "flexitfl.com__pledge"
+        ],
+        "adult_or_sensitive_keyword:adult,dating": [
+          "community.chatchecks.com__local"
+        ],
+        "patch_4_search_ambiguous_2": [
+          "confluencebrewing.com__about"
+        ],
+        "patch_1_search_ambiguous_2": [
+          "connectabq.org__default"
+        ],
+        "adult_or_sensitive_keyword:gambling": [
+          "cricketmcwguide.com__for-age-18-and-above-only"
+        ],
+        "adult_or_sensitive_keyword:dating,hookup,sex": [
+          "datingreviewer.net__benaughty-review",
+          "datingreviewer.net__plentyoffish-review"
+        ],
+        "adult_or_sensitive_keyword:bet,dating,hookup,sex": [
+          "datingreviewer.net__coffeemeetsbagel-review"
+        ],
+        "patch_20_search_not_found": [
+          "davidabramczyk.com__about-the-author"
+        ],
+        "patch_21_search_not_found": [
+          "davidabramczyk.com__about-the-author"
+        ],
+        "placeholder_or_parked:coming soon,placeholder": [
+          "dbtrashers.com__cart"
+        ],
+        "adult_or_sensitive_keyword:bet,nude": [
+          "deepnudeapps.com__disclaimer",
+          "deepnudeapps.com__why-deepnude-was-created"
+        ],
+        "placeholder_or_parked:this domain": [
+          "deepnudeapps.com__disclaimer",
+          "digitalmarkeeter.com__privacy-policy",
+          "genecrypt.io"
+        ],
+        "adult_or_sensitive_keyword:escort,escorts": [
+          "delhi-escorts-x.in__blog"
+        ],
+        "adult_or_sensitive_keyword:adult,bet,sex": [
+          "denverjacks.com__page_4"
+        ],
+        "adult_or_sensitive_keyword:adult,bet,dating": [
+          "disabilitease.com__handicapped-equipment"
+        ],
+        "adult_or_sensitive_keyword:bet,cam,sex": [
+          "durbnpoisn.com__blog",
+          "fixington.com__plumbers"
+        ],
+        "adult_or_sensitive_keyword:escort": [
+          "elitekaya.com__escort-jobs-for-girls"
+        ],
+        "adult_or_sensitive_keyword:bet,xxx": [
+          "elizabethwrightart.com__about-elizabeth-wright",
+          "emblemthreads.com__blog",
+          "entitechsolutions.com__about",
+          "g2a-ltc.com__images",
+          "g2a-ltc.com__videos"
+        ],
+        "patch_2_search_ambiguous_2": [
+          "flchampton.com__life-groups"
+        ],
+        "patch_3_search_ambiguous_2": [
+          "flchampton.com__life-groups"
+        ],
+        "patch_0_search_ambiguous_3": [
+          "fracturedprunenj.com__three-locations",
+          "foragerchef.com__beef-tagliata-chive-blossom-dressing"
+        ],
+        "adult_or_sensitive_keyword:bet,betting": [
+          "g3newswire.com__sports-betting"
+        ],
+        "placeholder_or_parked:placeholder,this domain": [
+          "gaiageld.com",
+          "getmoredoneatwork.com"
+        ],
+        "adult_or_sensitive_keyword:bet,betting,casino,dating,gambling": [
+          "gamblingappsstore.com__compare"
+        ],
+        "patch_11_search_not_found": [
+          "givzey.com__integrations",
+          "guywh.com__naked-guy"
+        ],
+        "adult_or_sensitive_keyword:bet,cam,webcam": [
+          "guywh.com__naked-guy"
+        ],
+        "adult_or_sensitive_keyword:bet,cam,nude,webcam": [
+          "guywh.com__nude-leaks"
+        ]
+      }
+    },
+    "image-repair": {
+      "total": 4845,
+      "issue_counts": {
+        "missing_output_files": 4845,
+        "patch_0_replace_uncheckable_missing_output_code": 4845,
+        "remote_url_present": 2715,
+        "missing_dst_screenshot": 278,
+        "patch_0_search_not_found": 187,
+        "adult_or_sensitive_keyword:bet": 792,
+        "challenge_or_captcha:captcha": 962,
+        "placeholder_or_parked:placeholder": 1080,
+        "adult_or_sensitive_keyword:xxx": 18,
+        "adult_or_sensitive_keyword:casino,gambling": 1,
+        "patch_1_replace_uncheckable_missing_output_code": 58,
+        "adult_or_sensitive_keyword:bet,sex": 13,
+        "adult_or_sensitive_keyword:adult,bet": 7,
+        "adult_or_sensitive_keyword:cam": 145,
+        "adult_or_sensitive_keyword:adult": 17,
+        "patch_0_search_ambiguous_3": 9,
+        "patch_0_search_ambiguous_2": 61,
+        "adult_or_sensitive_keyword:adult,bet,bets,betting,gambling": 1,
+        "adult_or_sensitive_keyword:sex": 29,
+        "risky_domain_from_instance_id": 97,
+        "patch_2_replace_uncheckable_missing_output_code": 10,
+        "patch_3_replace_uncheckable_missing_output_code": 4,
+        "patch_4_replace_uncheckable_missing_output_code": 2,
+        "patch_5_replace_uncheckable_missing_output_code": 1,
+        "adult_or_sensitive_keyword:bet,casino": 5,
+        "adult_or_sensitive_keyword:bet,casino,gambling": 1,
+        "patch_1_search_not_found": 7,
+        "adult_or_sensitive_keyword:cam,sex": 3,
+        "adult_or_sensitive_keyword:cam,dating,porn,porno": 1,
+        "adult_or_sensitive_keyword:porn": 1,
+        "adult_or_sensitive_keyword:bet,dating": 8,
+        "adult_or_sensitive_keyword:bet,cam": 32,
+        "patch_0_search_ambiguous_543844": 1,
+        "adult_or_sensitive_keyword:adult,bet,cam": 2,
+        "placeholder_or_parked:lorem ipsum": 27,
+        "patch_1_search_ambiguous_281": 1,
+        "patch_0_search_ambiguous_331724": 1,
+        "adult_or_sensitive_keyword:bet,cam,casino": 2,
+        "patch_0_search_ambiguous_9656": 1,
+        "placeholder_or_parked:this domain": 9,
+        "patch_0_search_ambiguous_8": 1,
+        "patch_0_search_ambiguous_896742": 1,
+        "adult_or_sensitive_keyword:adult,cam": 1,
+        "adult_or_sensitive_keyword:erotic,nude,porn,sex,xxx": 1,
+        "challenge_or_captcha:security check": 1,
+        "adult_or_sensitive_keyword:cam,nude,nudes": 1,
+        "adult_or_sensitive_keyword:dating": 8,
+        "patch_0_search_ambiguous_5": 2,
+        "adult_or_sensitive_keyword:adult,bet,dating,hookup": 1,
+        "patch_0_search_ambiguous_12": 1,
+        "patch_1_search_ambiguous_5": 1,
+        "adult_or_sensitive_keyword:casino": 4,
+        "patch_0_search_ambiguous_464112": 1,
+        "patch_0_search_ambiguous_667948": 1,
+        "patch_0_search_ambiguous_790468": 1,
+        "adult_or_sensitive_keyword:bet,casino,sex": 2,
+        "adult_or_sensitive_keyword:bet,bets,betting,sex": 1,
+        "placeholder_or_parked:lorem ipsum,placeholder": 4,
+        "patch_0_search_ambiguous_1432069": 1,
+        "placeholder_or_parked:coming soon": 1,
+        "adult_or_sensitive_keyword:bet,cam,cams": 3,
+        "patch_0_search_ambiguous_454654": 1,
+        "patch_0_search_ambiguous_213468": 1,
+        "placeholder_or_parked:placeholder,this domain,under construction": 1,
+        "challenge_or_captcha:captcha,enable javascript": 2,
+        "adult_or_sensitive_keyword:bet,betting,casino": 3,
+        "adult_or_sensitive_keyword:adult,dating,hookup": 1,
+        "patch_0_search_ambiguous_4": 1,
+        "patch_0_search_ambiguous_574473": 1,
+        "adult_or_sensitive_keyword:cam,webcam": 1,
+        "patch_0_search_ambiguous_913939": 1,
+        "adult_or_sensitive_keyword:adult,dating": 2,
+        "adult_or_sensitive_keyword:bet,cam,cams,dating": 1,
+        "adult_or_sensitive_keyword:dating,hookup,sex": 1,
+        "adult_or_sensitive_keyword:dating,hookup": 1,
+        "adult_or_sensitive_keyword:cam,dating": 1,
+        "adult_or_sensitive_keyword:bet,dating,sex": 1,
+        "challenge_or_captcha:cloudflare": 6,
+        "adult_or_sensitive_keyword:adult,bet,nude": 1,
+        "adult_or_sensitive_keyword:escort,escorts": 2,
+        "adult_or_sensitive_keyword:adult,bet,sex": 1,
+        "patch_0_search_ambiguous_381248": 1,
+        "patch_0_search_ambiguous_522021": 1,
+        "patch_0_search_ambiguous_3261": 1,
+        "placeholder_or_parked:under construction": 1,
+        "patch_0_search_ambiguous_528734": 1,
+        "adult_or_sensitive_keyword:escort": 1,
+        "adult_or_sensitive_keyword:dating,escort,escorts": 1,
+        "patch_0_search_ambiguous_408020": 1,
+        "adult_or_sensitive_keyword:bet,xxx": 5,
+        "challenge_or_captcha:enable javascript": 2,
+        "adult_or_sensitive_keyword:adult,escort,escorts": 1,
+        "adult_or_sensitive_keyword:bet,porn,porno": 1,
+        "patch_0_search_ambiguous_789253": 1,
+        "patch_0_search_ambiguous_314179": 1,
+        "patch_0_search_ambiguous_355935": 1,
+        "adult_or_sensitive_keyword:bet,cam,sex": 2,
+        "patch_1_search_ambiguous_54": 1,
+        "adult_or_sensitive_keyword:bet,bets": 5,
+        "adult_or_sensitive_keyword:cam,xxx": 2,
+        "adult_or_sensitive_keyword:bet,betting": 1,
+        "adult_or_sensitive_keyword:bet,betting,casino,gambling": 1,
+        "patch_0_search_ambiguous_293294": 1,
+        "adult_or_sensitive_keyword:bet,bets,casino": 1,
+        "adult_or_sensitive_keyword:adult,sex": 1,
+        "adult_or_sensitive_keyword:bet,cam,webcam": 1,
+        "patch_0_search_ambiguous_16424": 1,
+        "adult_or_sensitive_keyword:hookup": 2,
+        "adult_or_sensitive_keyword:bet,hookup": 5
+      },
+      "examples": {
+        "missing_output_files": [
+          "1staab.com__quotes",
+          "1staab.com__digital-art",
+          "10-twenty.ca__seo",
+          "10legsinthekitchen.com__staceybender",
+          "01simple.com__world",
+          "01logix.com__mspowerbi",
+          "24-news.net__ip",
+          "10legsinthekitchen.com__lets-talk-turkey-sandwiches",
+          "01simple.com__immigration",
+          "2023.ravensbourne.ac.uk__about-ravensbourne"
+        ],
+        "patch_0_replace_uncheckable_missing_output_code": [
+          "1staab.com__quotes",
+          "1staab.com__digital-art",
+          "10-twenty.ca__seo",
+          "10legsinthekitchen.com__staceybender",
+          "01simple.com__world",
+          "01logix.com__mspowerbi",
+          "24-news.net__ip",
+          "10legsinthekitchen.com__lets-talk-turkey-sandwiches",
+          "01simple.com__immigration",
+          "2023.ravensbourne.ac.uk__about-ravensbourne"
+        ],
+        "remote_url_present": [
+          "1staab.com__quotes",
+          "1staab.com__digital-art",
+          "10-twenty.ca__seo",
+          "01simple.com__world",
+          "01logix.com__mspowerbi",
+          "24-news.net__ip",
+          "01simple.com__immigration",
+          "2023.ravensbourne.ac.uk__about-ravensbourne",
+          "2023.ravensbourne.ac.uk__concept-realisation",
+          "10kcards.com__pricing"
+        ],
+        "missing_dst_screenshot": [
+          "10legsinthekitchen.com__staceybender",
+          "2fast2die.com__reviews",
+          "4leggedflix.com__faq",
+          "AllThingsAcoustic.org__contact",
+          "NeoK12.com__games",
+          "VancouverLocksmithStore.com__locksmith-terms-and-conditions",
+          "MiamiLockAndKeys.com__locksmith-terms-and-conditions",
+          "a1limo.com__wedding",
+          "aaronlee.co",
+          "abroadplanet.com"
+        ],
+        "patch_0_search_not_found": [
+          "10legsinthekitchen.com__staceybender",
+          "2fast2die.com__reviews",
+          "4leggedflix.com__faq",
+          "AllThingsAcoustic.org__contact",
+          "NeoK12.com__games",
+          "VancouverLocksmithStore.com__locksmith-terms-and-conditions",
+          "a1limo.com__wedding",
+          "abroadplanet.com",
+          "acorepolicyforum.org__resources_4",
+          "advantumhealth.com__services"
+        ],
+        "adult_or_sensitive_keyword:bet": [
+          "01simple.com__world",
+          "01simple.com__immigration",
+          "01simple.com__realestate",
+          "3dcomenius.com",
+          "4thfloorjournal.co.nz__submissions-guidelines",
+          "8welllife.com",
+          "ENHYPEN.com__page_5",
+          "MonstrosityPodcast.com__about-david-race",
+          "MonstrosityPodcast.com__comedians-talking-about-bigfoot--patreon-content",
+          "MonstrosityPodcast.com__contact"
+        ],
+        "challenge_or_captcha:captcha": [
+          "01logix.com__mspowerbi",
+          "01logix.com__ad-linked",
+          "01logix.com__microsoft-sharepoint-online-partner",
+          "4master.nl__over-4master",
+          "8dayhomesale.com",
+          "AlexandriaLocalLocksmith.com__contact-us-locksmith-service",
+          "8dayhomesale.com__washington-dc",
+          "8dayhomesale.com__baltimore",
+          "AllThingsAcoustic.org__RequestLine",
+          "3dgroup.net__custom-360-feedback-surveys"
+        ],
+        "placeholder_or_parked:placeholder": [
+          "01logix.com__mspowerbi",
+          "2derms.com__contact",
+          "2canoes.com__retouching-services",
+          "2canoes.com__faq",
+          "01logix.com__ad-linked",
+          "2fast2die.com__about",
+          "01logix.com__microsoft-sharepoint-online-partner",
+          "3mdrivingschool.com.au__faq",
+          "2fast2die.com__reviews",
+          "3mdrivingschool.com.au__contact"
+        ],
+        "adult_or_sensitive_keyword:xxx": [
+          "2023.ravensbourne.ac.uk__about-ravensbourne",
+          "2023.ravensbourne.ac.uk__concept-realisation",
+          "8dayhomesale.com",
+          "8dayhomesale.com__washington-dc",
+          "8dayhomesale.com__baltimore",
+          "8dayhomesale.com__blog",
+          "birthdaycakephoto.net__birthday-cards-with-photos-c2",
+          "ahselanne.com__hello-im-felicia",
+          "ahselanne.com__crochet-apparel-accessories",
+          "brittenslogs.co.uk"
+        ],
+        "adult_or_sensitive_keyword:casino,gambling": [
+          "1stok.com__online-slots"
+        ],
+        "patch_1_replace_uncheckable_missing_output_code": [
+          "24sevenfaith.com__workplace-wisdom",
+          "3hundredtraining.com__39-2",
+          "aamd.org",
+          "aapatsahaaya.org__about",
+          "adkbrewery.com__story",
+          "afmfirst.com__recreational-vehicle-insurance-for-dealers",
+          "agathaschooler.com",
+          "age-of-product.com__agile-and-scrum",
+          "alightcreative.com",
+          "amiraspantry.com__subscribe"
+        ],
+        "adult_or_sensitive_keyword:bet,sex": [
+          "3s-selfstorage.com__faq",
+          "96problems.com__we-vibe-instructions-and-manuals",
+          "96problems.com__what-is-the-autoblow-history-reviews-and-critiques",
+          "96problems.com",
+          "blog.aiesec.org__aiesec-at-unido-youth-innovation-and-partnerships-shaping-the-future",
+          "c-7.de__de",
+          "centreforaviation.com__insights",
+          "coworkbuffalo.com__policy",
+          "createtheripple.co.uk",
+          "createtheripple.co.uk__ripple-making"
+        ],
+        "adult_or_sensitive_keyword:adult,bet": [
+          "4gujarat.com__terms-of-service",
+          "aspire.com.sg__partner-with-us",
+          "bgassociates.com__business-case-boomer-marketing",
+          "debrahleecharatan.com__feed",
+          "disabilitease.com__handicapped-equipment",
+          "fencebuildersaz.com__swimming-pool-safety-fence",
+          "furaffinity.net__search"
+        ],
+        "adult_or_sensitive_keyword:cam": [
+          "50skyshades.com__blogs",
+          "50skyshades.com",
+          "actionsdg.ctb.ku.edu__cookie-policy",
+          "actionsdg.ctb.ku.edu",
+          "actionskills.co",
+          "agilemanifesto.org__history",
+          "algamchina.com__dealer",
+          "algamchina.com__news",
+          "algamchina.com__service",
+          "algamchina.com__pinfo"
+        ],
+        "adult_or_sensitive_keyword:adult": [
+          "LauraBrownAuthor.com__hearing-loss-resources",
+          "LauraBrownAuthor.com__my-books",
+          "LauraBrownAuthor.com__the-un-arranged-marriage",
+          "aspire.com.sg__the-guild-social-club",
+          "babywinkz.com__services",
+          "babywinkz.com__about-us",
+          "babywinkz.com__elitza",
+          "blackbeltkaratecenter.com__contact-black-belt-karate",
+          "brixtonkravmaga.com__krav-maga-adults",
+          "classydogs.com__available-adult-dogs"
+        ],
+        "patch_0_search_ambiguous_3": [
+          "MiamiLockAndKeys.com__locksmith-terms-and-conditions",
+          "andreworlowski.com__archive",
+          "centredevils.co.uk__transfer-news",
+          "chapelstreet.com.au__contact-us",
+          "chaseconsultants.com__about-chase",
+          "domainnamecoaching.com",
+          "fidelityheight.com__shops",
+          "gemateknik.web.indotrading.com__peralatan-kerja-refractory-64807",
+          "hippiechicsalon.com"
+        ],
+        "patch_0_search_ambiguous_2": [
+          "aaronlee.co",
+          "aiblifescience.com__cart",
+          "allied-eng.com__careers",
+          "alternativepac.us__join",
+          "ar2021.lovingheartjurong.org.sg__about-us",
+          "asdea.org__venus-independent-sd",
+          "atthomes.co.uk__property-coaching-150211500",
+          "babybloomnutrition.com__speaking",
+          "backandbodyny.com__headaches",
+          "barbequeboss.com"
+        ],
+        "adult_or_sensitive_keyword:adult,bet,bets,betting,gambling": [
+          "abitoarchitects.com"
+        ],
+        "adult_or_sensitive_keyword:sex": [
+          "accumulationofthings.com",
+          "activebacktohealth.com__blog",
+          "adoptionformsexpress.com__terms-of-use",
+          "adoptionformsexpress.com__privacy-policy",
+          "adoptionformsexpress.com",
+          "americana-for-sale.com__1964-chevrolet-corvette-2",
+          "bborwv.com__default_5",
+          "bborwv.com",
+          "bborwv.com__default_6",
+          "blavatnikfoundation.org__blavatnik-awards"
+        ],
+        "risky_domain_from_instance_id": [
+          "adoptionformsexpress.com__terms-of-use",
+          "adoptionformsexpress.com__privacy-policy",
+          "adoptionformsexpress.com",
+          "agencasinosbobet.net__admin",
+          "agencasinosbobet.net__mpo500-slot-game-review-and-winning-tips",
+          "agencasinosbobet.net__gambling",
+          "alltopdating.com__black-dating",
+          "alltopdating.com__asian-dating",
+          "alltopdating.com__christian-dating",
+          "aviatrixbet.com__aviatrix-demo"
+        ],
+        "patch_2_replace_uncheckable_missing_output_code": [
+          "adkbrewery.com__story",
+          "agathaschooler.com",
+          "alightcreative.com",
+          "avalon-enterprises.com__green-building",
+          "camstudio.org__faq",
+          "coworkbuffalo.com__agreement",
+          "everythingwebsites.com__pricing",
+          "globalchains.ca__car-wash-dx1010",
+          "help.maxon.net__r3d",
+          "hookupinsiders.com__nordvpn-subscription-plans"
+        ],
+        "patch_3_replace_uncheckable_missing_output_code": [
+          "adkbrewery.com__story",
+          "avalon-enterprises.com__green-building",
+          "coworkbuffalo.com__agreement",
+          "hookupinsiders.com__nordvpn-subscription-plans"
+        ],
+        "patch_4_replace_uncheckable_missing_output_code": [
+          "adkbrewery.com__story",
+          "coworkbuffalo.com__agreement"
+        ],
+        "patch_5_replace_uncheckable_missing_output_code": [
+          "adkbrewery.com__story"
+        ],
+        "adult_or_sensitive_keyword:bet,casino": [
+          "agencasinosbobet.net__admin",
+          "agencasinosbobet.net__mpo500-slot-game-review-and-winning-tips",
+          "casinoreviews.nl__fruitautomaten",
+          "daroniefoodclub.com",
+          "frische-daten.de__250-bonus"
+        ],
+        "adult_or_sensitive_keyword:bet,casino,gambling": [
+          "agencasinosbobet.net__gambling"
+        ],
+        "patch_1_search_not_found": [
+          "age-of-product.com__agile-and-scrum",
+          "artechyapi.com__design-development",
+          "atsolutions.org__suggest-solution-ideas",
+          "bonsaimadesimple.com__three-late-winter-bonsai-tasks",
+          "bremerbrisbane.org.au",
+          "flowerandtonic.com__about",
+          "fluffsofluv.com__pet-sitting-in-pineville-nc"
+        ],
+        "adult_or_sensitive_keyword:cam,sex": [
+          "alchetron.com__contact",
+          "brighamcason.com__feed",
+          "godmadeus.com__whichBible"
+        ],
+        "adult_or_sensitive_keyword:cam,dating,porn,porno": [
+          "alchetron.com__terms"
+        ],
+        "adult_or_sensitive_keyword:porn": [
+          "all-free-download.com__font"
+        ],
+        "adult_or_sensitive_keyword:bet,dating": [
+          "alltopdating.com__black-dating",
+          "alltopdating.com__asian-dating",
+          "alltopdating.com__christian-dating",
+          "asianbridesonline.org__japanese-brides",
+          "bridesworldsite.com",
+          "datingjet.com__dating-sites",
+          "datingjet.com__coomeet-review",
+          "foreign-bride.org__india"
+        ],
+        "adult_or_sensitive_keyword:bet,cam": [
+          "alok-mishra.net__moving-for-moksha-my-latest-poetry-collection-is-out",
+          "alok-mishra.net__alok-mishra-creativity",
+          "alok-mishra.net__a-poem-a-day",
+          "ambientvisions.com",
+          "anchorbaptist1611.com__camp-2026",
+          "artscouncil.org__privacy-policy",
+          "ashenburg.com",
+          "ashenburg.com__the-mourners-dance",
+          "benjamindawson.com",
+          "boldly.com__executive-assistants"
+        ],
+        "patch_0_search_ambiguous_543844": [
+          "amaravillage.net__jackery-solarsaga-100w-solar-panel"
+        ],
+        "adult_or_sensitive_keyword:adult,bet,cam": [
+          "ambientvisions.com__avsqanda",
+          "aspire.com.sg__aspire-infinite-experiential-camps"
+        ],
+        "placeholder_or_parked:lorem ipsum": [
+          "amos.im.alisoft.com",
+          "antaresproperties.ca",
+          "ben-p.de__about-me",
+          "authentictitle.com__buyers",
+          "bryonycrane.co.uk__older",
+          "carpetkingofburlington.com__pressure-washing",
+          "cheohome.org__christian-college-fair-registration",
+          "collaborateup.com__our-formula",
+          "ctrlnetworks.com__connectivity-solutions-overview",
+          "curate.org__work"
+        ],
+        "patch_1_search_ambiguous_281": [
+          "angel.co__overview"
+        ],
+        "patch_0_search_ambiguous_331724": [
+          "annabellenelson.com__books"
+        ],
+        "adult_or_sensitive_keyword:bet,cam,casino": [
+          "apppearl.com__personvernerklaering",
+          "apppearl.com__om-oss"
+        ],
+        "patch_0_search_ambiguous_9656": [
+          "anvely.ca__privacy-policy"
+        ],
+        "placeholder_or_parked:this domain": [
+          "anvely.ca__privacy-policy",
+          "atoztopnews.com",
+          "bewellbyann.com",
+          "bsccareer.com",
+          "digitalmarkeeter.com__terms-of-service",
+          "digitalmarkeeter.com__privacy-policy",
+          "domainnamecoaching.com",
+          "elegantbouquet.ca",
+          "fbaprepnow.com"
+        ],
+        "patch_0_search_ambiguous_8": [
+          "arhq.com__services"
+        ],
+        "patch_0_search_ambiguous_896742": [
+          "aspirecaregiving.com__specialized-care-programs"
+        ],
+        "adult_or_sensitive_keyword:adult,cam": [
+          "astunit.com"
+        ],
+        "adult_or_sensitive_keyword:erotic,nude,porn,sex,xxx": [
+          "baddieschicks.com__alannasworldx-takes-a-hard-fucking-post-workout"
+        ],
+        "challenge_or_captcha:security check": [
+          "basicincome.org.uk__betninja"
+        ],
+        "adult_or_sensitive_keyword:cam,nude,nudes": [
+          "bauerart.com__Mayan"
+        ],
+        "adult_or_sensitive_keyword:dating": [
+          "bc-lawyers.com.au",
+          "chainoflakesvet.com__reviews",
+          "coniferareacouncil.org__community-vision",
+          "cutcarbon.org.uk",
+          "datingproductsreview.com__ashley-madison-review",
+          "datingwebreviews.com",
+          "fivestarbuslines.com__request-a-charter-quote",
+          "ford-admirer.com__content"
+        ],
+        "patch_0_search_ambiguous_5": [
+          "beckermanlegal.com",
+          "gabrielheymans.com__contact"
+        ],
+        "adult_or_sensitive_keyword:adult,bet,dating,hookup": [
+          "bestadulthookup.com__best-married-dating-sites"
+        ],
+        "patch_0_search_ambiguous_12": [
+          "bewellbyann.com"
+        ],
+        "patch_1_search_ambiguous_5": [
+          "andreasmaxones.com__kontakt"
+        ],
+        "adult_or_sensitive_keyword:casino": [
+          "1stok.com__privacy-policy",
+          "casinoapp.eu__blackjack-apps",
+          "fairgocasinoau.com",
+          "heartfeltstamping.com"
+        ],
+        "patch_0_search_ambiguous_464112": [
+          "aaryavartt.com"
+        ],
+        "patch_0_search_ambiguous_667948": [
+          "3mdrivingschool.com.au__gallery"
+        ],
+        "patch_0_search_ambiguous_790468": [
+          "4thfloorcreative.com__about"
+        ],
+        "adult_or_sensitive_keyword:bet,casino,sex": [
+          "betmentor.com__22bet-review",
+          "betmentor.com__melbet-review"
+        ],
+        "adult_or_sensitive_keyword:bet,bets,betting,sex": [
+          "betmentor.com"
+        ],
+        "placeholder_or_parked:lorem ipsum,placeholder": [
+          "bikeforthecure.org__hiw",
+          "caselfreliance.org__california-cardroom-moratorium-bill-ab341-progresses-through-senate-amended-for-table-limit",
+          "caselfreliance.org__news",
+          "gildedgal.com__shop"
+        ],
+        "patch_0_search_ambiguous_1432069": [
+          "bluewater-farms.com__fresh-cranberries"
+        ],
+        "placeholder_or_parked:coming soon": [
+          "brewham.co.uk"
+        ],
+        "adult_or_sensitive_keyword:bet,cam,cams": [
+          "camstudio.org",
+          "camstudio.org__faq",
+          "camstudio.org__legacy"
+        ],
+        "patch_0_search_ambiguous_454654": [
+          "campiopartners.com__contact"
+        ],
+        "patch_0_search_ambiguous_213468": [
+          "cannonhilldental.com__new-technology"
+        ],
+        "placeholder_or_parked:placeholder,this domain,under construction": [
+          "carefulapps.com"
+        ],
+        "challenge_or_captcha:captcha,enable javascript": [
+          "caselfreliance.org__contact",
+          "drlisamarotta.com"
+        ],
+        "adult_or_sensitive_keyword:bet,betting,casino": [
+          "casinoapp.eu__sports-betting",
+          "gbbet.co.uk__sportsbook-reviews",
+          "gbbet.co.uk__deposit-methods"
+        ],
+        "adult_or_sensitive_keyword:adult,dating,hookup": [
+          "casualrelationships.net__adult"
+        ],
+        "patch_0_search_ambiguous_4": [
+          "chaplainsontheharbor.org__anime"
+        ],
+        "patch_0_search_ambiguous_574473": [
+          "clarkairservices.com__preventative-maintenance"
+        ],
+        "adult_or_sensitive_keyword:cam,webcam": [
+          "crossbrowdy.com__page_1"
+        ],
+        "patch_0_search_ambiguous_913939": [
+          "ctrlnetworks.com__contact-us"
+        ],
+        "adult_or_sensitive_keyword:adult,dating": [
+          "cupidbrides.com__lithuanian-brides",
+          "datingjet.org__adult"
+        ],
+        "adult_or_sensitive_keyword:bet,cam,cams,dating": [
+          "datingjet.com__myfreecams-review"
+        ],
+        "adult_or_sensitive_keyword:dating,hookup,sex": [
+          "datingreviewer.net__eharmony-review"
+        ],
+        "adult_or_sensitive_keyword:dating,hookup": [
+          "datingjet.org__hookup-apps"
+        ],
+        "adult_or_sensitive_keyword:cam,dating": [
+          "datingupdates.org__social-media"
+        ],
+        "adult_or_sensitive_keyword:bet,dating,sex": [
+          "datingjet.org"
+        ],
+        "challenge_or_captcha:cloudflare": [
+          "decoholic.org__interior-design-homes",
+          "eatwellspendsmart.com__subscribe",
+          "eatwellspendsmart.com__about",
+          "eatwellspendsmart.com",
+          "eatwellspendsmart.com__money-saving-tips",
+          "ghbtns.com"
+        ],
+        "adult_or_sensitive_keyword:adult,bet,nude": [
+          "deepnudeapps.com__bots"
+        ],
+        "adult_or_sensitive_keyword:escort,escorts": [
+          "delhi-escorts-x.in__sadie",
+          "elitekaya.com__rates"
+        ],
+        "adult_or_sensitive_keyword:adult,bet,sex": [
+          "denverjacks.com__page_4"
+        ],
+        "patch_0_search_ambiguous_381248": [
+          "deanclaytonwoo.com"
+        ],
+        "patch_0_search_ambiguous_522021": [
+          "dreameditionspress.com__my-cart"
+        ],
+        "patch_0_search_ambiguous_3261": [
+          "drivebywebsites.co.uk__responsive-website-development"
+        ],
+        "placeholder_or_parked:under construction": [
+          "dressesgalore.co.uk"
+        ],
+        "patch_0_search_ambiguous_528734": [
+          "eaglecapecod.com__contact-eagle-companies-inc"
+        ],
+        "adult_or_sensitive_keyword:escort": [
+          "elitekaya.com__escort-jobs-for-girls"
+        ],
+        "adult_or_sensitive_keyword:dating,escort,escorts": [
+          "elitekaya.com__contact-us"
+        ],
+        "patch_0_search_ambiguous_408020": [
+          "elitehc.net__sms-privacy-policy"
+        ],
+        "adult_or_sensitive_keyword:bet,xxx": [
+          "emblemthreads.com__emtim-apparel-etsy-shop",
+          "emblemthreads.com__resources",
+          "emblemthreads.com__about",
+          "futurestepscreative.com",
+          "gatewaygazette.ca__gazette"
+        ],
+        "challenge_or_captcha:enable javascript": [
+          "enable-javascript.com__es",
+          "genesis-construction.com__connect"
+        ],
+        "adult_or_sensitive_keyword:adult,escort,escorts": [
+          "englandescortdirectory.com__registration"
+        ],
+        "adult_or_sensitive_keyword:bet,porn,porno": [
+          "essentialsurvival.org__feed"
+        ],
+        "patch_0_search_ambiguous_789253": [
+          "eu-cnc.org__business"
+        ],
+        "patch_0_search_ambiguous_314179": [
+          "evesland.com__1081"
+        ],
+        "patch_0_search_ambiguous_355935": [
+          "familydentistryelpasotexas.com"
+        ],
+        "adult_or_sensitive_keyword:bet,cam,sex": [
+          "fixington.com__plumbers",
+          "fixington.com__heating-engineers"
+        ],
+        "patch_1_search_ambiguous_54": [
+          "fortheloveofpeterentals.com__event-rental"
+        ],
+        "adult_or_sensitive_keyword:bet,bets": [
+          "freesuperbets.com__sport-news",
+          "freesuperbets.com__bookmakers",
+          "freesuperbets.com__et",
+          "hojopro.com__default_6",
+          "hojopro.com__default_2"
+        ],
+        "adult_or_sensitive_keyword:cam,xxx": [
+          "ftmanews.com__page_6",
+          "ftmanews.com__page_1"
+        ],
+        "adult_or_sensitive_keyword:bet,betting": [
+          "g3newswire.com__sports-betting"
+        ],
+        "adult_or_sensitive_keyword:bet,betting,casino,gambling": [
+          "gamblingappsstore.com"
+        ],
+        "patch_0_search_ambiguous_293294": [
+          "getasa2.com__your-account"
+        ],
+        "adult_or_sensitive_keyword:bet,bets,casino": [
+          "goharpc.com__golden-panda-casino"
+        ],
+        "adult_or_sensitive_keyword:adult,sex": [
+          "grabbysamerica.com"
+        ],
+        "adult_or_sensitive_keyword:bet,cam,webcam": [
+          "guywh.com__categories"
+        ],
+        "patch_0_search_ambiguous_16424": [
+          "hdizhi1.com__1_5"
+        ],
+        "adult_or_sensitive_keyword:hookup": [
+          "hookupsguru.com__size-guide-adidas-footwear",
+          "hookupsguru.com__return-policy"
+        ],
+        "adult_or_sensitive_keyword:bet,hookup": [
+          "hookupinsiders.com__about",
+          "hookeepr.com__bdsm-hookup",
+          "hookupinsiders.com__nordvpn-subscription-plans",
+          "hookeepr.com__gay-hookup-sites",
+          "hookeepr.com__bbw-hookup-sites"
+        ]
+      }
+    }
+  }
+}

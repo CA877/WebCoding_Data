@@ -1,0 +1,56 @@
+[
+  {
+    "file": "/data1/xieqianqian/webcoding/release_sft_6tasks_v1/jsonl/image-edit.jsonl",
+    "name": "image-edit.jsonl",
+    "total": 4333,
+    "any_lang_attr": 4174,
+    "any_lang_attr_ratio": 0.9633048696053542,
+    "likely_non_zh_en_lang_attr": 316,
+    "likely_non_zh_en_lang_attr_ratio": 0.07292868682206323
+  },
+  {
+    "file": "/data1/xieqianqian/webcoding/release_sft_6tasks_v1/jsonl/image-generate.jsonl",
+    "name": "image-generate.jsonl",
+    "total": 9769,
+    "any_lang_attr": 9074,
+    "any_lang_attr_ratio": 0.9288565871634763,
+    "likely_non_zh_en_lang_attr": 740,
+    "likely_non_zh_en_lang_attr_ratio": 0.07574982086191012
+  },
+  {
+    "file": "/data1/xieqianqian/webcoding/release_sft_6tasks_v1/jsonl/image-repair.jsonl",
+    "name": "image-repair.jsonl",
+    "total": 4845,
+    "any_lang_attr": 4640,
+    "any_lang_attr_ratio": 0.957688338493292,
+    "likely_non_zh_en_lang_attr": 336,
+    "likely_non_zh_en_lang_attr_ratio": 0.0693498452012384
+  },
+  {
+    "file": "/data1/xieqianqian/webcoding/release_sft_6tasks_v1/jsonl/text-edit.jsonl",
+    "name": "text-edit.jsonl",
+    "total": 4333,
+    "any_lang_attr": 4174,
+    "any_lang_attr_ratio": 0.9633048696053542,
+    "likely_non_zh_en_lang_attr": 316,
+    "likely_non_zh_en_lang_attr_ratio": 0.07292868682206323
+  },
+  {
+    "file": "/data1/xieqianqian/webcoding/release_sft_6tasks_v1/jsonl/text-generate.jsonl",
+    "name": "text-generate.jsonl",
+    "total": 4959,
+    "any_lang_attr": 4709,
+    "any_lang_attr_ratio": 0.9495866102036701,
+    "likely_non_zh_en_lang_attr": 357,
+    "likely_non_zh_en_lang_attr_ratio": 0.07199032062915911
+  },
+  {
+    "file": "/data1/xieqianqian/webcoding/release_sft_6tasks_v1/jsonl/text-repair.jsonl",
+    "name": "text-repair.jsonl",
+    "total": 4926,
+    "any_lang_attr": 4721,
+    "any_lang_attr_ratio": 0.9583840844498579,
+    "likely_non_zh_en_lang_attr": 346,
+    "likely_non_zh_en_lang_attr_ratio": 0.07023954526999594
+  }
+]

@@ -39,14 +39,14 @@ def _copy_fresh(src: Path, dst: Path) -> None:
     shutil.copytree(src, dst)
 
 
-def process_sample(payload: tuple[str, str, str, str, int, int]) -> dict[str, Any]:
+def process_sample(payload: tuple[str, str, str, str, int, int, bool]) -> dict[str, Any]:
     """Process one URL: crawl → postprocess.
 
     Output:
     - Always produces single_page/{project}/ (1 sample) if crawl succeeds.
     - If crawl is multi_page, also produces multi_page/{project}/ (+1 sample).
     """
-    url, output_root, browser_proxy, requests_proxy, max_pages, wait_ms = payload
+    url, output_root, browser_proxy, requests_proxy, max_pages, wait_ms, code_resources_only = payload
     output_dir = Path(output_root)
     single_root = output_dir / "single_page"
     multi_root = output_dir / "multi_page"
@@ -84,6 +84,7 @@ def process_sample(payload: tuple[str, str, str, str, int, int]) -> dict[str, An
             crawl_result = crawl_site(
                 url, tmp_dir, browser, session,
                 max_pages=max_pages, wait_ms=wait_ms,
+                code_resources_only=code_resources_only,
             )
         except Exception as exc:  # noqa: BLE001
             crawl_result = {
@@ -160,12 +161,12 @@ def process_sample(payload: tuple[str, str, str, str, int, int]) -> dict[str, An
     return result
 
 
-def process_sample_entry(payload: tuple[str, str, str, str, int, int],
+def process_sample_entry(payload: tuple[str, str, str, str, int, int, bool],
                          result_queue: mp.Queue) -> None:
     result_queue.put(process_sample(payload))
 
 
-def timeout_result(payload: tuple[str, str, str, str, int, int],
+def timeout_result(payload: tuple[str, str, str, str, int, int, bool],
                    elapsed: float, site_timeout: int) -> dict[str, Any]:
     url = payload[0]
     return {
@@ -181,7 +182,7 @@ def timeout_result(payload: tuple[str, str, str, str, int, int],
     }
 
 
-def cleanup_sample_outputs(payload: tuple[str, str, str, str, int, int]) -> None:
+def cleanup_sample_outputs(payload: tuple[str, str, str, str, int, int, bool]) -> None:
     url = payload[0]
     output_dir = Path(payload[1])
     proj_name = project_name_from_url(url)
@@ -251,6 +252,11 @@ def main() -> None:
     parser.add_argument("--browser-proxy", default="")
     parser.add_argument("--requests-proxy", default="")
     parser.add_argument(
+        "--code-resources-only",
+        action="store_true",
+        help="Do not fetch or store non-code resources; keep only HTML plus JS/CSS.",
+    )
+    parser.add_argument(
         "--site-timeout", type=int, default=0,
         help="Hard wall-clock timeout per sample in seconds.",
     )
@@ -299,7 +305,7 @@ def main() -> None:
 
     payloads = [
         (url, str(args.output_dir), args.browser_proxy or "", args.requests_proxy or "",
-         args.max_pages, args.wait)
+         args.max_pages, args.wait, args.code_resources_only)
         for url in urls if url not in done_urls
     ]
 

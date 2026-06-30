@@ -1,0 +1,57 @@
+{
+  "meta": {
+    "class": "image_genration",
+    "difficulty": "N/A"
+  },
+  "working_dir": "/testbed",
+  "repo": "claude/webcoding",
+  "instance_id": "109",
+  "base_commit": "main",
+  "problem_statement": [
+    {
+      "task": "Verify page renders and layout is stable",
+      "category": "Runnability",
+      "operation_sequence": "1. Open the website. 2. Verify there are no critical console errors blocking render. 3. Ensure the background pattern and main content containers are visible.",
+      "expected_result": "Page loads fully with no blocking errors, displaying the striped background and central content.",
+      "criteria": "Pass if page loads and displays core elements; fail if rendering crashes or severe console errors occur.",
+      "max_score": 10
+    },
+    {
+      "task": "Verify navigation link hover states",
+      "category": "Spec Implementation",
+      "operation_sequence": "1. Locate the sidebar navigation menu. 2. Hover over the 'Home' link. 3. Observe any visual changes. 4. Hover over the 'Contact Us' link.",
+      "expected_result": "Based on 'home.png', hovering over 'Home' might show a red outline (indicator 1) or 'Contact Us' might show a blue outline (indicator 2) if these are interactive states and not just annotations.",
+      "criteria": "Pass if interactive states match the visual indicators if they are meant to be hover/focus states; deduct points if navigation is static without interactive feedback.",
+      "max_score": 15
+    },
+    {
+      "task": "Verify search form exists on index/home pages",
+      "category": "Spec Implementation",
+      "operation_sequence": "1. Navigate to the Home page ('index.html.png'). 2. Locate the search input field below the header. 3. Locate the 'Search' button next to it.",
+      "expected_result": "The search input field and 'Search' button should be present on the home page as shown in the screenshot.",
+      "criteria": "Pass if both elements are present; fail if missing.",
+      "max_score": 15
+    },
+    {
+      "task": "Check design fidelity for the Contact Us page",
+      "category": "Design Quality",
+      "reference_image_path": "contact_us.html.png",
+      "webpage_screenshot_path": "contact_us_actual.png",
+      "max_score": 20
+    },
+    {
+      "task": "Check design fidelity for the annotated Home page",
+      "category": "Design Quality",
+      "reference_image_path": "home.png",
+      "webpage_screenshot_path": "home_actual.png",
+      "max_score": 20
+    },
+    {
+      "task": "Check design fidelity for the standard Index page",
+      "category": "Design Quality",
+      "reference_image_path": "index.html.png",
+      "webpage_screenshot_path": "index_actual.png",
+      "max_score": 20
+    }
+  ]
+}

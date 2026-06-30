@@ -1,0 +1,65 @@
+{
+  "meta": {
+    "class": "image_genration",
+    "difficulty": "N/A"
+  },
+  "working_dir": "/testbed",
+  "repo": "claude/webcoding",
+  "instance_id": "115",
+  "base_commit": "main",
+  "problem_statement": [
+    {
+      "task": "Verify the page loads and renders without critical errors",
+      "category": "Runnability",
+      "operation_sequence": "1. Navigate to the website's homepage. 2. Observe the page load process. 3. Check the browser console for any blocking errors (e.g., 404s for main CSS/JS).",
+      "expected_result": "The homepage loads completely, displaying the header, main content area, and footer without any critical console errors.",
+      "criteria": "Pass: Page loads fully without critical errors. Fail: Page crashes, fails to render, or shows blocking errors in the console.",
+      "max_score": 15
+    },
+    {
+      "task": "Verify navigation menu links are present and clickable",
+      "category": "Spec Implementation",
+      "operation_sequence": "1. Locate the main navigation menu in the header. 2. Verify the presence of links: Home, Artikelen, Projecten, Diensten, Webshop, Contact. 3. Click on the 'Artikelen' link.",
+      "expected_result": "Clicking the 'Artikelen' link should navigate to or display the 'Artikelen' page content, matching the structure shown in artikelen.php.png.",
+      "criteria": "Pass: All links are present and clicking 'Artikelen' changes the page state correctly. Fail: Links are missing or clicking them does nothing/causes errors.",
+      "max_score": 15
+    },
+    {
+      "task": "Verify navigation to 'Projecten' page",
+      "category": "Spec Implementation",
+      "operation_sequence": "1. From the homepage, click on the 'Projecten' link in the navigation menu. 2. Observe the main content area. 3. Check for the presence of the data tables.",
+      "expected_result": "The main content area should update to show the 'Projecten' content, including tables for 'Digibytez minikits' and 'Digibytez kits' as seen in projecten.php.png.",
+      "criteria": "Pass: The 'Projecten' view loads and displays the expected tabular data structure. Fail: Navigation fails or tables are missing.",
+      "max_score": 15
+    },
+    {
+      "task": "Verify footer contact information is present",
+      "category": "Spec Implementation",
+      "operation_sequence": "1. Scroll down to the footer section on any page. 2. Inspect the text content within the green patterned background. 3. Verify the presence of address, T, E, W, bank, IBAN, BIC, KVK, and BTW details.",
+      "expected_result": "The footer should contain all specific contact and business details exactly as laid out in the reference images.",
+      "criteria": "Pass: All footer information is present and correctly formatted. Fail: Missing or incorrect text in the footer.",
+      "max_score": 10
+    },
+    {
+      "task": "Check design fidelity of the Homepage layout",
+      "category": "Design Quality",
+      "reference_image_path": "home.png",
+      "webpage_screenshot_path": "",
+      "max_score": 15
+    },
+    {
+      "task": "Check design fidelity of the Artikelen page layout",
+      "category": "Design Quality",
+      "reference_image_path": "artikelen.php.png",
+      "webpage_screenshot_path": "",
+      "max_score": 15
+    },
+    {
+      "task": "Check design fidelity of the Projecten page layout, specifically the data tables",
+      "category": "Design Quality",
+      "reference_image_path": "projecten.php.png",
+      "webpage_screenshot_path": "",
+      "max_score": 15
+    }
+  ]
+}

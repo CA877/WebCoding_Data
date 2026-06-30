@@ -1,0 +1,435 @@
+{
+  "files": {
+    "data/local_samples/current/local_10samples_six_tasks_20260625/image-edit/samples_10.jsonl": 10,
+    "data/local_samples/current/local_10samples_six_tasks_20260625/image-generate/samples_10.jsonl": 10,
+    "data/local_samples/current/local_10samples_six_tasks_20260625/image-repair/samples_10.jsonl": 10,
+    "data/local_samples/current/local_10samples_six_tasks_20260625/text-edit/samples_10.jsonl": 10,
+    "data/local_samples/current/local_10samples_six_tasks_20260625/text-generate/samples_10.jsonl": 10,
+    "data/local_samples/current/local_10samples_six_tasks_20260625/text-repair/samples_10.jsonl": 10
+  },
+  "tasks": {
+    "image-editing": {
+      "total": 10,
+      "issue_counts": {
+        "adult_or_sensitive_keyword:bet": 2,
+        "missing_output_files": 10,
+        "patch_0_replace_uncheckable_missing_output_code": 10,
+        "patch_0_search_not_found": 5,
+        "patch_1_replace_uncheckable_missing_output_code": 6,
+        "patch_1_search_not_found": 4,
+        "remote_url_present": 7,
+        "placeholder_or_parked:placeholder": 2,
+        "patch_2_replace_uncheckable_missing_output_code": 3,
+        "patch_3_replace_uncheckable_missing_output_code": 1,
+        "patch_3_search_not_found": 1,
+        "adult_or_sensitive_keyword:casino": 1,
+        "patch_2_search_not_found": 1,
+        "adult_or_sensitive_keyword:porn,sex,xxx": 1,
+        "risky_domain_from_instance_id": 1,
+        "adult_or_sensitive_keyword:bet,cam": 1
+      },
+      "examples": {
+        "adult_or_sensitive_keyword:bet": [
+          "1-keyworddomainnames.com__keyword-domains-for-sale",
+          "10bestbuy.com__travel"
+        ],
+        "missing_output_files": [
+          "1-keyworddomainnames.com__keyword-domains-for-sale",
+          "1-keyworddomainnames.com__keyword-domain-news",
+          "10-twenty.ca__seo",
+          "10-twenty.ca",
+          "10bestbuy.com__travel",
+          "10kcards.com__support",
+          "10legsinthekitchen.com__recipes-2",
+          "1stok.com__bonus-offers",
+          "1teenporn.com",
+          "22fusion.com"
+        ],
+        "patch_0_replace_uncheckable_missing_output_code": [
+          "1-keyworddomainnames.com__keyword-domains-for-sale",
+          "1-keyworddomainnames.com__keyword-domain-news",
+          "10-twenty.ca__seo",
+          "10-twenty.ca",
+          "10bestbuy.com__travel",
+          "10kcards.com__support",
+          "10legsinthekitchen.com__recipes-2",
+          "1stok.com__bonus-offers",
+          "1teenporn.com",
+          "22fusion.com"
+        ],
+        "patch_0_search_not_found": [
+          "10-twenty.ca__seo",
+          "10-twenty.ca",
+          "10kcards.com__support",
+          "10legsinthekitchen.com__recipes-2",
+          "1stok.com__bonus-offers"
+        ],
+        "patch_1_replace_uncheckable_missing_output_code": [
+          "10-twenty.ca__seo",
+          "10bestbuy.com__travel",
+          "10legsinthekitchen.com__recipes-2",
+          "1stok.com__bonus-offers",
+          "1teenporn.com",
+          "22fusion.com"
+        ],
+        "patch_1_search_not_found": [
+          "10-twenty.ca__seo",
+          "10bestbuy.com__travel",
+          "1stok.com__bonus-offers",
+          "22fusion.com"
+        ],
+        "remote_url_present": [
+          "10-twenty.ca__seo",
+          "10-twenty.ca",
+          "10bestbuy.com__travel",
+          "10kcards.com__support",
+          "1stok.com__bonus-offers",
+          "1teenporn.com",
+          "22fusion.com"
+        ],
+        "placeholder_or_parked:placeholder": [
+          "10kcards.com__support",
+          "1stok.com__bonus-offers"
+        ],
+        "patch_2_replace_uncheckable_missing_output_code": [
+          "10legsinthekitchen.com__recipes-2",
+          "1stok.com__bonus-offers",
+          "22fusion.com"
+        ],
+        "patch_3_replace_uncheckable_missing_output_code": [
+          "10legsinthekitchen.com__recipes-2"
+        ],
+        "patch_3_search_not_found": [
+          "10legsinthekitchen.com__recipes-2"
+        ],
+        "adult_or_sensitive_keyword:casino": [
+          "1stok.com__bonus-offers"
+        ],
+        "patch_2_search_not_found": [
+          "1stok.com__bonus-offers"
+        ],
+        "adult_or_sensitive_keyword:porn,sex,xxx": [
+          "1teenporn.com"
+        ],
+        "risky_domain_from_instance_id": [
+          "1teenporn.com"
+        ],
+        "adult_or_sensitive_keyword:bet,cam": [
+          "22fusion.com"
+        ]
+      }
+    },
+    "image-generation": {
+      "total": 10,
+      "issue_counts": {
+        "adult_or_sensitive_keyword:bet": 2,
+        "remote_url_present": 9,
+        "placeholder_or_parked:placeholder": 2,
+        "challenge_or_captcha:captcha": 1
+      },
+      "examples": {
+        "adult_or_sensitive_keyword:bet": [
+          "01simple.com__139738",
+          "01simple.com__immigration"
+        ],
+        "remote_url_present": [
+          "01simple.com__139738",
+          "01simple.com__immigration",
+          "1-box.com",
+          "1-keyworddomainnames.com",
+          "1-keyworddomainnames.com__feed",
+          "10-twenty.ca",
+          "10kcards.com__login",
+          "1st-drainage-tewkesbury.co.uk__contact",
+          "1staab.com__privacy-policy"
+        ],
+        "placeholder_or_parked:placeholder": [
+          "10kcards.com__login",
+          "1st-drainage-tewkesbury.co.uk__contact"
+        ],
+        "challenge_or_captcha:captcha": [
+          "1st-drainage-tewkesbury.co.uk__contact"
+        ]
+      }
+    },
+    "image-repair": {
+      "total": 10,
+      "issue_counts": {
+        "image_repair_diff_unavailable": 10,
+        "missing_output_files": 10,
+        "patch_0_replace_uncheckable_missing_output_code": 10,
+        "remote_url_present": 8,
+        "missing_dst_screenshot": 1,
+        "patch_0_search_not_found": 1,
+        "adult_or_sensitive_keyword:bet": 2,
+        "challenge_or_captcha:captcha": 1,
+        "placeholder_or_parked:placeholder": 2,
+        "adult_or_sensitive_keyword:xxx": 1
+      },
+      "examples": {
+        "image_repair_diff_unavailable": [
+          "1staab.com__quotes",
+          "1staab.com__digital-art",
+          "10-twenty.ca__seo",
+          "10legsinthekitchen.com__staceybender",
+          "01simple.com__world",
+          "01logix.com__mspowerbi",
+          "24-news.net__ip",
+          "10legsinthekitchen.com__lets-talk-turkey-sandwiches",
+          "01simple.com__immigration",
+          "2023.ravensbourne.ac.uk__about-ravensbourne"
+        ],
+        "missing_output_files": [
+          "1staab.com__quotes",
+          "1staab.com__digital-art",
+          "10-twenty.ca__seo",
+          "10legsinthekitchen.com__staceybender",
+          "01simple.com__world",
+          "01logix.com__mspowerbi",
+          "24-news.net__ip",
+          "10legsinthekitchen.com__lets-talk-turkey-sandwiches",
+          "01simple.com__immigration",
+          "2023.ravensbourne.ac.uk__about-ravensbourne"
+        ],
+        "patch_0_replace_uncheckable_missing_output_code": [
+          "1staab.com__quotes",
+          "1staab.com__digital-art",
+          "10-twenty.ca__seo",
+          "10legsinthekitchen.com__staceybender",
+          "01simple.com__world",
+          "01logix.com__mspowerbi",
+          "24-news.net__ip",
+          "10legsinthekitchen.com__lets-talk-turkey-sandwiches",
+          "01simple.com__immigration",
+          "2023.ravensbourne.ac.uk__about-ravensbourne"
+        ],
+        "remote_url_present": [
+          "1staab.com__quotes",
+          "1staab.com__digital-art",
+          "10-twenty.ca__seo",
+          "01simple.com__world",
+          "01logix.com__mspowerbi",
+          "24-news.net__ip",
+          "01simple.com__immigration",
+          "2023.ravensbourne.ac.uk__about-ravensbourne"
+        ],
+        "missing_dst_screenshot": [
+          "10legsinthekitchen.com__staceybender"
+        ],
+        "patch_0_search_not_found": [
+          "10legsinthekitchen.com__staceybender"
+        ],
+        "adult_or_sensitive_keyword:bet": [
+          "01simple.com__world",
+          "01simple.com__immigration"
+        ],
+        "challenge_or_captcha:captcha": [
+          "01logix.com__mspowerbi"
+        ],
+        "placeholder_or_parked:placeholder": [
+          "01logix.com__mspowerbi",
+          "2023.ravensbourne.ac.uk__about-ravensbourne"
+        ],
+        "adult_or_sensitive_keyword:xxx": [
+          "2023.ravensbourne.ac.uk__about-ravensbourne"
+        ]
+      }
+    },
+    "text-editing": {
+      "total": 10,
+      "issue_counts": {
+        "missing_input_files": 10,
+        "missing_output_files": 10,
+        "patch_uncheckable_missing_input_code": 10,
+        "remote_url_present": 5,
+        "placeholder_or_parked:placeholder": 3,
+        "adult_or_sensitive_keyword:casino": 1,
+        "adult_or_sensitive_keyword:porn,sex,xxx": 1,
+        "risky_domain_from_instance_id": 1
+      },
+      "examples": {
+        "missing_input_files": [
+          "1-keyworddomainnames.com__keyword-domain-news",
+          "1-keyworddomainnames.com__keyword-domains-for-sale",
+          "10-twenty.ca",
+          "10-twenty.ca__seo",
+          "10bestbuy.com__travel",
+          "10kcards.com__support",
+          "10legsinthekitchen.com__recipes-2",
+          "1stok.com__bonus-offers",
+          "1teenporn.com",
+          "1upretro.com__blog"
+        ],
+        "missing_output_files": [
+          "1-keyworddomainnames.com__keyword-domain-news",
+          "1-keyworddomainnames.com__keyword-domains-for-sale",
+          "10-twenty.ca",
+          "10-twenty.ca__seo",
+          "10bestbuy.com__travel",
+          "10kcards.com__support",
+          "10legsinthekitchen.com__recipes-2",
+          "1stok.com__bonus-offers",
+          "1teenporn.com",
+          "1upretro.com__blog"
+        ],
+        "patch_uncheckable_missing_input_code": [
+          "1-keyworddomainnames.com__keyword-domain-news",
+          "1-keyworddomainnames.com__keyword-domains-for-sale",
+          "10-twenty.ca",
+          "10-twenty.ca__seo",
+          "10bestbuy.com__travel",
+          "10kcards.com__support",
+          "10legsinthekitchen.com__recipes-2",
+          "1stok.com__bonus-offers",
+          "1teenporn.com",
+          "1upretro.com__blog"
+        ],
+        "remote_url_present": [
+          "1-keyworddomainnames.com__keyword-domains-for-sale",
+          "10-twenty.ca",
+          "10kcards.com__support",
+          "10legsinthekitchen.com__recipes-2",
+          "1stok.com__bonus-offers"
+        ],
+        "placeholder_or_parked:placeholder": [
+          "10kcards.com__support",
+          "1stok.com__bonus-offers",
+          "1upretro.com__blog"
+        ],
+        "adult_or_sensitive_keyword:casino": [
+          "1stok.com__bonus-offers"
+        ],
+        "adult_or_sensitive_keyword:porn,sex,xxx": [
+          "1teenporn.com"
+        ],
+        "risky_domain_from_instance_id": [
+          "1teenporn.com"
+        ]
+      }
+    },
+    "text-generation": {
+      "total": 10,
+      "issue_counts": {
+        "challenge_or_captcha:captcha": 4,
+        "adult_or_sensitive_keyword:bet": 3,
+        "placeholder_or_parked:placeholder": 6,
+        "placeholder_or_parked:lorem ipsum": 1,
+        "adult_or_sensitive_keyword:cam": 1,
+        "adult_or_sensitive_keyword:dating": 1,
+        "remote_url_present": 2
+      },
+      "examples": {
+        "challenge_or_captcha:captcha": [
+          "3dgroup.net__360-degree-feedback",
+          "3dgroup.net__feedback-coaching",
+          "01logix.com",
+          "3dgroup.net__leadership-navigator-360-degree-feedback"
+        ],
+        "adult_or_sensitive_keyword:bet": [
+          "2daybusinessinfo.com__forex",
+          "3dgroup.net__feedback-coaching",
+          "3mdrivingschool.com.au__learner-drivers"
+        ],
+        "placeholder_or_parked:placeholder": [
+          "2daybusinessinfo.com__forex",
+          "24-news.net",
+          "01logix.com",
+          "3mdrivingschool.com.au__about-us",
+          "1-keyworddomainnames.com__keyword-domain-news",
+          "3mdrivingschool.com.au__learner-drivers"
+        ],
+        "placeholder_or_parked:lorem ipsum": [
+          "3dgroup.net__feedback-coaching"
+        ],
+        "adult_or_sensitive_keyword:cam": [
+          "24-news.net"
+        ],
+        "adult_or_sensitive_keyword:dating": [
+          "01logix.com"
+        ],
+        "remote_url_present": [
+          "3mdrivingschool.com.au__about-us",
+          "3mdrivingschool.com.au__learner-drivers"
+        ]
+      }
+    },
+    "text-repair": {
+      "total": 10,
+      "issue_counts": {
+        "adult_or_sensitive_keyword:bet,sex,xxx": 2,
+        "missing_input_files": 10,
+        "missing_output_files": 10,
+        "patch_uncheckable_missing_input_code": 10,
+        "remote_url_present": 7,
+        "adult_or_sensitive_keyword:bet": 2,
+        "challenge_or_captcha:captcha": 1,
+        "adult_or_sensitive_keyword:xxx": 1,
+        "placeholder_or_parked:placeholder": 1
+      },
+      "examples": {
+        "adult_or_sensitive_keyword:bet,sex,xxx": [
+          "1staab.com__digital-art",
+          "1staab.com__quotes"
+        ],
+        "missing_input_files": [
+          "1staab.com__digital-art",
+          "1staab.com__quotes",
+          "10-twenty.ca__seo",
+          "10legsinthekitchen.com__staceybender",
+          "01simple.com__world",
+          "01logix.com__mspowerbi",
+          "24-news.net__ip",
+          "10legsinthekitchen.com__lets-talk-turkey-sandwiches",
+          "01simple.com__immigration",
+          "2023.ravensbourne.ac.uk__about-ravensbourne"
+        ],
+        "missing_output_files": [
+          "1staab.com__digital-art",
+          "1staab.com__quotes",
+          "10-twenty.ca__seo",
+          "10legsinthekitchen.com__staceybender",
+          "01simple.com__world",
+          "01logix.com__mspowerbi",
+          "24-news.net__ip",
+          "10legsinthekitchen.com__lets-talk-turkey-sandwiches",
+          "01simple.com__immigration",
+          "2023.ravensbourne.ac.uk__about-ravensbourne"
+        ],
+        "patch_uncheckable_missing_input_code": [
+          "1staab.com__digital-art",
+          "1staab.com__quotes",
+          "10-twenty.ca__seo",
+          "10legsinthekitchen.com__staceybender",
+          "01simple.com__world",
+          "01logix.com__mspowerbi",
+          "24-news.net__ip",
+          "10legsinthekitchen.com__lets-talk-turkey-sandwiches",
+          "01simple.com__immigration",
+          "2023.ravensbourne.ac.uk__about-ravensbourne"
+        ],
+        "remote_url_present": [
+          "1staab.com__digital-art",
+          "1staab.com__quotes",
+          "10legsinthekitchen.com__staceybender",
+          "01simple.com__world",
+          "10legsinthekitchen.com__lets-talk-turkey-sandwiches",
+          "01simple.com__immigration",
+          "2023.ravensbourne.ac.uk__about-ravensbourne"
+        ],
+        "adult_or_sensitive_keyword:bet": [
+          "01simple.com__world",
+          "01simple.com__immigration"
+        ],
+        "challenge_or_captcha:captcha": [
+          "01logix.com__mspowerbi"
+        ],
+        "adult_or_sensitive_keyword:xxx": [
+          "2023.ravensbourne.ac.uk__about-ravensbourne"
+        ],
+        "placeholder_or_parked:placeholder": [
+          "2023.ravensbourne.ac.uk__about-ravensbourne"
+        ]
+      }
+    }
+  }
+}

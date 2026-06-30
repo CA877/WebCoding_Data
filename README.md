@@ -109,10 +109,18 @@ python3 construct/validate_webcode2m_task_dirs.py \
 │   ├── add_js.py                        # LLM 生成 Vanilla JS
 │   ├── human_like_playwright_record.py  # 视频录制
 │   └── validate_webcode2m_task_dirs.py  # 输出验证器
+├── scripts/                             # unified/OSS 转换、截图构造、发布、审计脚本
+├── train/                               # 训练格式转换与 LLaMA-Factory 配置
+├── data/                                # 本地轻量样本、试跑产物、raw URL 列表
+├── docs/
+│   ├── planning/                        # pipeline 与构造规划
+│   ├── status/                          # 状态、TODO、问题汇总、审计报告
+│   └── references/                      # 调研和参考文档
+├── external/                            # 外部评测/参考代码
+├── useless/                             # 暂不使用但保留的历史文件、系统产物、缓存
 ├── .env.example                         # API 凭据模板
 ├── AGENTS.md                            # 工作原则 + 服务器信息
-├── CLAUDE.md                            # Claude 指令
-└── 数据构造规划.md                        # 完整构造规划
+└── README.md
 ```
 
 ## 模型配置
@@ -132,4 +140,4 @@ python3 construct/validate_webcode2m_task_dirs.py \
 
 不要提交 API key、`.env`、生成结果截图/视频或日志。
 
-详细构造规划见 [数据构造规划.md](数据构造规划.md)。
+详细构造规划见 [docs/planning/数据构造规划.md](docs/planning/数据构造规划.md)；当前完整 pipeline 与质量检查见 [docs/planning/训练数据完整Pipeline与质量检查.md](docs/planning/训练数据完整Pipeline与质量检查.md)。

@@ -67,6 +67,7 @@ CONCURRENCY_B="${CONCURRENCY_B:-100}"
 
 # 超时（秒）
 SITE_TIMEOUT="${SITE_TIMEOUT:-120}"
+CODE_RESOURCES_ONLY="${CODE_RESOURCES_ONLY:-}"
 
 # 运行名
 RUN_NAME="${RUN_NAME:-run_b15000}"
@@ -147,6 +148,7 @@ log "pipeline_b_output=$PIPELINE_B_OUTPUT"
 log "pipeline_b_log_dir=$PIPELINE_B_LOG_DIR"
 log "concurrency=$CONCURRENCY_B"
 log "site_timeout=${SITE_TIMEOUT}s"
+log "code_resources_only=${CODE_RESOURCES_ONLY:-no}"
 log "browser_proxy=$BROWSER_PROXY"
 log "requests_proxy=$REQUESTS_PROXY"
 log "python=$($PYTHON --version 2>&1)"
@@ -215,6 +217,11 @@ log "[B] URL 文件行数: $URL_COUNT"
 log ""
 log "========== 启动 Pipeline B (并发=$CONCURRENCY_B, limit=$PIPELINE_B_URL_LIMIT) =========="
 
+CODE_RESOURCE_ARGS=()
+if [ -n "$CODE_RESOURCES_ONLY" ]; then
+    CODE_RESOURCE_ARGS+=(--code-resources-only)
+fi
+
 $PYTHON preprocess/pipeline_b_sample_level.py \
     --url-file "$PIPELINE_B_URL_FILE" \
     --output-dir "$PIPELINE_B_OUTPUT" \
@@ -225,6 +232,7 @@ $PYTHON preprocess/pipeline_b_sample_level.py \
     --limit "$PIPELINE_B_URL_LIMIT" \
     --browser-proxy "$BROWSER_PROXY" \
     --requests-proxy "$REQUESTS_PROXY" \
+    "${CODE_RESOURCE_ARGS[@]}" \
     2>&1 | tee "$PIPELINE_B_LOG_DIR/pipeline_b.log"
 
 PIPELINE_EXIT=$?

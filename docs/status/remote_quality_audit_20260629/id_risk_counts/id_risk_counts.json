@@ -1,0 +1,101 @@
+[
+  {
+    "file": "/data1/xieqianqian/webcoding/release_sft_6tasks_v1/jsonl/image-edit.jsonl",
+    "name": "image-edit.jsonl",
+    "total": 4333,
+    "risky_instance_id": 0,
+    "risky_instance_id_ratio": 0.0,
+    "examples": []
+  },
+  {
+    "file": "/data1/xieqianqian/webcoding/release_sft_6tasks_v1/jsonl/image-generate.jsonl",
+    "name": "image-generate.jsonl",
+    "total": 9769,
+    "risky_instance_id": 30,
+    "risky_instance_id_ratio": 0.003070938683590951,
+    "examples": [
+      "alltopdating.com__country-dating",
+      "best-bitcoin-casino.eu",
+      "blog.photofeeler.com__online-dating",
+      "bridesworldsite.com__ukrainian-dating",
+      "datingjet.org__casual-dating",
+      "delhi-escorts-x.in__margo",
+      "jasons-journal.com__dating-101-5-questions-to-ask-when-dating",
+      "juleshollandart.com__sex-sells-collection",
+      "kabono.com__casino-apps",
+      "matchbook.org__why-betting-odds-vary-across-countries",
+      "mrbetlogin.com__mr-bet-betting-review",
+      "olimpic-casino.com__gambling",
+      "olimpic-casino.com__the-rising-popularity-of-digital-gaming-platforms-in-malaysia",
+      "popchassid.com__die-evolution-von-live-casino-und-esports-wetten-warum-lemon-casino-die-branche-neu-definiert",
+      "riversweeps.org__bitcoin-casino",
+      "suppupftl.com__betting",
+      "tlv-escort.com__about-me-jewish-gfe-independent-tel-aviv-escort",
+      "tropical-casino.com",
+      "whitespark-publishing.com__young-adult",
+      "wimberleylibrary.org__adult-craft-lab",
+      "www.casino.org__apps",
+      "www.datecambridgeshiresingles.co.uk__jewish-dating",
+      "www.datecumbriasingles.co.uk__over-50s-dating",
+      "www.datewesternislessingles.co.uk__jewish-dating",
+      "www.dipikadelhi.com__call-girls-noida",
+      "www.kamnikaur.in__jaipur-escorts",
+      "www.kamnikaur.in__mumbai-escorts",
+      "www.maturexmatch.com__mature-dating",
+      "www.onlinebetting.org__betting-online-reviews",
+      "www.punehottiess.com__pune-call-girls-whatsapp-number"
+    ]
+  },
+  {
+    "file": "/data1/xieqianqian/webcoding/release_sft_6tasks_v1/jsonl/image-repair.jsonl",
+    "name": "image-repair.jsonl",
+    "total": 4845,
+    "risky_instance_id": 19,
+    "risky_instance_id_ratio": 0.00392156862745098,
+    "examples": [
+      "agencasinosbobet.net__gambling",
+      "alltopdating.com__black-dating",
+      "alltopdating.com__asian-dating",
+      "alltopdating.com__christian-dating",
+      "bestadulthookup.com__best-married-dating-sites",
+      "casinoapp.eu__sports-betting",
+      "casualrelationships.net__adult",
+      "classydogs.com__available-adult-dogs",
+      "craftsbyamanda.com__adult-crafts",
+      "datingjet.com__dating-sites",
+      "datingjet.org__adult",
+      "datingjet.org__hookup-apps",
+      "delhi-escorts-x.in__sadie",
+      "elitekaya.com__escort-jobs-for-girls",
+      "g3newswire.com__sports-betting",
+      "goharpc.com__golden-panda-casino",
+      "hookeepr.com__bdsm-hookup",
+      "hookeepr.com__gay-hookup-sites",
+      "hookeepr.com__bbw-hookup-sites"
+    ]
+  },
+  {
+    "file": "/data1/xieqianqian/webcoding/release_sft_6tasks_v1/jsonl/text-edit.jsonl",
+    "name": "text-edit.jsonl",
+    "total": 4333,
+    "risky_instance_id": 0,
+    "risky_instance_id_ratio": 0.0,
+    "examples": []
+  },
+  {
+    "file": "/data1/xieqianqian/webcoding/release_sft_6tasks_v1/jsonl/text-generate.jsonl",
+    "name": "text-generate.jsonl",
+    "total": 4959,
+    "risky_instance_id": 0,
+    "risky_instance_id_ratio": 0.0,
+    "examples": []
+  },
+  {
+    "file": "/data1/xieqianqian/webcoding/release_sft_6tasks_v1/jsonl/text-repair.jsonl",
+    "name": "text-repair.jsonl",
+    "total": 4926,
+    "risky_instance_id": 0,
+    "risky_instance_id_ratio": 0.0,
+    "examples": []
+  }
+]
