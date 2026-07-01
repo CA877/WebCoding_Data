@@ -233,6 +233,11 @@ raw/preprocessed data
   -> adult/gambling/dating blacklist
   -> challenge/parked/placeholder detection
   -> code/resource schema validation
+  -> resource slimming
+       - 删除未引用的孤儿 resources 文件
+       - 删除内容完全重复的 resources 文件
+       - 被引用的第三方库/blob 只在允许 CDN 且提供映射时外链化
+       - HTML、内联 CSS/JS、作者脚本保留
   -> patch normalization and unique-match validation
   -> image URL audit/localization and patch re-validation
   -> local render + image load stats
@@ -247,6 +252,8 @@ raw/preprocessed data
 - 非中英文：剔除。
 - adult/gambling/dating：剔除，不进入 release。
 - patch 不唯一：剔除或回到构造阶段重生成。
+- orphan/duplicate resources：清理并记录删除清单。
+- referenced vendor/blob：默认保留并标记；允许 CDN 时按显式映射外链化。
 - image-repair 低视觉差异：不进入 image-repair；可保留 text-repair。
 - challenge/parked/placeholder：剔除或人工复核。
 - remote URL：图片不使用替代占位 URL；真实图片可保留或本地化并进入 QC，CSS/JS/font/video 远程依赖应剔除或本地化。
