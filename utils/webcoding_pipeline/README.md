@@ -12,6 +12,14 @@ Reusable implementation of the full WebCoding data gate described in
 - `resources.py`: audits and optionally removes orphan or duplicate `resources/` files while respecting protected patch paths.
 - `release_pipeline.py`: runs the final release gate and writes `accepted.jsonl`, `review.jsonl`, `rejected.jsonl`, `sample_issues.jsonl`, and `quality_pipeline_summary.json`.
 
+## Image URL Policy
+
+New data production must not synthesize replacement image URLs. Do not replace
+original links with `picsum.photos`, `loremflickr.com`, or any other placeholder
+image service. Real resources can be localized; otherwise keep the original URL
+and let QC decide whether the sample is acceptable. Existing placeholder URLs
+are treated as hard reject issues by `content_qc.py`.
+
 ## CLI
 
 ```bash

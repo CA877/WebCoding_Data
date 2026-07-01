@@ -59,9 +59,10 @@ raw OSS JSONL
        - 统一字段
        - 对 edit/repair patch 做唯一匹配校验
        - repair 统一为 input_files=buggy, output_files=fixed, patches=buggy->fixed
-  -> replace_picsum_with_loremflickr.py
-       - 将 picsum 替换为尺寸保持的 loremflickr
-       - 替换后再次验证 patch search/replace 是否还能匹配
+  -> image link policy / content QC
+       - 不再合成图片占位 URL
+       - 图片保留原始链接或真实本地化
+       - picsum/loremflickr 等历史占位 URL 进入拒绝或人工复核
   -> build_oss_image_editing_dataset.py
        - 基于 text-editing success JSONL
        - 渲染 input_files，截图编辑前页面
@@ -75,17 +76,17 @@ raw OSS JSONL
 
 ## 3. 已实现的补救逻辑
 
-### 3.1 图片替代与本地截图补救
+### 3.1 图片链接与本地截图补救
 
 历史排查确认：不能用早期 live URL 截图证明本地 HTML 可截图，image-based 数据必须本地重渲染。
 
 当前截图脚本基线修复包括：
 
 - 触发懒加载和滚动事件。
-- 把缺失的本地相对图片引用按元素尺寸替换为 `loremflickr`。
-- 将 `picsum.photos` 统一替换为尺寸保持的 `loremflickr.com/{width}/{height}?lock=...`。
+- 不再把缺失图片或远程图片替换为 `picsum` / `loremflickr` 等合成占位图。
+- 图片要么真实下载到本地并改写为本地资源路径，要么保留原始 URL 并由 QC 决定是否接受。
 - 对无效 `<picture><source srcset="null">`、`srcset="#"`、本地缺失 `srcset` 做清理，避免浏览器优先选择坏候选。
-- 对残留 `/userfiles/...`、`/images/...` 等没有 assets 的路径运行时替换。
+- 对残留 `/userfiles/...`、`/images/...` 等没有 assets 的路径做统计和 QC，不合成新图片 URL。
 - 不强制给 Chromium 走 `127.0.0.1:7890`，因为小规模验证中无代理更稳定。
 - 图片统计不只看 `document.images.length`，同时报告：
   - `loadable_image_count`
@@ -113,7 +114,7 @@ raw OSS JSONL
 - repair 支持两种输入情况：
   - 当前代码已是 buggy：直接应用 buggy -> fixed。
   - 当前代码是 clean：反向注入 bug，再统一输出 buggy -> fixed。
-- 替换图片 URL 后再次验证 patch 是否仍能在 `input_files` / `output_files` 中匹配。
+- 图片链接本地化或清理后再次验证 patch 是否仍能在 `input_files` / `output_files` 中匹配。
 
 ### 3.4 失败样本补救原则
 
@@ -233,7 +234,7 @@ raw/preprocessed data
   -> challenge/parked/placeholder detection
   -> code/resource schema validation
   -> patch normalization and unique-match validation
-  -> image URL rewrite and patch re-validation
+  -> image URL audit/localization and patch re-validation
   -> local render + image load stats
   -> screenshot blank/low-content detection
   -> image-repair src/dst diff threshold
@@ -248,4 +249,4 @@ raw/preprocessed data
 - patch 不唯一：剔除或回到构造阶段重生成。
 - image-repair 低视觉差异：不进入 image-repair；可保留 text-repair。
 - challenge/parked/placeholder：剔除或人工复核。
-- remote URL：图片替代 URL 可白名单，CSS/JS/font/video 远程依赖应剔除或本地化。
+- remote URL：图片不使用替代占位 URL；真实图片可保留或本地化并进入 QC，CSS/JS/font/video 远程依赖应剔除或本地化。

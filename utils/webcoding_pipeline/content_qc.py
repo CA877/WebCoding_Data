@@ -47,14 +47,14 @@ P0_ISSUES = {
     "remote_stylesheet_href",
     "remote_iframe_src",
     "remote_media_src",
+    "picsum_image_residual",
+    "loremflickr_placeholder_image",
 }
 
 P1_ISSUES = {
     "bad_src_or_srcset_null_hash",
     "remote_image_src_or_srcset",
     "remote_or_web_font_reference",
-    "picsum_image_residual",
-    "loremflickr_placeholder_image",
     "low_visible_text_lt_80",
     "code_too_short_lt_500",
     "inline_event_handler_present",

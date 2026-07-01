@@ -60,10 +60,8 @@ from playwright.sync_api import sync_playwright, Browser, Page
 # Constants
 # ---------------------------------------------------------------------------
 
-# Fallback image IDs for picsum.photos.
-# When a remote image cannot be downloaded, we use https://picsum.photos/id/{ID}/800/600
-# directly in the HTML (not downloaded). The model learns to reference this URL pattern.
-# All IDs verified working — each returns a consistent, real photograph.
+# Legacy fallback image IDs. New data production must not synthesize picsum or
+# loremflickr URLs; keep original URLs or let QC reject/review the sample.
 PICSUM_IDS = [
     10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
     20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
@@ -79,9 +77,8 @@ PICSUM_IDS = [
 
 
 def _fallback_url(index: int) -> str:
-    """Generate a picsum.photos fallback URL for a given index."""
-    pid = PICSUM_IDS[index % len(PICSUM_IDS)]
-    return f"https://picsum.photos/id/{pid}/800/600"
+    """Legacy fallback hook. New pipeline intentionally returns no replacement."""
+    return ""
 
 # JS to inject into page — inlines CSS, removes scripts and noise
 INLINE_CSS_JS = """() => {
@@ -233,9 +230,9 @@ def _download_css(session: requests.Session, url: str, resources_dir: Path,
                    _sanitize_urls: bool = True) -> str | None:
     """Download a remote CSS file to resources/ dir. Returns relative path or None.
 
-    When _sanitize_urls is True (default in fast-clean mode), replaces remote
-    url() references inside the CSS with placeholders so the CSS doesn't depend
-    on any external resources.
+    When _sanitize_urls is True, remote font urls may be removed, but image
+    urls are kept as-is. New data production should not synthesize placeholder
+    image URLs.
     """
     try:
         resp = session.get(url, timeout=(5, 10), allow_redirects=True)
@@ -257,9 +254,7 @@ def _download_css(session: requests.Session, url: str, resources_dir: Path,
                         return m.group(0)
                     if any(inner.lower().endswith(ext) for ext in _font_exts):
                         return "url()"  # drop remote font — browser falls back
-                    placeholder = _picsum_url(_counter[0])
-                    _counter[0] += 1
-                    return f"url({placeholder})"
+                    return m.group(0)
                 css_text = re.sub(r'url\(["\']?([^)]+?)["\']?\)', _replace_css_remote_url, css_text)
             target.write_text(css_text, encoding="utf-8")
             return f"./resources/{name}"
@@ -272,7 +267,8 @@ def download_resource(session: requests.Session, url: str, resources_dir: Path,
                       fallback_index: int = -1) -> str | None:
     """Download a resource to resources/ dir. Returns relative path or None.
 
-    If download fails and fallback_index >= 0, downloads a fallback image instead.
+    If download fails, return None. New data production must not synthesize
+    placeholder image URLs.
     """
     try:
         resp = session.get(url, timeout=(2, 3), allow_redirects=True)
@@ -292,10 +288,6 @@ def download_resource(session: requests.Session, url: str, resources_dir: Path,
             return f"./resources/{name}"
     except Exception:
         pass
-
-    # Fallback: use a stable image URL directly (model learns to reference URLs)
-    if fallback_index >= 0:
-        return _fallback_url(fallback_index)
 
     return None
 
@@ -394,10 +386,11 @@ def rewrite_to_existing_resources(html: str, page_url: str, resources_dir: Path)
 def localize_resources(html: str, page_url: str, resources_dir: Path,
                        session: requests.Session,
                        code_resources_only: bool = False) -> str:
-    """Download remote images and inline remaining remote CSS.
+    """Localize code resources and preserve original image URLs.
 
-    Failed image downloads get a fallback placeholder (not removed from DOM).
     Remote CSS that couldn't be inlined by Playwright gets downloaded and inlined here.
+    Image URLs are kept as original remote/local references unless another
+    explicit resource-localization step successfully downloads the real file.
     """
     # Remove IE conditional comments and HTML comments containing scripts
     html = re.sub(r'<!--\[if[^\]]*\]>.*?<!\[endif\]-->', '', html, flags=re.DOTALL)
@@ -577,7 +570,7 @@ def localize_resources(html: str, page_url: str, resources_dir: Path,
             else:
                 del tag["style"]
 
-    # Non-image extensions that should NOT get picsum fallbacks
+    # Non-image extensions that can be localized without altering page imagery.
     _NON_IMAGE_EXTS = {".woff", ".woff2", ".ttf", ".otf", ".eot", ".css", ".js", ".json", ".xml", ".svg"}
 
     # Process CSS background-image url() in style attributes
@@ -1377,10 +1370,10 @@ _PLACEHOLDER_FONTS = [
 
 
 def _picsum_url(idx: int, w: int = 0, h: int = 0) -> str:
-    """Return a picsum.photos URL with deterministic photo ID.
+    """Legacy helper for old replacement runs.
 
-    If w/h are given (from original tag attributes), use them.
-    Otherwise cycle through default sizes.
+    New data production must preserve original image links or localize real
+    downloaded resources instead of synthesizing picsum/loremflickr URLs.
     """
     photo_id = _PICSUM_IDS[idx % len(_PICSUM_IDS)]
     if w > 0 and h > 0:
@@ -1424,15 +1417,22 @@ def _parse_img_dimensions(tag) -> tuple[int, int]:
 
 
 def clean_project_fast(project_dir: Path, session: requests.Session | None = None) -> dict:
-    """Clean project with minimal network — download CSS/JS, placeholder everything else.
+    """Clean project while preserving original image URLs.
 
-    CSS/JS → download to resources/ and reference locally
-    Images → picsum.photos real photos (198 unique IDs × 12 sizes)
-    Fonts → Google Fonts placeholder URLs
+    This entry point used to synthesize placeholder image/font URLs. New data
+    production keeps original URLs, downloads real CSS/JS when possible, and
+    leaves unresolved remote media for downstream QC instead.
     """
     index_html_path = project_dir / "index.html"
     if not index_html_path.exists():
         return {"status": "no_index", "project": project_dir.name}
+
+    if session is None:
+        session = requests.Session()
+    result = clean_project(project_dir, session)
+    result["status"] = "cleaned_no_placeholder_policy"
+    result["synthetic_placeholders"] = 0
+    return result
 
     # Remove only image/video files from resources/ — keep CSS, JS, and fonts
     resources_dir = project_dir / "resources"
@@ -1675,9 +1675,9 @@ def clean_project(project_dir: Path, session: requests.Session) -> dict:
         cleaned = localize_resources(html, base_url, resources_dir, session)
         html_file.write_text(cleaned, encoding="utf-8")
 
-        # Count truly remote references (any *src= attribute, exclude picsum fallbacks)
+        # Count remaining remote references for downstream QC.
         all_remote = re.findall(r'[a-z-]*src="(https?://[^"]+)"', cleaned)
-        remaining = sum(1 for u in all_remote if "picsum.photos" not in u)
+        remaining = len(all_remote)
         total_remaining += remaining
 
     # Neutralize external links

@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Replace picsum.photos URLs with size-preserving loremflickr URLs in JSONL."""
+"""Legacy helper: replace picsum.photos URLs in old JSONL releases.
+
+Do not use this script in new data production. The current policy is to keep
+original image URLs, localize real downloaded resources when possible, and let
+QC reject samples that still contain synthetic placeholder image services.
+"""
 
 from __future__ import annotations
 
@@ -89,11 +94,20 @@ def validate_patches(record: dict[str, Any]) -> list[str]:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--allow-legacy-rewrite",
+        action="store_true",
+        help="Required acknowledgement: this legacy script must not be used for new production data.",
+    )
     parser.add_argument("--input-jsonl", type=Path, required=True)
     parser.add_argument("--output-jsonl", type=Path, required=True)
     parser.add_argument("--failed-jsonl", type=Path, required=True)
     parser.add_argument("--limit", type=int, default=0)
     args = parser.parse_args()
+    if not args.allow_legacy_rewrite:
+        parser.error(
+            "--allow-legacy-rewrite is required. New production data should not rewrite image URLs to loremflickr."
+        )
 
     args.output_jsonl.parent.mkdir(parents=True, exist_ok=True)
     args.failed_jsonl.parent.mkdir(parents=True, exist_ok=True)

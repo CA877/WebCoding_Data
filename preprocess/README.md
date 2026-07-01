@@ -122,8 +122,8 @@ python3 preprocess/playwright_crawl.py \
 **这一步做了什么（通俗解释）：**
 1. **图片本地化**：找到 HTML 里所有 `<img src="https://...">` 的远程图片
    - 能下载的 → 保存到 `resources/` 目录，HTML 改为 `src="./resources/xxx.jpg"`
-   - 下载失败的 → 替换为 `https://picsum.photos/id/42/800/600` 这种稳定占位 URL
-   - 每页最多下载 50 张（防止超大页面卡住），超过的用 picsum URL
+   - 下载失败的 → 保留原始 URL，并在 QC 中标记为远程/不可本地化资源
+   - 每页最多下载 50 张（防止超大页面卡住），超过的保留原始 URL 并进入 QC
 2. **删除脚本**：移除所有 `<script>` 标签（训练不需要 JS）
 3. **删除 iframe**：移除嵌入的 YouTube、地图等
 4. **删除音视频**：移除 `<video>`/`<audio>`（太大）
@@ -196,19 +196,19 @@ expand（需要真实外链来找子页面）
 | 情况 | 处理方式 |
 |------|---------|
 | 远程完整 URL 图片 | 通过代理下载到 `resources/` |
-| 下载失败 | 用 `https://picsum.photos/id/{N}/800/600` 占位 |
-| 超过 50 张/页 | 超出的用 picsum URL（不删除标签，保护布局） |
+| 下载失败 | 保留原始 URL，不合成占位图 |
+| 超过 50 张/页 | 超出的保留原始 URL 并标记 |
 | Base64 data: URI | 保留不动 |
-| CSS background-image | 同上逻辑下载/替换 |
+| CSS background-image | 能本地化则本地化，否则保留原始 URL 并标记 |
 
-picsum.photos 使用固定 ID 池 (10-110)，同一网站只有 ID 数字不同，方便模型记忆 URL 模式。
+新版本不再把原始图片链接替换成 `picsum.photos`、`loremflickr.com` 或其他合成占位图 URL。占位图会造成数据构造指纹，也会改变原网页语义。
 
 ---
 
 ## 质量保证
 
 清洗后每个项目满足：
-- ✅ 零远程图片引用（全部本地化或 picsum 占位）
+- ✅ 不合成图片占位 URL；远程图片要么本地化，要么保留原始 URL 并进入 QC
 - ✅ 零远程 CSS（全部 inline）
 - ✅ 零外部链接（全部 `#` 或本地文件）
 - ✅ 零 JavaScript
