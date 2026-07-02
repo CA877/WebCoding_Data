@@ -238,6 +238,7 @@ raw/preprocessed data
        - 删除内容完全重复的 resources 文件
        - 被引用的第三方库/blob 只在允许 CDN 且提供映射时外链化
        - HTML、内联 CSS/JS、作者脚本保留
+       - 对 vendor/blob 识别分置信度：明确第三方库可生成 CDN 候选；疑似 vendor bundle 只标记不自动改；混合作者代码默认保留
   -> patch normalization and unique-match validation
   -> image URL audit/localization and patch re-validation
   -> local render + image load stats
@@ -253,7 +254,23 @@ raw/preprocessed data
 - adult/gambling/dating：剔除，不进入 release。
 - patch 不唯一：剔除或回到构造阶段重生成。
 - orphan/duplicate resources：清理并记录删除清单。
-- referenced vendor/blob：默认保留并标记；允许 CDN 时按显式映射外链化。
+- referenced vendor/blob：默认保留并标记；允许 CDN 且映射确认后按显式映射外链化。
+- unclear vendor bundle：只进入审计报告，不自动外链化，避免误删作者代码。
 - image-repair 低视觉差异：不进入 image-repair；可保留 text-repair。
 - challenge/parked/placeholder：剔除或人工复核。
 - remote URL：图片不使用替代占位 URL；真实图片可保留或本地化并进入 QC，CSS/JS/font/video 远程依赖应剔除或本地化。
+
+## 9. Generate 代码面一致性
+
+当前合作者反馈：`image-generate` 和 `text-generate` 的代码输入面可能不一致。
+
+- `text-generate` 往往来自 full code JSONL，可能带大量 `resources`。
+- `image-generate` 当前 fake-url 构造链只读取 `index.html`，`resources=[]`，因此 token 明显更短。
+
+这不是模型任务天然差异，而是构造链差异。后续 release 应记录并统一 `target_format`：
+
+- `single_html`
+- `multi_file_with_resources`
+- `slimmed_multi_file`
+
+若短期不重构，需要在质量报告中单独标注 `image-generate` 是 single-html 特例，不把它的 token 分布当作 full-code generate 的代表。
