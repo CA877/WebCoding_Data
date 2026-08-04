@@ -7,6 +7,8 @@ import json
 from collections import Counter
 from pathlib import Path
 
+from PIL import Image, ImageStat
+
 
 TASK_FILES = {
     "text-generation": "text-generate.jsonl",
@@ -41,6 +43,18 @@ def input_code(record: dict) -> list[dict] | None:
     return None
 
 
+def validate_image(path: Path) -> None:
+    with Image.open(path) as raw:
+        raw.verify()
+    with Image.open(path) as raw:
+        if raw.width < 300 or raw.height < 300:
+            raise ValueError(f"image is too small: {raw.size}")
+        preview = raw.convert("L")
+        preview.thumbnail((128, 128))
+        if ImageStat.Stat(preview).stddev[0] < 1.0:
+            raise ValueError("image is near-uniform/blank")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--jsonl-dir", type=Path, required=True)
@@ -54,6 +68,8 @@ def main() -> None:
     counts: dict[str, int] = {}
     task_count_distributions: dict[str, dict[str, int]] = {}
     errors: list[str] = []
+    checked_images: set[Path] = set()
+    release_root = args.jsonl_dir.resolve().parent
     for task, name in TASK_FILES.items():
         path = args.jsonl_dir / name
         seen: set[str] = set()
@@ -78,8 +94,19 @@ def main() -> None:
                         raise ValueError("text-generation query is empty")
                     if task.startswith("image-"):
                         images = record.get("input_images", [])
-                        if not images or any(not Path(image).is_file() for image in images):
+                        all_images = list(dict.fromkeys(
+                            [*images, *record.get("src_screenshot", []), *record.get("dst_screenshot", [])]
+                        ))
+                        resolved_images = [
+                            (Path(image) if Path(image).is_absolute() else release_root / image).resolve()
+                            for image in all_images
+                        ]
+                        if not images or any(not image.is_file() for image in resolved_images):
                             raise ValueError("missing input image")
+                        for image in resolved_images:
+                            if image not in checked_images:
+                                validate_image(image)
+                                checked_images.add(image)
                     code = input_code(record)
                     if task in {"text-generation", "image-generation"}:
                         output_paths = {item["path"] for item in record["response"]}

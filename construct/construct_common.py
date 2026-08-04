@@ -564,7 +564,8 @@ def screenshot_project_to_dir(project_dir: Path, out_dir: Path, browser_proxy: s
                             raise RuntimeError(f"local_http_status:{response.status if response else 'none'}")
                         page.wait_for_timeout(1000)
                         dest = out_dir / f"{page_key}__{vp_name}.jpg"
-                        page.screenshot(path=str(dest), full_page=full_page, type="jpeg", quality=92, timeout=90000)
+                        page.screenshot(path=str(dest), full_page=full_page, type="jpeg", quality=92,
+                                        animations="disabled", caret="hide", timeout=90000)
                         records.append({"page": rel, "viewport": vp_name, "path": dest.relative_to(out_dir.parent).as_posix()})
                     except Exception as exc:
                         print(f"  screenshot failed for {rel} ({vp_name}): {exc}")

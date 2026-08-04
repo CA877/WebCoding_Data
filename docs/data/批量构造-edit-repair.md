@@ -15,10 +15,10 @@
 
 ## 多 task 合约
 
-- 每样本 2–10 个不同 `task_type`：2–5 合计约 80%，6–10 合计约 20%（可由 `--min-tasks/--max-tasks` 调整）。
-- 每个 task type 有至少一个 `<search_replace>` patch，可有多个。
+- 每样本 1–7 个不同 `task_type`，按清单序号严格均衡分配。
+- 每个 task type 有 1–10 个 `<search_replace>` patch。
 - 每个 patch 带显式 `task_type`；生成后强制验证 task/patch 映射和 patch 在模型可见源码中的可应用性。
-- 输入：60K 内的 HTML + 作者 CSS + manifest；不输入 JS/bundle 正文。
+- 输入：全部 HTML/CSS/JS 文件，精确 Qwen token 合计不超过 40K；超限直接淘汰。
 
 ## 运行
 
@@ -37,11 +37,12 @@ export CONSTRUCT_API_TIMEOUT=600
 LORA_PYTHON=web-coding-agent/.conda/lora/bin/python
 $LORA_PYTHON construct/construct_text_editing.py \
   --project-list runs/webcompass_6503/edit_projects.txt \
-  --output-dir runs/construct_edit --min-tasks 2 --max-tasks 10 --workers 1
+  --output-dir runs/construct_edit --min-tasks 1 --max-tasks 7 --workers 1
 
 $LORA_PYTHON construct/construct_text_repair.py \
   --project-list runs/webcompass_6503/repair_projects.txt \
-  --output-dir runs/construct_repair --min-tasks 2 --max-tasks 10 --workers 1
+  --output-dir runs/construct_repair --min-tasks 1 --max-tasks 7 --workers 1 \
+  --minimum-changed-ratio 0.01 --image-repair-target 3000
 ```
 
 构造器 JSONL 会以 `status=ok/error` 逐条落盘，可直接恢复；不要把 error 视为训练样本。
@@ -61,6 +62,6 @@ DRY_RUN=1 bash construct/run_edit_repair_batch.sh
 
 ## image-editing / image-repair
 
-- `image-editing` 不再重新 Playwright 截图：`construct_image_editing.py` 读取统一 records JSONL 并复用源项目根目录的 `<样本名>*.png`。
-- `text-repair` 在生成缺陷代码后截取单张 1920×1080 desktop 缺陷图；当前文本修复合同不实施视觉差异门禁。若要将同一结果用于 image-repair，必须另行执行同尺寸 clean/defective 视觉验收，不能仅依据 text-repair 的 `status=ok`。
-- `image-editing` 读取/验证统一 JSONL；`image-repair` 的旧 `info.json` 兼容入口仍保留，但新的批量交付应直接使用 text-repair 输出的统一 JSONL。
+- 正向 edit 在 LLM 与精确 patch 验证成功后截图，并同时写 text-edit/image-edit v2。
+- Repair 同时生成 1920×1080 clean/defective 图并禁用动画；代码合格即进入 text-repair。
+- 只有像素差异 ≥1% 且 clean 重渲染漂移 ≤0.2% 的记录进入 image-repair；低于门禁的记录只保留 text-repair。

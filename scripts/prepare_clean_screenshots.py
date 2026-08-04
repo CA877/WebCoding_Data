@@ -52,7 +52,8 @@ def screenshot_project(
                 timeout=60_000,
             )
             page.wait_for_timeout(1500)
-            page.screenshot(path=str(out), full_page=True, timeout=90_000)
+            page.screenshot(path=str(out), full_page=True, animations="disabled",
+                            caret="hide", timeout=90_000)
             browser.close()
     finally:
         server.shutdown()

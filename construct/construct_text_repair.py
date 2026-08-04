@@ -77,7 +77,24 @@ def _process_one(project_dir: Path, args, synthesizer, all_task_types,
         visual = repair_visual_difference(
             clean_screens, defect_screens, minimum_ratio=0.0, channel_threshold=8
         )
-        image_repair_eligible = visual["max_changed_ratio"] >= args.minimum_changed_ratio
+        # A second clean render detects animation/network nondeterminism.  A
+        # visually unstable page may remain text-repair, but must not pass the
+        # 1% image-repair gate because of unrelated frame drift.
+        with tempfile.TemporaryDirectory() as stability_temp:
+            stability_dir = Path(stability_temp) / project_dir.name
+            raw_repeat = screenshot_project_to_dir(
+                project_dir, stability_dir, args.browser_proxy,
+                viewports=DESKTOP_VIEWPORT, full_page=False,
+            )
+            repeat_screens = _absolute_screens(raw_repeat, stability_dir)
+            stability = repair_visual_difference(
+                clean_screens, repeat_screens, minimum_ratio=0.0, channel_threshold=8
+            )
+        visual["clean_rerender_max_changed_ratio"] = stability["max_changed_ratio"]
+        image_repair_eligible = (
+            visual["max_changed_ratio"] >= args.minimum_changed_ratio
+            and stability["max_changed_ratio"] <= args.maximum_clean_rerender_ratio
+        )
         return {
             "instance_id": project_dir.name,
             "source_project": str(project_dir.resolve()),
@@ -125,6 +142,7 @@ def main() -> None:
     parser.add_argument("--clean-screenshot-dir", type=Path,
                         help="Clean pair assets; defaults to <output-dir>/repair_clean_screenshots.")
     parser.add_argument("--minimum-changed-ratio", type=float, default=0.01)
+    parser.add_argument("--maximum-clean-rerender-ratio", type=float, default=0.002)
     parser.add_argument("--image-repair-target", type=int, default=0,
                         help="Stop scheduling new projects after this many v2 image-repair records; zero scans all.")
     parser.add_argument("--overwrite", action="store_true")
@@ -135,6 +153,8 @@ def main() -> None:
         parser.error("task range must satisfy 1 <= min-tasks <= max-tasks <= 7")
     if not 0 <= args.minimum_changed_ratio <= 1:
         parser.error("--minimum-changed-ratio must be between 0 and 1")
+    if not 0 <= args.maximum_clean_rerender_ratio <= 1:
+        parser.error("--maximum-clean-rerender-ratio must be between 0 and 1")
     if args.image_repair_target < 0:
         parser.error("--image-repair-target must be non-negative")
 

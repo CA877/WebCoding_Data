@@ -2,13 +2,16 @@
 
 ## 构造规则
 
-- 每个项目随机生成 2–10 个不同 task type；2–5 合计约 80%，6–10 合计约 20%。
-- 每个 task type 至少一个 patch，可有多个 patch；每个 patch 必须带自己的 `task_type`。
+- 每条样本指定 1–7 个不同 task type；按固定项目清单序号严格均衡分配，不受并发完成顺序影响。
+- 每个 task type 必须对应 1–10 个 patch；每个 patch 带自己的 `task_type`。
+- 每个 search 必须在完整输入文件中非空、精确且唯一匹配；构造后强制做正反向恢复验证。
 - **旧交付包的构造器**仍使用 HTML（移除脚本）+ 作者 CSS、60K 的历史口径，不能作为最终 WebCompass 对齐版本。
 - 已确认的新最终口径是：完整 HTML、内联 CSS/JS、作者外部 CSS/JS、以及保留在最终项目内的本地第三方 bundle 全部进入模型上下文；使用精确 Qwen tokenizer，最大 **40K**。超过上限直接淘汰，不能截断或隐藏 bundle。
 - 当前构造器已经使用 40K 全代码 serializer；批量生产前仍必须对目标项目清单运行精确 tokenizer 门禁。
 - 输出为可恢复追加的 `records.jsonl`。只使用 `status=ok` 行构造训练集。
-- image-editing 不重新截图，只验证并引用项目根目录的已审核 PNG；repair 在缺陷注入后只截一张 desktop 视口图（`<项目名>/index__desktop.jpg`），不再做 clean/defective 多视口对比与视觉变化量门禁（patch 应用已保证代码级改动，视觉 delta 对 text-repair 训练无增益）。
+- Edit 只允许正向构造。LLM 与 patch 验证成功后，再渲染原始项目的 1920×1080 Playwright 截图；同一次构造同时落盘 text-edit/image-edit v2 记录。
+- Repair 在同一流程渲染 clean、defective 和第二次 clean 稳定性检查图。所有精确 patch 成功的记录进入 text-repair；仅 clean/defective 像素差异 ≥1% 且 clean 重渲染漂移 ≤0.2% 的记录进入 image-repair。
+- text-repair 最终输入只有缺陷代码，不提供指出 bug 类型的 query；审计元数据保留 defect type，但不进入训练指令。
 
 ## 6,503 条 WebCompass 原始样本
 
@@ -25,10 +28,9 @@ python scripts/materialize_sharegpt_web_projects.py \
   --project-list runs/webcompass_6503/materialized_projects.txt
 ```
 
-先用 `scripts/filter_construct_projects_40k.py --allow-missing-screenshot` 做 40K
-预筛，再对预筛清单运行 `scripts/prepare_clean_screenshots.py` 生成 desktop
-clean screenshot，最后不带 `--allow-missing-screenshot` 严格复筛。把复筛后的
-edit/repair 清单显式传给批处理入口；批处理脚本不再提供旧 7,302 清单的默认值。
+使用 `scripts/filter_construct_projects_40k.py --allow-missing-screenshot` 对所有完整文件做
+40K 硬门禁；超过上限直接淘汰，不截断、不丢文件。随后生成 image-generate 截图，
+并用 `scripts/select_construct_quotas.py` 固定 edit 3,000 清单与 repair 候选顺序。
 
 ## 一条命令批量运行
 
@@ -47,11 +49,11 @@ python3 scripts/prepare_clean_screenshots.py \
   --project-list runs/webcompass_6503/eligible_40k_preclean.txt \
   --browser-proxy http://127.0.0.1:7890 --width 1920 --height 1080
 
-python3 scripts/filter_construct_projects_40k.py \
-  --project-list runs/webcompass_6503/eligible_40k_preclean.txt \
-  --tokenizer .cache/qwen3-tokenizer.json \
-  --output-list runs/webcompass_6503/eligible_40k_final.txt \
-  --audit-jsonl runs/webcompass_6503/final_gate.jsonl
+python3 scripts/select_construct_quotas.py \
+  --eligible-list runs/webcompass_6503/eligible_40k_preclean.txt \
+  --edit-list runs/webcompass_6503/edit_projects.txt \
+  --repair-list runs/webcompass_6503/repair_projects.txt \
+  --manifest runs/webcompass_6503/selection_manifest.json --edit-count 3000
 ```
 
 ```bash
@@ -70,9 +72,13 @@ bash construct/run_edit_repair_batch.sh
 
 ```text
 text_edit/records.jsonl
-image_edit_records.jsonl
+text_edit/text-edit.v2.jsonl
+text_edit/image-edit.v2.jsonl
 text_repair/records.jsonl
-image_repair/repair_defect_screenshots/<项目名>/
+text_repair/text-repair.v2.jsonl
+text_repair/image-repair.v2.jsonl
+images/image-edit/<项目名>/
+images/image-repair/{clean,defective}/<项目名>/
 ```
 
 可按环境变量调整：
