@@ -20,6 +20,11 @@ SOURCE_NAMES = {
     "image-repair": ("repair/image-repair.v2.jsonl", "image-repair.jsonl"),
 }
 IMAGE_KEYS = ("input_images", "src_screenshot", "dst_screenshot")
+PROVENANCE_LISTS = {
+    "eligible_40k_all_files.txt": "eligible_40k.ids.txt",
+    "edit_3000.txt": "edit_3000.ids.txt",
+    "repair_candidates_6502.txt": "repair_candidates.ids.txt",
+}
 
 
 def link_or_copy(source: Path, destination: Path) -> None:
@@ -45,6 +50,61 @@ def iter_source_records(path: Path):
         for line in handle:
             if line.strip():
                 yield json.loads(line)
+
+
+def write_provenance(production_root: Path, release_root: Path) -> dict:
+    """Write portable IDs and token-gate evidence into the release."""
+    output_root = release_root / "provenance"
+    output_root.mkdir(parents=True, exist_ok=True)
+    manifest: dict[str, dict] = {}
+
+    for source_name, output_name in PROVENANCE_LISTS.items():
+        source = production_root / source_name
+        ids = [Path(line.strip()).name for line in source.read_text(encoding="utf-8").splitlines()
+               if line.strip()]
+        output = output_root / output_name
+        output.write_text("".join(f"{instance_id}\n" for instance_id in ids), encoding="utf-8")
+        manifest[output_name] = {"count": len(ids), "sha256": checksum(output)}
+
+    token_output = output_root / "token_gate_audit.jsonl"
+    token_count = eligible_count = rejected_count = 0
+    with (production_root / "token_gate_audit.jsonl").open("r", encoding="utf-8") as source_handle, \
+            token_output.open("w", encoding="utf-8") as output_handle:
+        for line in source_handle:
+            if not line.strip():
+                continue
+            record = json.loads(line)
+            portable = {
+                "instance_id": Path(str(record["project"])).name,
+                "tokens": int(record["tokens"]),
+                "status": str(record["status"]),
+            }
+            output_handle.write(json.dumps(portable, ensure_ascii=False) + "\n")
+            token_count += 1
+            if portable["status"] == "eligible":
+                eligible_count += 1
+            else:
+                rejected_count += 1
+    manifest["token_gate_audit.jsonl"] = {
+        "count": token_count,
+        "eligible": eligible_count,
+        "rejected": rejected_count,
+        "maximum_qwen_tokens": 40000,
+        "all_code_files_included": True,
+        "sha256": checksum(token_output),
+    }
+
+    selection = json.loads((production_root / "selection_manifest.json").read_text(encoding="utf-8"))
+    selection["source"] = "provenance/eligible_40k.ids.txt"
+    selection["source_input_count"] = token_count
+    selection["maximum_qwen_tokens"] = 40000
+    selection["over_token_limit_count"] = rejected_count
+    selection_output = output_root / "selection_manifest.json"
+    selection_output.write_text(
+        json.dumps(selection, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
+    manifest["selection_manifest.json"] = {"sha256": checksum(selection_output)}
+    return manifest
 
 
 def rewrite_images(record: dict, task: str, release_root: Path) -> dict:
@@ -117,7 +177,7 @@ def main() -> None:
     args = parser.parse_args()
     jsonl_dir = args.release_root / "jsonl"
     jsonl_dir.mkdir(parents=True, exist_ok=True)
-    manifest = {"schema_reference": "webcoding-sft-v2", "tasks": {}}
+    manifest = {"schema_reference": "webcoding-sft-v2", "tasks": {}, "provenance": {}}
     image_repair_source = args.production_root / SOURCE_NAMES["image-repair"][0]
     paired_repair_ids = {
         str(record["instance_id"])
@@ -150,6 +210,7 @@ def main() -> None:
             "image_root": f"images/{task}" if task.startswith("image-") else None,
         }
         print(f"{task}: {count}", flush=True)
+    manifest["provenance"] = write_provenance(args.production_root, args.release_root)
     manifest_path = args.release_root / "manifest.json"
     manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(manifest_path)

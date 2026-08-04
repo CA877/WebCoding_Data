@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 import sys
 
 import pytest
@@ -13,7 +14,10 @@ from WebCoding_Data.construct.construct_common import (
     validate_patch_round_trip,
 )
 from WebCoding_Data.construct.v2_records import repair_records
-from WebCoding_Data.scripts.pack_construct_v2_release import select_balanced_text_repairs
+from WebCoding_Data.scripts.pack_construct_v2_release import (
+    select_balanced_text_repairs,
+    write_provenance,
+)
 from WebCoding_Data.scripts.audit_construct_v2_release import (
     apply_exact as audit_apply_exact,
     changed_ratio,
@@ -144,3 +148,40 @@ def test_release_audit_recomputes_pixel_ratio(tmp_path: Path) -> None:
     changed.putpixel((0, 0), (0, 0, 0))
     changed.save(right)
     assert changed_ratio(left, right) == pytest.approx(0.01)
+
+
+def test_release_provenance_is_portable_and_proves_token_gate(tmp_path: Path) -> None:
+    production = tmp_path / "production"
+    release = tmp_path / "release"
+    production.mkdir()
+    absolute = "/physical/run/source_projects"
+    (production / "eligible_40k_all_files.txt").write_text(
+        f"{absolute}/a\n{absolute}/b\n", encoding="utf-8"
+    )
+    (production / "edit_3000.txt").write_text(f"{absolute}/a\n", encoding="utf-8")
+    (production / "repair_candidates_6502.txt").write_text(
+        f"{absolute}/a\n{absolute}/b\n", encoding="utf-8"
+    )
+    (production / "token_gate_audit.jsonl").write_text(
+        "\n".join([
+            '{"project":"/physical/a","tokens":10,"status":"eligible"}',
+            '{"project":"/physical/b","tokens":40000,"status":"eligible"}',
+            '{"project":"/physical/c","tokens":40001,"status":"over_token_limit"}',
+        ]) + "\n",
+        encoding="utf-8",
+    )
+    (production / "selection_manifest.json").write_text(
+        '{"source":"/physical/list","eligible_count":2,"edit_count":1,'
+        '"repair_candidate_count":2}',
+        encoding="utf-8",
+    )
+
+    manifest = write_provenance(production, release)
+    assert (release / "provenance/eligible_40k.ids.txt").read_text() == "a\nb\n"
+    audit = [json.loads(line) for line in
+             (release / "provenance/token_gate_audit.jsonl").read_text().splitlines()]
+    assert audit[-1] == {"instance_id": "c", "tokens": 40001, "status": "over_token_limit"}
+    assert manifest["token_gate_audit.jsonl"]["count"] == 3
+    selection = json.loads((release / "provenance/selection_manifest.json").read_text())
+    assert selection["source_input_count"] == 3
+    assert selection["maximum_qwen_tokens"] == 40000

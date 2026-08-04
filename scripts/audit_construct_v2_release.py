@@ -19,6 +19,14 @@ TASK_FILES = {
     "text-repair": "text-repair.jsonl",
     "image-repair": "image-repair.jsonl",
 }
+MANIFEST_TASK_KEYS = {
+    "text-generation": "text-generate",
+    "image-generation": "image-generate",
+    "text-editing": "text-edit",
+    "image-editing": "image-edit",
+    "text-repair": "text-repair",
+    "image-repair": "image-repair",
+}
 
 
 def _apply_exact_once(code: list[dict], patches: list[dict]) -> list[dict]:
@@ -89,11 +97,28 @@ def fingerprint(value) -> str:
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
+def checksum(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def read_unique_ids(path: Path) -> set[str]:
+    values = [line.strip() for line in path.read_text(encoding="utf-8").splitlines()
+              if line.strip()]
+    if len(values) != len(set(values)):
+        raise ValueError(f"duplicate IDs in {path}")
+    return set(values)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--jsonl-dir", type=Path, required=True)
     parser.add_argument("--summary", type=Path, required=True)
     parser.add_argument("--expected-generate", type=int, default=6502)
+    parser.add_argument("--expected-source", type=int, default=6503)
     parser.add_argument("--expected-edit", type=int, default=3000)
     parser.add_argument("--expected-image-repair", type=int, default=3000)
     args = parser.parse_args()
@@ -225,6 +250,69 @@ def main() -> None:
                       != pair_fingerprints["text-repair"].get(instance_id)]
         if mismatched:
             errors.append(f"paired payloads differ: text-repair vs image-repair: {mismatched[:5]}")
+
+    # Manifest and portable provenance are part of the release contract, not
+    # sidecar operator state.  Recompute every published checksum and prove
+    # the 6503 -> 6502 token-gate decision from release-local evidence.
+    try:
+        manifest_path = release_root / "manifest.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        if manifest.get("schema_reference") != "webcoding-sft-v2":
+            raise ValueError("manifest schema reference mismatch")
+        for task, name in TASK_FILES.items():
+            entry = manifest["tasks"][MANIFEST_TASK_KEYS[task]]
+            task_path = release_root / entry["jsonl"]
+            if int(entry["count"]) != counts[task]:
+                raise ValueError(f"manifest count mismatch for {task}")
+            if entry["sha256"] != checksum(task_path):
+                raise ValueError(f"manifest checksum mismatch for {task}")
+
+        provenance_root = release_root / "provenance"
+        provenance = manifest["provenance"]
+        for name, entry in provenance.items():
+            path = provenance_root / name
+            if entry["sha256"] != checksum(path):
+                raise ValueError(f"provenance checksum mismatch for {name}")
+
+        eligible_ids = read_unique_ids(provenance_root / "eligible_40k.ids.txt")
+        edit_ids = read_unique_ids(provenance_root / "edit_3000.ids.txt")
+        repair_candidate_ids = read_unique_ids(provenance_root / "repair_candidates.ids.txt")
+        if eligible_ids != ids["text-generation"]:
+            raise ValueError("eligible token-gate IDs differ from generation release IDs")
+        if edit_ids != ids["text-editing"]:
+            raise ValueError("selected edit IDs differ from edit release IDs")
+        if not ids["text-repair"].issubset(repair_candidate_ids):
+            raise ValueError("released text-repair IDs are outside repair candidate IDs")
+
+        token_records = list(
+            json.loads(line) for line in
+            (provenance_root / "token_gate_audit.jsonl").read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        )
+        token_ids = [str(record["instance_id"]) for record in token_records]
+        if len(token_ids) != args.expected_source or len(token_ids) != len(set(token_ids)):
+            raise ValueError("token-gate audit source count/uniqueness mismatch")
+        audited_eligible = {
+            str(record["instance_id"]) for record in token_records
+            if record["status"] == "eligible" and int(record["tokens"]) <= 40000
+        }
+        invalid_gate = [record for record in token_records if (
+            (record["status"] == "eligible" and int(record["tokens"]) > 40000)
+            or (record["status"] != "eligible" and int(record["tokens"]) <= 40000)
+        )]
+        if invalid_gate or audited_eligible != eligible_ids:
+            raise ValueError("token-gate audit does not prove the 40K decision")
+        selection = json.loads(
+            (provenance_root / "selection_manifest.json").read_text(encoding="utf-8")
+        )
+        if (int(selection["source_input_count"]) != args.expected_source
+                or int(selection["eligible_count"]) != args.expected_generate
+                or int(selection["edit_count"]) != args.expected_edit
+                or int(selection["repair_candidate_count"]) != len(repair_candidate_ids)
+                or int(selection["maximum_qwen_tokens"]) != 40000):
+            raise ValueError("selection manifest counts/limits mismatch")
+    except Exception as exc:  # noqa: BLE001
+        errors.append(f"manifest/provenance: {type(exc).__name__}: {exc}")
 
     summary = {
         "status": "pass" if not errors else "fail",
