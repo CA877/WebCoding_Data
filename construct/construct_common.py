@@ -7,7 +7,6 @@ import os
 import random
 import re
 import shutil
-import socket
 import socketserver
 import threading
 import time
@@ -513,12 +512,6 @@ class _QuietScreenshotHandler(http.server.SimpleHTTPRequestHandler):
         return
 
 
-def _free_local_port() -> int:
-    with socket.socket() as sock:
-        sock.bind(("127.0.0.1", 0))
-        return int(sock.getsockname()[1])
-
-
 def screenshot_project_to_dir(project_dir: Path, out_dir: Path, browser_proxy: str = "",
                               viewports: list[tuple[str, int, int]] | None = None,
                               full_page: bool = False) -> list[dict[str, str]]:
@@ -539,10 +532,15 @@ def screenshot_project_to_dir(project_dir: Path, out_dir: Path, browser_proxy: s
         shutil.rmtree(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    port = _free_local_port()
-    server = _ScreenshotServer(("127.0.0.1", port), functools.partial(_QuietScreenshotHandler, directory=str(project_dir)))
+    # Bind port 0 directly so the kernel reserves the selected port for this
+    # server atomically.  Selecting a free port with a separate probe socket
+    # creates a TOCTOU race when many screenshot workers start together.
+    server = _ScreenshotServer(("127.0.0.1", 0), functools.partial(_QuietScreenshotHandler, directory=str(project_dir)))
+    port = int(server.server_address[1])
     threading.Thread(target=server.serve_forever, daemon=True).start()
     records: list[dict[str, str]] = []
+    navigation_timeout_ms = int(os.environ.get("SCREENSHOT_NAVIGATION_TIMEOUT_MS", "45000"))
+    screenshot_attempts = max(1, int(os.environ.get("SCREENSHOT_ATTEMPTS", "2")))
     try:
       with sync_playwright() as p:
         executable_path = os.environ.get("PLAYWRIGHT_CHROMIUM_EXECUTABLE") or None
@@ -557,24 +555,34 @@ def screenshot_project_to_dir(project_dir: Path, out_dir: Path, browser_proxy: s
                 rel = html.relative_to(project_dir).as_posix()
                 page_key = safe_name(rel[:-5] if rel.lower().endswith(".html") else rel)
                 for vp_name, width, height in viewports:
-                    page = browser.new_page(viewport={"width": width, "height": height})
-                    try:
-                        response = page.goto(f"http://127.0.0.1:{port}/{quote(rel)}", wait_until="domcontentloaded", timeout=20_000)
-                        if response is None or response.status >= 400:
-                            raise RuntimeError(f"local_http_status:{response.status if response else 'none'}")
-                        # Timed intro/loading overlays in real projects often
-                        # disappear around 2--2.5 seconds after window.load.
-                        # Capture the settled application rather than a splash
-                        # screen; the value remains configurable for audits.
-                        page.wait_for_timeout(int(os.environ.get("SCREENSHOT_SETTLE_MS", "3000")))
-                        dest = out_dir / f"{page_key}__{vp_name}.jpg"
-                        page.screenshot(path=str(dest), full_page=full_page, type="jpeg", quality=92,
-                                        animations="disabled", caret="hide", timeout=90000)
-                        records.append({"page": rel, "viewport": vp_name, "path": dest.relative_to(out_dir.parent).as_posix()})
-                    except Exception as exc:
-                        print(f"  screenshot failed for {rel} ({vp_name}): {exc}")
-                    finally:
-                        page.close()
+                    for attempt in range(1, screenshot_attempts + 1):
+                        page = browser.new_page(viewport={"width": width, "height": height})
+                        try:
+                            response = page.goto(
+                                f"http://127.0.0.1:{port}/{quote(rel)}",
+                                wait_until="domcontentloaded",
+                                timeout=navigation_timeout_ms,
+                            )
+                            if response is None or response.status >= 400:
+                                raise RuntimeError(f"local_http_status:{response.status if response else 'none'}")
+                            # Timed intro/loading overlays in real projects often
+                            # disappear around 2--2.5 seconds after window.load.
+                            # Capture the settled application rather than a splash
+                            # screen; the value remains configurable for audits.
+                            page.wait_for_timeout(int(os.environ.get("SCREENSHOT_SETTLE_MS", "3000")))
+                            dest = out_dir / f"{page_key}__{vp_name}.jpg"
+                            page.screenshot(path=str(dest), full_page=full_page, type="jpeg", quality=92,
+                                            animations="disabled", caret="hide", timeout=90000)
+                            records.append({"page": rel, "viewport": vp_name,
+                                            "path": dest.relative_to(out_dir.parent).as_posix()})
+                            break
+                        except Exception as exc:
+                            print(
+                                f"  screenshot attempt {attempt}/{screenshot_attempts} failed "
+                                f"for {rel} ({vp_name}): {exc}"
+                            )
+                        finally:
+                            page.close()
         finally:
             browser.close()
     finally:
