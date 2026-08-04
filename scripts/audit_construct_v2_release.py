@@ -94,6 +94,22 @@ def validate_instruction_contract(record: dict, task_types: list[str]) -> None:
             raise ValueError("image-repair instruction must not disclose injected bug tasks")
 
 
+def validate_patch_metadata(record: dict, task_types: list[str], mapping: Counter[str]) -> None:
+    """Prove published task/patch counters describe the actual payload."""
+    metadata = record.get("metadata", {})
+    patches = record.get("response", [])
+    if int(metadata.get("task_count", -1)) != len(task_types):
+        raise ValueError("metadata task_count does not match task_type")
+    if int(metadata.get("patch_count", -1)) != len(patches):
+        raise ValueError("metadata patch_count does not match response")
+    reported = {
+        str(key): int(value)
+        for key, value in metadata.get("patch_count_by_task", {}).items()
+    }
+    if reported != dict(mapping):
+        raise ValueError("metadata patch_count_by_task does not match response")
+
+
 def validate_image(path: Path) -> None:
     with Image.open(path) as raw:
         raw.verify()
@@ -216,6 +232,7 @@ def main() -> None:
                         mapping = Counter(str(patch.get("task_type", "")) for patch in patches)
                         if set(mapping) != set(task_types) or any(not 1 <= value <= 10 for value in mapping.values()):
                             raise ValueError("task-to-patch mapping violates 1--10 contract")
+                        validate_patch_metadata(record, task_types, mapping)
                         apply_exact(code, patches)
                         task_fingerprints[instance_id] = fingerprint(
                             {"task_type": task_types, "input": code, "patches": patches}

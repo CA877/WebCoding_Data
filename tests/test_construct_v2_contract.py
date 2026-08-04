@@ -1,3 +1,4 @@
+from collections import Counter
 from pathlib import Path
 import json
 import sys
@@ -23,6 +24,7 @@ from WebCoding_Data.scripts.audit_construct_v2_release import (
     changed_ratio,
     validate_instruction_contract,
     validate_image,
+    validate_patch_metadata,
 )
 
 
@@ -170,6 +172,26 @@ def test_release_audit_rejects_repair_bug_disclosure() -> None:
             {"task": "image-repair", "instruction": "Fix the injected occlusion bug."},
             ["Occlusion"],
         )
+
+
+def test_release_audit_enforces_published_patch_counters() -> None:
+    record = {
+        "response": [
+            {"task_type": "Accordion"},
+            {"task_type": "Accordion"},
+            {"task_type": "Dark Mode"},
+        ],
+        "metadata": {
+            "task_count": 2,
+            "patch_count": 3,
+            "patch_count_by_task": {"Accordion": 2, "Dark Mode": 1},
+        },
+    }
+    mapping = Counter({"Accordion": 2, "Dark Mode": 1})
+    validate_patch_metadata(record, ["Accordion", "Dark Mode"], mapping)
+    record["metadata"]["patch_count"] = 2
+    with pytest.raises(ValueError, match="patch_count does not match"):
+        validate_patch_metadata(record, ["Accordion", "Dark Mode"], mapping)
 
 
 def test_release_audit_recomputes_pixel_ratio(tmp_path: Path) -> None:
