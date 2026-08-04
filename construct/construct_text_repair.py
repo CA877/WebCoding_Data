@@ -25,6 +25,7 @@ from WebCoding_Data.construct.construct_common import (
     existing_final_screenshots,
     iter_project_dirs,
     iter_project_list,
+    iter_jsonl_records,
     load_repair_catalog,
     _apply_patches_reverse,
     screenshot_project_to_dir,
@@ -114,15 +115,9 @@ def main() -> None:
     # Resume support
     done_ids: set[str] = set()
     if not args.overwrite and out_jsonl.exists():
-        import json
-        for line in out_jsonl.read_text().splitlines():
-            if line.strip():
-                try:
-                    rec = json.loads(line)
-                    if rec.get("status") == "ok":
-                        done_ids.add(rec["instance_id"])
-                except json.JSONDecodeError:
-                    pass
+        for rec in iter_jsonl_records(out_jsonl, ignore_invalid=True):
+            if rec.get("status") == "ok":
+                done_ids.add(rec["instance_id"])
         print(f"Resuming: {len(done_ids)} already done")
 
     api_key, base_url, model = ensure_api_env(prefer_vision=False)

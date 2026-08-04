@@ -127,6 +127,25 @@ def append_jsonl(path: Path, payload: dict[str, Any]) -> None:
         f.write(json.dumps(payload, ensure_ascii=False) + "\n")
 
 
+def iter_jsonl_records(path: Path, *, ignore_invalid: bool = False):
+    """Yield JSON objects one physical file line at a time.
+
+    Web source can contain Unicode line/paragraph separators.  ``splitlines``
+    treats those characters as record boundaries even though JSONL only uses
+    the physical newline written by :func:`append_jsonl`.
+    """
+    with path.open("r", encoding="utf-8") as handle:
+        for line_number, line in enumerate(handle, 1):
+            if not line.strip():
+                continue
+            try:
+                yield json.loads(line)
+            except json.JSONDecodeError:
+                if ignore_invalid:
+                    continue
+                raise ValueError(f"invalid JSONL record at {path}:{line_number}") from None
+
+
 # ============ Patch 后处理 ============
 
 def _snap_to_source(llm_text: str, source_code: str) -> str:
@@ -578,7 +597,12 @@ def repair_visual_difference(clean_screens: list[dict], defective_screens: list[
             if a.size != b.size:
                 raise RuntimeError(f"screenshot_size_mismatch:{key}")
             diff = ImageChops.difference(a, b)
-            changed = sum(1 for pixel in diff.getdata() if max(pixel) >= 24)
+            pixels = (
+                diff.get_flattened_data()
+                if hasattr(diff, "get_flattened_data")
+                else diff.getdata()
+            )
+            changed = sum(1 for pixel in pixels if max(pixel) >= 24)
             ratio = changed / max(a.width * a.height, 1)
         metrics.append({"page": key[0], "viewport": key[1], "changed_ratio": round(ratio, 6)})
     strongest = max((item["changed_ratio"] for item in metrics), default=0.0)
