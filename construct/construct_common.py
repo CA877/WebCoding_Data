@@ -465,19 +465,24 @@ def choose_task_types(
 
 
 def choose_task_count(min_tasks: int, max_tasks: int, seed: int, instance_id: str) -> int:
-    """Sample task count with dense small multi-task cases and a long tail.
-
-    For the standard 2--10 range, 2--5 collectively receive 80% probability
-    and 6--10 receive 20%.  Smaller custom ranges degrade to uniform sampling.
-    """
-    if min_tasks < 2 or max_tasks < min_tasks:
-        raise ValueError("task count range must satisfy 2 <= min <= max")
+    """Deterministically sample a task count inside the requested range."""
+    if min_tasks < 1 or max_tasks < min_tasks:
+        raise ValueError("task count range must satisfy 1 <= min <= max")
     rng = random.Random(f"task-count:{seed}:{instance_id}")
-    low = [n for n in range(max(2, min_tasks), min(5, max_tasks) + 1)]
-    high = [n for n in range(max(6, min_tasks), max_tasks + 1)]
-    if low and high:
-        return rng.choice(low if rng.random() < .8 else high)
     return rng.randint(min_tasks, max_tasks)
+
+
+def balanced_task_count(ordinal: int, seed: int, min_tasks: int = 1, max_tasks: int = 7) -> int:
+    """Assign counts evenly across a stable ordered batch.
+
+    Every complete block of ``max_tasks-min_tasks+1`` samples contains each
+    task count exactly once.  Concurrency and retries therefore cannot skew
+    the requested 1--7 distribution.
+    """
+    if ordinal < 0 or min_tasks < 1 or max_tasks < min_tasks:
+        raise ValueError("invalid balanced task-count arguments")
+    width = max_tasks - min_tasks + 1
+    return min_tasks + ((ordinal + seed) % width)
 
 
 def training_source_manifest(project: Path) -> dict[str, Any]:
@@ -515,7 +520,8 @@ def _free_local_port() -> int:
 
 
 def screenshot_project_to_dir(project_dir: Path, out_dir: Path, browser_proxy: str = "",
-                              viewports: list[tuple[str, int, int]] | None = None) -> list[dict[str, str]]:
+                              viewports: list[tuple[str, int, int]] | None = None,
+                              full_page: bool = False) -> list[dict[str, str]]:
     """Capture every user-facing page/viewport over local HTTP.
 
     This is used for image-editing/image-repair pairs.  It deliberately does
@@ -558,7 +564,7 @@ def screenshot_project_to_dir(project_dir: Path, out_dir: Path, browser_proxy: s
                             raise RuntimeError(f"local_http_status:{response.status if response else 'none'}")
                         page.wait_for_timeout(1000)
                         dest = out_dir / f"{page_key}__{vp_name}.jpg"
-                        page.screenshot(path=str(dest), full_page=True, type="jpeg", quality=82, timeout=90000)
+                        page.screenshot(path=str(dest), full_page=full_page, type="jpeg", quality=92, timeout=90000)
                         records.append({"page": rel, "viewport": vp_name, "path": dest.relative_to(out_dir.parent).as_posix()})
                     except Exception as exc:
                         print(f"  screenshot failed for {rel} ({vp_name}): {exc}")
@@ -575,7 +581,8 @@ def screenshot_project_to_dir(project_dir: Path, out_dir: Path, browser_proxy: s
 
 
 def repair_visual_difference(clean_screens: list[dict], defective_screens: list[dict],
-                             minimum_ratio: float = .01) -> dict[str, Any]:
+                             minimum_ratio: float = .01,
+                             channel_threshold: int = 8) -> dict[str, Any]:
     """Reject repair defects that do not visibly change a rendered screenshot.
 
     Records returned by :func:`screenshot_project_to_dir` have paths relative
@@ -602,13 +609,15 @@ def repair_visual_difference(clean_screens: list[dict], defective_screens: list[
                 if hasattr(diff, "get_flattened_data")
                 else diff.getdata()
             )
-            changed = sum(1 for pixel in pixels if max(pixel) >= 24)
+            changed = sum(1 for pixel in pixels if max(pixel) >= channel_threshold)
             ratio = changed / max(a.width * a.height, 1)
-        metrics.append({"page": key[0], "viewport": key[1], "changed_ratio": round(ratio, 6)})
+        metrics.append({"page": key[0], "viewport": key[1], "changed_pixels": changed,
+                        "total_pixels": a.width * a.height, "changed_ratio": round(ratio, 6)})
     strongest = max((item["changed_ratio"] for item in metrics), default=0.0)
     if strongest < minimum_ratio:
         raise RuntimeError(f"repair_defect_not_visually_observable:{strongest:.6f}<{minimum_ratio:.6f}")
-    return {"minimum_changed_ratio": minimum_ratio, "max_changed_ratio": strongest, "screens": metrics}
+    return {"minimum_changed_ratio": minimum_ratio, "channel_threshold": channel_threshold,
+            "max_changed_ratio": strongest, "screens": metrics}
 
 
 def _truncate_text(value: str, limit: int) -> str:
@@ -767,7 +776,7 @@ def build_generation_data(
     tokenizer_json: Path | None = None,
     max_prompt_tokens: int = 40_000,
 ) -> dict[str, Any]:
-    """Prepare the same complete retained-code contract used by Pipeline C."""
+    """Prepare the complete all-file context, rejecting projects over 40K."""
     try:  # package import for tests; direct import for CLI scripts from repo root
         from WebCoding_Data.preprocess.pipeline_c.qwen_token_gate import (
             count_project_tokens,
@@ -786,6 +795,13 @@ def build_generation_data(
     tokenizer_json = tokenizer_json or Path(
         os.environ.get("QWEN_TOKENIZER_JSON", REPO_ROOT / ".cache/qwen3-tokenizer.json")
     )
+    all_code_files = iter_training_code_files(project_dir)
+    full_code = [
+        {"path": path.relative_to(project_dir).as_posix(),
+         "code": path.read_text(encoding="utf-8", errors="replace")}
+        for path in all_code_files
+    ]
+
     if tokenizer_json.is_file():
         full_prompt_tokens = count_project_tokens(project_dir, tokenizer_json)
     else:
@@ -793,32 +809,25 @@ def build_generation_data(
         # cannot run, so skip it explicitly instead of failing every project.
         print(f"WARNING: tokenizer not found ({tokenizer_json}); skipping 40K token gate")
         full_prompt_tokens = 0
-    all_code_files = iter_training_code_files(project_dir)
     if full_prompt_tokens > max_prompt_tokens:
         raise ValueError(
-            f"full retained-code source is {full_prompt_tokens} Qwen tokens, over {max_prompt_tokens}"
+            f"complete all-file source is {full_prompt_tokens} Qwen tokens, over {max_prompt_tokens}"
         )
-
-    # The training contract is all retained HTML/CSS/JS, including local
-    # bundles.  Never silently drop files or fall back to HTML-only context.
+    visible_code = full_code
     context_mode = "full"
-    selected_files = all_code_files
     model_context = serialize_training_project(project_dir)
     prompt_tokens = full_prompt_tokens
-
-    visible_code: list[dict[str, str]] = []
-    for path in selected_files:
-        text = path.read_text(encoding="utf-8", errors="replace")
-        visible_code.append({"path": path.relative_to(project_dir).as_posix(), "code": text})
 
     return {
         "instance_id": project_dir.name,
         "dst_code": visible_code,
+        "full_code": full_code,
         "resources": [],
         "prompt_tokens": prompt_tokens,
         "full_prompt_tokens": full_prompt_tokens,
         "context_mode": context_mode,
         "model_context": model_context,
+        "input_contract": {"max_prompt_tokens": max_prompt_tokens, "all_files_included": True},
     }
 
 
@@ -1073,6 +1082,50 @@ def apply_search_replace_local(
     return result_code, errors
 
 
+def apply_search_replace_exact(
+    code_list: list[dict[str, str]],
+    modified_files: list[dict[str, str]],
+) -> list[dict[str, str]]:
+    """Apply sequential patches only when each search has one exact match."""
+    code_map = {item["path"]: item["code"] for item in code_list}
+    for index, patch in enumerate(modified_files):
+        path = str(patch.get("path", ""))
+        search = patch.get("search")
+        replace = patch.get("replace")
+        if path not in code_map:
+            raise ValueError(f"patch {index}: unknown file path {path!r}")
+        if not isinstance(search, str) or not search:
+            raise ValueError(f"patch {index}: search must be non-empty")
+        if not isinstance(replace, str) or search == replace:
+            raise ValueError(f"patch {index}: replace must differ from search")
+        matches = code_map[path].count(search)
+        if matches != 1:
+            raise ValueError(
+                f"patch {index}: search must match exactly once in {path}; got {matches}"
+            )
+        code_map[path] = code_map[path].replace(search, replace, 1)
+    return [{**item, "code": code_map[item["path"]]} for item in code_list]
+
+
+def validate_patch_round_trip(
+    visible_clean: list[dict[str, str]],
+    full_clean: list[dict[str, str]],
+    forward_patches: list[dict[str, str]],
+) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
+    """Validate exact patches on both the model-visible and full render code."""
+    visible_changed = apply_search_replace_exact(visible_clean, forward_patches)
+    full_changed = apply_search_replace_exact(full_clean, forward_patches)
+    reverse = [
+        {**patch, "search": patch["replace"], "replace": patch["search"]}
+        for patch in reversed(forward_patches)
+    ]
+    if apply_search_replace_exact(visible_changed, reverse) != visible_clean:
+        raise ValueError("visible-code patch round trip failed")
+    if apply_search_replace_exact(full_changed, reverse) != full_clean:
+        raise ValueError("full-code patch round trip failed")
+    return visible_changed, full_changed
+
+
 def validate_patch_paths_for_context(generation_data: dict[str, Any], patches: list[dict[str, str]]) -> None:
     """Keep oversized-project patches inside the HTML-only construction contract."""
     if generation_data.get("context_mode") != "html_only":
@@ -1106,10 +1159,9 @@ class LocalSearchReplaceSynthesizer:
     ):
         from openai import OpenAI
 
-        # A failed/slow external generator must not monopolise a batch worker.
-        # 120s still allows normal 60K-source generation while bounding retries.
+        # Real 40K-code requests regularly exceed two minutes.
         self.client = OpenAI(api_key=api_key, base_url=base_url,
-                             timeout=float(os.environ.get("CONSTRUCT_API_TIMEOUT", "120")), max_retries=0)
+                             timeout=float(os.environ.get("CONSTRUCT_API_TIMEOUT", "600")), max_retries=0)
         self.model = model
         self.max_tokens = max_tokens
         self.max_retries = max_retries
@@ -1195,8 +1247,8 @@ class LocalSearchReplaceSynthesizer:
         """
         self._validate_task_types(description, expected_task_types)
         task_types = [str(item["task_type"]) for item in description]
-        if len(task_types) < 2:
-            raise ValueError(f"Expected multiple task types, got {task_types}")
+        if not 1 <= len(task_types) <= 7:
+            raise ValueError(f"Expected 1--7 task types, got {task_types}")
         if len(set(task_types)) != len(task_types):
             raise ValueError(f"Task types must be distinct, got {task_types}")
         mapped = Counter()
@@ -1208,6 +1260,9 @@ class LocalSearchReplaceSynthesizer:
         missing = [task_type for task_type in task_types if mapped[task_type] == 0]
         if missing:
             raise ValueError(f"No patches assigned to task types: {missing}")
+        excessive = {task_type: count for task_type, count in mapped.items() if count > 10}
+        if excessive:
+            raise ValueError(f"Each task may own at most 10 patches: {excessive}")
 
     def _generate(
         self,
@@ -1271,6 +1326,9 @@ Output format (nothing else):
 <description>[{{"task_type": "...", "description": "..."}}]</description>
 Each selected task type must have one or more patches. Mark EVERY patch with
 the exact task_type it implements; do not share an unlabelled patch across tasks.
+Each task must use 1--10 patches. Every <search> must be a non-empty, verbatim,
+uniquely occurring substring of an existing file. Do not create new files and
+do not use fuzzy, abbreviated, or placeholder search text.
 <search_replace path="path/to/file" task_type="one selected task_type"><search>exact source text</search><replace>edited text</replace></search_replace>
 
 {src_code_context}"""
@@ -1285,15 +1343,25 @@ the exact task_type it implements; do not share an unlabelled patch across tasks
                 ],
                 max_retries=self.max_retries,
             )
-            validate_patch_paths_for_context(generation_data, result["modified_files"])
-            self._validate_task_patch_mapping(result["description"], result["modified_files"], task_types)
-            apply_search_replace_local(src_code, result["modified_files"], strict_mode=True)
+            source_map = {item["path"]: item["code"] for item in src_code}
+            snapped_mods = []
+            for mod in result["modified_files"]:
+                snapped = dict(mod)
+                snapped["search"] = _snap_to_source(
+                    mod["search"], source_map.get(mod["path"], "")
+                )
+                snapped_mods.append(snapped)
+            validate_patch_paths_for_context(generation_data, snapped_mods)
+            self._validate_task_patch_mapping(result["description"], snapped_mods, task_types)
+            validate_patch_round_trip(
+                src_code, generation_data.get("full_code", src_code), snapped_mods
+            )
             return {
                 "task": "edit",
                 "task_type": task_types,
                 "description": result["description"],
                 "resources": generation_data.get("resources", []),
-                "label_modified_files": result.get("modified_files", []),
+                "label_modified_files": snapped_mods,
                 "llm_raw_response": result.get("raw_response"),
                 "llm_metadata": result.get("llm_metadata"),
             }
@@ -1456,6 +1524,15 @@ Output format (nothing else):
 <description>[{{"task_type": "...", "description": "structural repair instruction"}}]</description>
 Each selected defect type must have one or more patches. Mark EVERY patch with
 the exact task_type it implements; do not share an unlabelled patch across tasks.
+Each defect must use 1--10 patches. Every <search> must be a non-empty,
+verbatim, uniquely occurring substring of an existing file.
+
+VISUAL SEVERITY REQUIREMENT: inject a conspicuous defect affecting a large
+visible element or region in the initial 1920x1080 viewport. Prefer large
+geometry, spacing, visibility, contrast, overlap, or sizing changes. The
+combined defects should change at least 1% of rendered pixels. Do not satisfy a
+visual defect with a tiny icon, off-screen element, metadata-only change, or a
+subtle one-property tweak when a stronger valid manifestation is possible.
 <search_replace path="path/to/file" task_type="one selected defect type"><search>exact clean text</search><replace>defective text</replace></search_replace>
 
 {dst_code_context}"""
@@ -1480,13 +1557,15 @@ the exact task_type it implements; do not share an unlabelled patch across tasks
                 snapped_mods.append(snapped)
             validate_patch_paths_for_context(generation_data, snapped_mods)
             self._validate_task_patch_mapping(result["description"], snapped_mods, defect_types)
-            apply_search_replace_local(dst_code, snapped_mods, strict_mode=True)
+            defective_visible, defective_full = validate_patch_round_trip(
+                dst_code, generation_data.get("full_code", dst_code), snapped_mods
+            )
             # For repair: LLM's search = clean code, replace = defective code
             # label is the *fix* direction: search = defective, replace = clean
             label_modified_files = [
                 {"path": mod["path"], "task_type": mod["task_type"],
                  "search": mod["replace"], "replace": mod["search"]}
-                for mod in snapped_mods
+                for mod in reversed(snapped_mods)
             ]
             return {
                 "task": "repair",
@@ -1494,6 +1573,8 @@ the exact task_type it implements; do not share an unlabelled patch across tasks
                 "description": result["description"],
                 "resources": generation_data.get("resources", []),
                 "label_modified_files": label_modified_files,
+                "defective_code": defective_visible,
+                "defective_full_code": defective_full,
                 "llm_raw_response": result.get("raw_response"),
                 "llm_metadata": result.get("llm_metadata"),
             }

@@ -14,7 +14,7 @@
 #   EDIT_PROJECT_LIST=...      required, final 40K-eligible project list
 #   REPAIR_PROJECT_LIST=...    required, final 40K-eligible project list
 #   OUTPUT_ROOT=runs/construct_edit_repair_<run-id>
-#   EDIT_WORKERS=1 REPAIR_WORKERS=1 MIN_TASKS=2 MAX_TASKS=10
+#   EDIT_WORKERS=12 REPAIR_WORKERS=20 MIN_TASKS=1 MAX_TASKS=7
 #   DRY_RUN=1                  print resolved commands, make no API calls
 set -euo pipefail
 
@@ -36,13 +36,14 @@ TASKS="${TASKS:-edit,repair}"
 EDIT_PROJECT_LIST="${EDIT_PROJECT_LIST:-}"
 REPAIR_PROJECT_LIST="${REPAIR_PROJECT_LIST:-}"
 OUTPUT_ROOT="${OUTPUT_ROOT:-runs/construct_edit_repair_$(date +%Y%m%d)}"
-EDIT_WORKERS="${EDIT_WORKERS:-1}"
-REPAIR_WORKERS="${REPAIR_WORKERS:-1}"
-MIN_TASKS="${MIN_TASKS:-2}"
-MAX_TASKS="${MAX_TASKS:-10}"
-SEED="${SEED:-20260721}"
+EDIT_WORKERS="${EDIT_WORKERS:-12}"
+REPAIR_WORKERS="${REPAIR_WORKERS:-20}"
+MIN_TASKS="${MIN_TASKS:-1}"
+MAX_TASKS="${MAX_TASKS:-7}"
+SEED="${SEED:-20260805}"
 MAX_RETRIES="${MAX_RETRIES:-3}"
 MAX_OUTPUT_TOKENS="${MAX_OUTPUT_TOKENS:-8192}"
+IMAGE_REPAIR_TARGET="${IMAGE_REPAIR_TARGET:-3000}"
 DRY_RUN="${DRY_RUN:-0}"
 
 # The physical machine must use the project lora environment.  Keep an
@@ -63,8 +64,12 @@ export NO_PROXY="${NO_PROXY:-localhost,127.0.0.1}"
 export SSL_NO_VERIFY="${SSL_NO_VERIFY:-1}"
 export CONSTRUCT_API_TIMEOUT="${CONSTRUCT_API_TIMEOUT:-600}"
 
-if [[ "$MIN_TASKS" -lt 2 || "$MAX_TASKS" -lt "$MIN_TASKS" || "$MAX_TASKS" -gt 10 ]]; then
-  echo "MIN_TASKS/MAX_TASKS must satisfy 2 <= MIN_TASKS <= MAX_TASKS <= 10" >&2
+if [[ "$MIN_TASKS" -lt 1 || "$MAX_TASKS" -lt "$MIN_TASKS" || "$MAX_TASKS" -gt 7 ]]; then
+  echo "MIN_TASKS/MAX_TASKS must satisfy 1 <= MIN_TASKS <= MAX_TASKS <= 7" >&2
+  exit 2
+fi
+if [[ $((EDIT_WORKERS + REPAIR_WORKERS)) -gt 32 ]]; then
+  echo "EDIT_WORKERS + REPAIR_WORKERS must not exceed the physical-machine total of 32" >&2
   exit 2
 fi
 if [[ "$TASKS" != *"edit"* && "$TASKS" != *"repair"* ]]; then
@@ -102,7 +107,8 @@ count_records() {
 import json, sys
 ok = error = 0
 for line in open(sys.argv[1], encoding='utf-8'):
-    try: status = json.loads(line).get('status')
+    try:
+        rec = json.loads(line); status = rec.get('status', rec.get('conversion_status', 'ok'))
     except json.JSONDecodeError: continue
     ok += status == 'ok'; error += status == 'error'
 print(f'ok={ok} error={error}')
@@ -125,29 +131,30 @@ if [[ "$TASKS" == *"edit"* ]]; then
   [[ -f "$EDIT_PROJECT_LIST" ]] || { echo "missing: $EDIT_PROJECT_LIST" >&2; exit 2; }
   run "$PYTHON_BIN" construct/construct_text_editing.py \
     --project-list "$EDIT_PROJECT_LIST" --output-dir "$OUTPUT_ROOT/text_edit" \
+    --screenshot-dir "$OUTPUT_ROOT/images/image-edit" \
     --workers "$EDIT_WORKERS" --min-tasks "$MIN_TASKS" --max-tasks "$MAX_TASKS" \
-    --seed "$SEED" --max-retries "$MAX_RETRIES" --max-output-tokens "$MAX_OUTPUT_TOKENS"
-  # Image-editing does not re-render: it only verifies/reuses project-root PNGs.
-  run "$PYTHON_BIN" construct/construct_image_editing.py \
-    --records-jsonl "$OUTPUT_ROOT/text_edit/records.jsonl" \
-    --output-jsonl "$OUTPUT_ROOT/image_edit_records.jsonl"
+    --seed "$SEED" --max-retries "$MAX_RETRIES" --max-output-tokens "$MAX_OUTPUT_TOKENS" \
+    --browser-proxy http://127.0.0.1:7890
 fi
 
 if [[ "$TASKS" == *"repair"* ]]; then
   [[ -f "$REPAIR_PROJECT_LIST" ]] || { echo "missing: $REPAIR_PROJECT_LIST" >&2; exit 2; }
   run "$PYTHON_BIN" construct/construct_text_repair.py \
     --project-list "$REPAIR_PROJECT_LIST" --output-dir "$OUTPUT_ROOT/text_repair" \
-    --defect-screenshot-dir "$OUTPUT_ROOT/image_repair/repair_defect_screenshots" \
+    --defect-screenshot-dir "$OUTPUT_ROOT/images/image-repair/defective" \
+    --clean-screenshot-dir "$OUTPUT_ROOT/images/image-repair/clean" \
     --workers "$REPAIR_WORKERS" --min-tasks "$MIN_TASKS" --max-tasks "$MAX_TASKS" \
     --seed "$SEED" --max-retries "$MAX_RETRIES" --max-output-tokens "$MAX_OUTPUT_TOKENS" \
-    --browser-proxy "$HTTP_PROXY"
+    --browser-proxy "$HTTP_PROXY" --minimum-changed-ratio 0.01 \
+    --image-repair-target "$IMAGE_REPAIR_TARGET"
 fi
 
 echo "=== current outputs ==="
 if [[ "$TASKS" == *"edit"* ]]; then
   echo "text_edit: $(count_records "$OUTPUT_ROOT/text_edit/records.jsonl")"
-  echo "image_edit: $(count_records "$OUTPUT_ROOT/image_edit_records.jsonl")"
+  echo "image_edit: $(count_records "$OUTPUT_ROOT/text_edit/image-edit.v2.jsonl")"
 fi
 if [[ "$TASKS" == *"repair"* ]]; then
   echo "text_repair: $(count_records "$OUTPUT_ROOT/text_repair/records.jsonl")"
+  echo "image_repair: $(count_records "$OUTPUT_ROOT/text_repair/image-repair.v2.jsonl")"
 fi

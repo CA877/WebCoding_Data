@@ -39,7 +39,7 @@ def test_forward_strategy_extends_original_project(monkeypatch, tmp_path: Path) 
     class Synthesizer:
         def generate_forward_pair(self, generation_data, task_types):
             assert generation_data["dst_code"] == BASE_CODE
-            assert task_types == ["Search", "Modal"]
+            assert set(task_types) == {"Search", "Modal"}
             return {
                 "task_type": task_types,
                 "description": [{"task_type": "Search", "description": "Add search"}],
@@ -50,7 +50,7 @@ def test_forward_strategy_extends_original_project(monkeypatch, tmp_path: Path) 
     project = tmp_path / "project"
     project.mkdir()
     result = editing._process_one(
-        project, _args("forward"), Synthesizer(), ["Search", "Modal"]
+        project, _args("forward"), Synthesizer(), ["Search", "Modal"], task_count=2
     )
 
     assert result["status"] == "ok"
@@ -63,41 +63,6 @@ def test_forward_strategy_extends_original_project(monkeypatch, tmp_path: Path) 
     assert result["images"]["dst_screenshot"] == []
 
 
-def test_reverse_strategy_restores_removed_feature(monkeypatch, tmp_path: Path) -> None:
-    _setup(monkeypatch)
-    restore_patch = {
-        "path": "index.html",
-        "task_type": "Search",
-        "search": "</main>",
-        "replace": "<form>Search</form></main>",
-    }
-    complete_code = [
-        {"path": "index.html", "code": "<main>Existing<form>Search</form></main>"}
-    ]
-    monkeypatch.setattr(
-        editing,
-        "build_generation_data",
-        lambda _: {"dst_code": complete_code, "resources": []},
-    )
-
-    class Synthesizer:
-        def generate_reverse_pair(self, generation_data, n_features):
-            assert n_features == 2
-            return {
-                "task_type": ["Search"],
-                "description": [{"task_type": "Search", "description": "Add search"}],
-                "label_modified_files": [restore_patch],
-                "llm_raw_response": "",
-            }
-
-    project = tmp_path / "project"
-    project.mkdir()
-    result = editing._process_one(
-        project, _args("reverse"), Synthesizer(), ["Search", "Modal"]
-    )
-
-    assert result["status"] == "ok"
-    assert result["instruction"]["src_code"] == BASE_CODE
-    assert result["reference"]["dst_code"] == complete_code
-    assert result["images"]["src_screenshot"] == []
-    assert result["images"]["dst_screenshot"]
+def test_edit_constructor_has_no_reverse_cli_option() -> None:
+    source = Path(editing.__file__).read_text(encoding="utf-8")
+    assert 'choices=("forward", "reverse")' not in source
