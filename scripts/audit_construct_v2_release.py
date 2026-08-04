@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from collections import Counter
 from pathlib import Path
 
-from PIL import Image, ImageStat
+from PIL import Image, ImageChops, ImageStat
 
 
 TASK_FILES = {
@@ -20,7 +21,7 @@ TASK_FILES = {
 }
 
 
-def apply_exact(code: list[dict], patches: list[dict]) -> None:
+def _apply_exact_once(code: list[dict], patches: list[dict]) -> list[dict]:
     code_map = {item["path"]: item["code"] for item in code}
     for index, patch in enumerate(patches):
         path, search, replace = patch["path"], patch["search"], patch["replace"]
@@ -30,6 +31,20 @@ def apply_exact(code: list[dict], patches: list[dict]) -> None:
         if count != 1:
             raise ValueError(f"patch {index} search count is {count}, expected 1")
         code_map[path] = code_map[path].replace(search, replace, 1)
+    return [{**item, "code": code_map[item["path"]]} for item in code]
+
+
+def apply_exact(code: list[dict], patches: list[dict]) -> list[dict]:
+    """Apply patches and prove that their exact inverse restores every file."""
+    modified = _apply_exact_once(code, patches)
+    reverse = [
+        {**patch, "search": patch["replace"], "replace": patch["search"]}
+        for patch in reversed(patches)
+    ]
+    restored = _apply_exact_once(modified, reverse)
+    if restored != code:
+        raise ValueError("patches do not round-trip to the exact original code")
+    return modified
 
 
 def input_code(record: dict) -> list[dict] | None:
@@ -55,6 +70,25 @@ def validate_image(path: Path) -> None:
             raise ValueError("image is near-uniform/blank")
 
 
+def changed_ratio(left: Path, right: Path, channel_threshold: int = 8) -> float:
+    """Recompute max-channel pixel difference from the released PNG pair."""
+    with Image.open(left) as raw_left, Image.open(right) as raw_right:
+        a, b = raw_left.convert("RGB"), raw_right.convert("RGB")
+        if a.size != b.size:
+            raise ValueError(f"paired screenshot sizes differ: {a.size} vs {b.size}")
+        channels = ImageChops.difference(a, b).split()
+        masks = [channel.point(lambda value: 255 if value >= channel_threshold else 0)
+                 for channel in channels]
+        combined = ImageChops.lighter(ImageChops.lighter(masks[0], masks[1]), masks[2])
+        unchanged = combined.histogram()[0]
+        return (a.width * a.height - unchanged) / max(a.width * a.height, 1)
+
+
+def fingerprint(value) -> str:
+    payload = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--jsonl-dir", type=Path, required=True)
@@ -67,12 +101,14 @@ def main() -> None:
     ids: dict[str, set[str]] = {}
     counts: dict[str, int] = {}
     task_count_distributions: dict[str, dict[str, int]] = {}
+    pair_fingerprints: dict[str, dict[str, str]] = {}
     errors: list[str] = []
     checked_images: set[Path] = set()
     release_root = args.jsonl_dir.resolve().parent
     for task, name in TASK_FILES.items():
         path = args.jsonl_dir / name
         seen: set[str] = set()
+        task_fingerprints: dict[str, str] = {}
         distribution: Counter[int] = Counter()
         with path.open("r", encoding="utf-8") as handle:
             for line_number, line in enumerate(handle, 1):
@@ -113,6 +149,7 @@ def main() -> None:
                         manifest_paths = {item["path"] for item in record.get("file_manifest", []) if item.get("type") == "code"}
                         if output_paths != manifest_paths:
                             raise ValueError("generation response does not contain every code file")
+                        task_fingerprints[instance_id] = fingerprint(record["response"])
                     if code is not None:
                         task_types = list(record.get("task_type", []))
                         if not 1 <= len(task_types) <= 7 or len(task_types) != len(set(task_types)):
@@ -123,17 +160,37 @@ def main() -> None:
                         if set(mapping) != set(task_types) or any(not 1 <= value <= 10 for value in mapping.values()):
                             raise ValueError("task-to-patch mapping violates 1--10 contract")
                         apply_exact(code, patches)
+                        task_fingerprints[instance_id] = fingerprint(
+                            {"task_type": task_types, "input": code, "patches": patches}
+                        )
                         code_paths = {item["path"] for item in code}
                         manifest_paths = {item["path"] for item in record.get("file_manifest", []) if item.get("type") == "code"}
                         if code_paths != manifest_paths:
                             raise ValueError("input does not contain every code file")
                     if task == "image-repair":
-                        ratio = float(record.get("metadata", {}).get("visual_difference", {}).get("max_changed_ratio", 0))
-                        if ratio < 0.01 or not record.get("dst_screenshot"):
+                        reported_ratio = float(record.get("metadata", {}).get("visual_difference", {}).get("max_changed_ratio", 0))
+                        src = record.get("src_screenshot", [])
+                        dst = record.get("dst_screenshot", [])
+                        if not src or len(src) != len(dst):
+                            raise ValueError("image-repair screenshot pairing is incomplete")
+                        actual_ratio = max(
+                            changed_ratio(
+                                (Path(left) if Path(left).is_absolute() else release_root / left).resolve(),
+                                (Path(right) if Path(right).is_absolute() else release_root / right).resolve(),
+                            )
+                            for left, right in zip(src, dst, strict=True)
+                        )
+                        if actual_ratio < 0.01:
                             raise ValueError("image-repair fails 1% paired-image gate")
+                        if abs(actual_ratio - reported_ratio) > 0.0000015:
+                            raise ValueError(
+                                f"image-repair pixel ratio metadata mismatch: actual={actual_ratio:.6f}, "
+                                f"reported={reported_ratio:.6f}"
+                            )
                 except Exception as exc:  # noqa: BLE001
                     errors.append(f"{name}:{line_number}: {type(exc).__name__}: {exc}")
         ids[task] = seen
+        pair_fingerprints[task] = task_fingerprints
         counts[task] = len(seen)
         task_count_distributions[task] = {str(key): value for key, value in sorted(distribution.items())}
         if task in {"text-editing", "image-editing", "text-repair", "image-repair"}:
@@ -155,8 +212,19 @@ def main() -> None:
     for left, right in (("text-generation", "image-generation"), ("text-editing", "image-editing")):
         if ids[left] != ids[right]:
             errors.append(f"paired ids differ: {left} vs {right}")
+        else:
+            mismatched = [instance_id for instance_id in ids[left]
+                          if pair_fingerprints[left].get(instance_id) != pair_fingerprints[right].get(instance_id)]
+            if mismatched:
+                errors.append(f"paired payloads differ: {left} vs {right}: {mismatched[:5]}")
     if not ids["image-repair"].issubset(ids["text-repair"]):
         errors.append("image-repair ids are not a subset of text-repair ids")
+    else:
+        mismatched = [instance_id for instance_id in ids["image-repair"]
+                      if pair_fingerprints["image-repair"].get(instance_id)
+                      != pair_fingerprints["text-repair"].get(instance_id)]
+        if mismatched:
+            errors.append(f"paired payloads differ: text-repair vs image-repair: {mismatched[:5]}")
 
     summary = {
         "status": "pass" if not errors else "fail",

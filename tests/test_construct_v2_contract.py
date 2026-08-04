@@ -2,6 +2,7 @@ from pathlib import Path
 import sys
 
 import pytest
+from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
@@ -13,6 +14,10 @@ from WebCoding_Data.construct.construct_common import (
 )
 from WebCoding_Data.construct.v2_records import repair_records
 from WebCoding_Data.scripts.pack_construct_v2_release import select_balanced_text_repairs
+from WebCoding_Data.scripts.audit_construct_v2_release import (
+    apply_exact as audit_apply_exact,
+    changed_ratio,
+)
 
 
 def test_balanced_task_counts_are_exactly_uniform() -> None:
@@ -121,3 +126,21 @@ def test_forward_edit_retries_strict_validation_with_feedback() -> None:
     assert len(calls) == 2
     assert "VALIDATION FEEDBACK" in calls[1][1]["content"]
     assert result["llm_metadata"]["validation_attempt"] == 2
+
+
+def test_release_audit_rejects_non_reversible_exact_patch() -> None:
+    with pytest.raises(ValueError, match="search count is 2"):
+        audit_apply_exact(
+            [{"path": "index.html", "code": "x y"}],
+            [{"path": "index.html", "search": "x", "replace": "y"}],
+        )
+
+
+def test_release_audit_recomputes_pixel_ratio(tmp_path: Path) -> None:
+    left = tmp_path / "left.png"
+    right = tmp_path / "right.png"
+    Image.new("RGB", (10, 10), "white").save(left)
+    changed = Image.new("RGB", (10, 10), "white")
+    changed.putpixel((0, 0), (0, 0, 0))
+    changed.save(right)
+    assert changed_ratio(left, right) == pytest.approx(0.01)
