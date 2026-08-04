@@ -9,6 +9,7 @@ from PIL import Image
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from WebCoding_Data.construct.construct_common import (
+    LocalSearchReplaceSynthesizer,
     apply_search_replace_exact,
     balanced_task_count,
     build_forward_edit_synthesizer,
@@ -134,6 +135,33 @@ def test_forward_edit_retries_strict_validation_with_feedback() -> None:
     assert len(calls) == 2
     assert "VALIDATION FEEDBACK" in calls[1][1]["content"]
     assert result["llm_metadata"]["validation_attempt"] == 2
+
+
+def test_transport_retry_does_not_consume_content_validation_attempt(monkeypatch) -> None:
+    class APIConnectionError(Exception):
+        pass
+
+    class Completions:
+        def __init__(self):
+            self.calls = 0
+
+        def create(self, **kwargs):
+            self.calls += 1
+            if self.calls < 3:
+                raise APIConnectionError("temporary outage")
+            return "ok"
+
+    completions = Completions()
+    synthesizer = LocalSearchReplaceSynthesizer("test-key", max_retries=1)
+    synthesizer.client = type(
+        "Client", (), {"chat": type("Chat", (), {"completions": completions})()}
+    )()
+    monkeypatch.setenv("CONSTRUCT_TRANSPORT_ATTEMPTS", "3")
+    monkeypatch.setenv("CONSTRUCT_TRANSPORT_BACKOFF_BASE", "0")
+    monkeypatch.setattr("random.random", lambda: 0.0)
+
+    assert synthesizer._chat_completion([{"role": "user", "content": "test"}]) == "ok"
+    assert completions.calls == 3
 
 
 def test_release_audit_rejects_non_reversible_exact_patch() -> None:

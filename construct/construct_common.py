@@ -1179,6 +1179,42 @@ class LocalSearchReplaceSynthesizer:
         self.max_tokens = max_tokens
         self.max_retries = max_retries
 
+    @staticmethod
+    def _retryable_transport_error(exc: Exception) -> bool:
+        if type(exc).__name__ in {
+            "APIConnectionError",
+            "APITimeoutError",
+            "RateLimitError",
+            "InternalServerError",
+        }:
+            return True
+        status = getattr(exc, "status_code", None)
+        return isinstance(status, int) and (status == 429 or status >= 500)
+
+    def _chat_completion(self, messages: list[dict[str, Any]]):
+        """Retry transient transport failures without consuming validation attempts."""
+        attempts = max(1, int(os.environ.get("CONSTRUCT_TRANSPORT_ATTEMPTS", "5")))
+        backoff_base = max(0.0, float(os.environ.get("CONSTRUCT_TRANSPORT_BACKOFF_BASE", "2")))
+        last_error: Exception | None = None
+        for attempt in range(1, attempts + 1):
+            try:
+                return self.client.chat.completions.create(
+                    model=self.model,
+                    messages=messages,
+                    max_tokens=self.max_tokens,
+                )
+            except Exception as exc:  # noqa: BLE001
+                last_error = exc
+                if not self._retryable_transport_error(exc) or attempt >= attempts:
+                    raise
+                delay = (backoff_base ** (attempt - 1) if backoff_base else 0.0) + random.random()
+                print(
+                    f"Transient LLM transport failure {attempt}/{attempts}: "
+                    f"{type(exc).__name__}: {exc}; retrying in {delay:.1f}s"
+                )
+                time.sleep(delay)
+        raise RuntimeError(f"transport retry loop exhausted: {last_error}") from last_error
+
     def format_code_context(
         self,
         code_list: list[dict[str, str]],
@@ -1287,11 +1323,7 @@ class LocalSearchReplaceSynthesizer:
         last_error: Exception | None = None
         for attempt in range(1, max_retries + 1):
             try:
-                response = self.client.chat.completions.create(
-                    model=self.model,
-                    messages=messages,
-                    max_tokens=self.max_tokens,
-                )
+                response = self._chat_completion(messages)
                 response_text = response.choices[0].message.content if response and response.choices else None
                 if not response_text:
                     raise ValueError("Empty response content from LLM.")
