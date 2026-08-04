@@ -14,7 +14,7 @@
 #   EDIT_PROJECT_LIST=...      required, final 40K-eligible project list
 #   REPAIR_PROJECT_LIST=...    required, final 40K-eligible project list
 #   OUTPUT_ROOT=runs/construct_edit_repair_<run-id>
-#   EDIT_WORKERS=12 REPAIR_WORKERS=20 MIN_TASKS=1 MAX_TASKS=7
+#   EDIT_WORKERS=24 REPAIR_WORKERS=8 MIN_TASKS=1 MAX_TASKS=7
 #   DRY_RUN=1                  print resolved commands, make no API calls
 set -euo pipefail
 
@@ -36,8 +36,8 @@ TASKS="${TASKS:-edit,repair}"
 EDIT_PROJECT_LIST="${EDIT_PROJECT_LIST:-}"
 REPAIR_PROJECT_LIST="${REPAIR_PROJECT_LIST:-}"
 OUTPUT_ROOT="${OUTPUT_ROOT:-runs/construct_edit_repair_$(date +%Y%m%d)}"
-EDIT_WORKERS="${EDIT_WORKERS:-12}"
-REPAIR_WORKERS="${REPAIR_WORKERS:-20}"
+EDIT_WORKERS="${EDIT_WORKERS:-24}"
+REPAIR_WORKERS="${REPAIR_WORKERS:-8}"
 MIN_TASKS="${MIN_TASKS:-1}"
 MAX_TASKS="${MAX_TASKS:-7}"
 SEED="${SEED:-20260805}"
