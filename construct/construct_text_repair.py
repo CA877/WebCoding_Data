@@ -6,6 +6,7 @@ Output: a single JSONL file, one line per project.
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 import tempfile
 from pathlib import Path
@@ -95,6 +96,11 @@ def _process_one(project_dir: Path, args, synthesizer, all_task_types,
             visual["max_changed_ratio"] >= args.minimum_changed_ratio
             and stability["max_changed_ratio"] <= args.maximum_clean_rerender_ratio
         )
+        # ``repair_visual_difference`` is also used to measure sub-threshold
+        # text-only repairs, so it is called with a zero raising threshold.
+        # The persisted metadata must nevertheless describe the real release
+        # gate used below, not that measurement implementation detail.
+        visual["minimum_changed_ratio"] = args.minimum_changed_ratio
         return {
             "instance_id": project_dir.name,
             "source_project": str(project_dir.resolve()),
@@ -169,13 +175,25 @@ def main() -> None:
             if path.exists():
                 path.unlink()
 
+    image_task_quotas = Counter()
+    if args.image_repair_target:
+        image_task_quotas.update(
+            balanced_task_count(index, args.seed, args.min_tasks, args.max_tasks)
+            for index in range(args.image_repair_target)
+        )
+
     # Resume support also repairs an interrupted multi-file append.
     done_ids: set[str] = set()
     if out_jsonl.exists():
         text_ids = ({str(rec.get("instance_id")) for rec in iter_jsonl_records(text_v2_jsonl, ignore_invalid=True)}
                     if text_v2_jsonl.exists() else set())
-        image_ids = ({str(rec.get("instance_id")) for rec in iter_jsonl_records(image_v2_jsonl, ignore_invalid=True)}
-                     if image_v2_jsonl.exists() else set())
+        resume_image_records = (list(iter_jsonl_records(image_v2_jsonl, ignore_invalid=True))
+                                if image_v2_jsonl.exists() else [])
+        image_ids = {str(rec.get("instance_id")) for rec in resume_image_records}
+        resume_image_counts = Counter(
+            int(rec.get("metadata", {}).get("task_count", 0))
+            for rec in resume_image_records
+        )
         for rec in iter_jsonl_records(out_jsonl, ignore_invalid=True):
             if rec.get("status") == "ok":
                 instance_id = str(rec["instance_id"])
@@ -183,13 +201,15 @@ def main() -> None:
                 if instance_id not in text_ids:
                     append_jsonl(text_v2_jsonl, text_record)
                     text_ids.add(instance_id)
-                target_has_room = (
-                    not args.image_repair_target
-                    or len(image_ids) < args.image_repair_target
+                result_count = len(rec.get("task_type", []))
+                target_has_room = not args.image_repair_target or (
+                    len(image_ids) < args.image_repair_target
+                    and resume_image_counts[result_count] < image_task_quotas[result_count]
                 )
                 if image_record is not None and instance_id not in image_ids and target_has_room:
                     append_jsonl(image_v2_jsonl, image_record)
                     image_ids.add(instance_id)
+                    resume_image_counts[result_count] += 1
                 done_ids.add(instance_id)
         print(f"Resuming: {len(done_ids)} already done")
 
@@ -207,22 +227,62 @@ def main() -> None:
     print(f"text-repair: {total} projects, {args.workers} worker(s)")
 
     done = ok = errors = 0
-    image_ok = len({str(rec.get("instance_id")) for rec in iter_jsonl_records(image_v2_jsonl, ignore_invalid=True)}) if image_v2_jsonl.exists() else 0
-    if args.image_repair_target and image_ok >= args.image_repair_target:
+    image_records = (list(iter_jsonl_records(image_v2_jsonl, ignore_invalid=True))
+                     if image_v2_jsonl.exists() else [])
+    image_ok = len({str(rec.get("instance_id")) for rec in image_records})
+    image_task_counts = Counter(int(rec.get("metadata", {}).get("task_count", 0))
+                                for rec in image_records)
+    if args.image_repair_target:
+        invalid_existing = {
+            count: value for count, value in image_task_counts.items()
+            if count not in image_task_quotas or value > image_task_quotas[count]
+        }
+        if invalid_existing:
+            raise RuntimeError(f"existing image-repair task-count quotas exceeded: {invalid_existing}")
+    quotas_satisfied = bool(image_task_quotas) and all(
+        image_task_counts[count] >= quota
+        for count, quota in image_task_quotas.items()
+    )
+    if args.image_repair_target and quotas_satisfied:
         print(f"image-repair target already satisfied: {image_ok}/{args.image_repair_target}")
         return
 
     pending = iter(assigned)
     with ThreadPoolExecutor(max_workers=args.workers) as pool:
         futures = {}
+        inflight_task_counts = Counter()
+
+        def next_target_task_count(default_count: int) -> int:
+            if not image_task_quotas:
+                return default_count
+            available = [
+                count for count in sorted(image_task_quotas)
+                if image_task_counts[count] < image_task_quotas[count]
+            ]
+            if not available:
+                return default_count
+            # Keep every image-repair quota advancing together.  Counting
+            # in-flight work prevents a whole worker wave from selecting the
+            # same task count, while repeated sub-threshold results naturally
+            # cause that count to receive more future candidates.
+            return min(
+                available,
+                key=lambda count: (
+                    (image_task_counts[count] + 0.75 * inflight_task_counts[count])
+                    / image_task_quotas[count],
+                    (count - args.seed) % len(available),
+                ),
+            )
 
         def submit_one() -> bool:
             try:
-                project, count = next(pending)
+                project, default_count = next(pending)
             except StopIteration:
                 return False
+            count = next_target_task_count(default_count)
             future = pool.submit(_process_one, project, args, synthesizer, all_task_types, count)
-            futures[future] = project
+            futures[future] = (project, count)
+            inflight_task_counts[count] += 1
             return True
 
         for _ in range(min(args.workers, total)):
@@ -230,19 +290,22 @@ def main() -> None:
         while futures:
             completed, _ = wait(futures, return_when=FIRST_COMPLETED)
             for future in completed:
-                futures.pop(future)
+                _, scheduled_count = futures.pop(future)
+                inflight_task_counts[scheduled_count] -= 1
                 result = future.result()
                 append_jsonl(out_jsonl, result)
                 if result["status"] == "ok":
                     text_record, image_record = repair_records(result)
                     append_jsonl(text_v2_jsonl, text_record)
-                    target_has_room = (
-                        not args.image_repair_target
-                        or image_ok < args.image_repair_target
+                    result_count = len(result["task_type"])
+                    target_has_room = not args.image_repair_target or (
+                        image_ok < args.image_repair_target
+                        and image_task_counts[result_count] < image_task_quotas[result_count]
                     )
                     if image_record is not None and target_has_room:
                         append_jsonl(image_v2_jsonl, image_record)
                         image_ok += 1
+                        image_task_counts[result_count] += 1
                 done += 1
                 status = result["status"]
                 if status == "ok":
@@ -252,7 +315,10 @@ def main() -> None:
                 tag = f" — {result.get('error', '')[:80]}" if status == "error" else ""
                 target = f" image={image_ok}/{args.image_repair_target}" if args.image_repair_target else f" image={image_ok}"
                 print(f"  [{done}/{total}] {result['instance_id']}: {status}{tag}{target}")
-            target_met = args.image_repair_target and image_ok >= args.image_repair_target
+            target_met = args.image_repair_target and all(
+                image_task_counts[count] >= quota
+                for count, quota in image_task_quotas.items()
+            )
             if not target_met:
                 for _ in completed:
                     submit_one()

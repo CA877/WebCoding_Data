@@ -11,6 +11,7 @@ from WebCoding_Data.construct.construct_common import (
     validate_patch_round_trip,
 )
 from WebCoding_Data.construct.v2_records import repair_records
+from WebCoding_Data.scripts.pack_construct_v2_release import select_balanced_text_repairs
 
 
 def test_balanced_task_counts_are_exactly_uniform() -> None:
@@ -59,3 +60,26 @@ def test_low_visual_repair_has_text_record_only(tmp_path: Path) -> None:
     assert isinstance(text["instruction"], list)
     assert "description" not in text
     assert image is None
+
+
+def test_text_repair_release_balances_counts_and_keeps_image_pairs() -> None:
+    records = []
+    paired = set()
+    for task_count in range(1, 8):
+        for index in range(4 if task_count == 1 else 3):
+            instance_id = f"case-{task_count}-{index}"
+            records.append({
+                "instance_id": instance_id,
+                "metadata": {"task_count": task_count},
+            })
+            if index == 2:
+                paired.add(instance_id)
+
+    selected = select_balanced_text_repairs(records, paired)
+    selected_ids = {record["instance_id"] for record in selected}
+    assert paired <= selected_ids
+    assert len(selected) == 21
+    assert {
+        count: sum(record["metadata"]["task_count"] == count for record in selected)
+        for count in range(1, 8)
+    } == {count: 3 for count in range(1, 8)}

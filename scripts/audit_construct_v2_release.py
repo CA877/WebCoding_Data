@@ -136,6 +136,11 @@ def main() -> None:
         ids[task] = seen
         counts[task] = len(seen)
         task_count_distributions[task] = {str(key): value for key, value in sorted(distribution.items())}
+        if task in {"text-editing", "image-editing", "text-repair", "image-repair"}:
+            if set(distribution) != set(range(1, 8)):
+                errors.append(f"{name}: task-count distribution does not cover 1--7: {dict(distribution)}")
+            elif max(distribution.values()) - min(distribution.values()) > 1:
+                errors.append(f"{name}: task-count distribution is not even: {dict(distribution)}")
 
     expected = {
         "text-generation": args.expected_generate,
