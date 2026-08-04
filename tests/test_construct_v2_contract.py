@@ -153,6 +153,8 @@ def test_release_audit_enforces_edit_query_task_mapping() -> None:
         },
     }
     validate_instruction_contract(valid, ["Accordion", "Dark Mode"])
+    valid["instruction"]["description"].reverse()
+    validate_instruction_contract(valid, ["Accordion", "Dark Mode"])
     valid["instruction"]["description"][1]["task_type"] = "Carousel"
     with pytest.raises(ValueError, match="map exactly"):
         validate_instruction_contract(valid, ["Accordion", "Dark Mode"])

@@ -82,7 +82,9 @@ def validate_instruction_contract(record: dict, task_types: list[str]) -> None:
             for item in descriptions
             if isinstance(item, dict)
         ]
-        if described_types != task_types or len(described_types) != len(descriptions):
+        if (len(described_types) != len(descriptions)
+                or len(described_types) != len(task_types)
+                or set(described_types) != set(task_types)):
             raise ValueError("edit query descriptions do not map exactly to task_type")
         if any(not str(item.get("description", "")).strip() for item in descriptions):
             raise ValueError("edit query contains an empty task description")
