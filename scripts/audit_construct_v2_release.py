@@ -66,6 +66,32 @@ def input_code(record: dict) -> list[dict] | None:
     return None
 
 
+def validate_instruction_contract(record: dict, task_types: list[str]) -> None:
+    """Enforce explicit edit queries and non-disclosing repair instructions."""
+    task = record["task"]
+    if task in {"text-editing", "image-editing"}:
+        descriptions = (
+            record.get("instruction", {}).get("description")
+            if task == "text-editing"
+            else record.get("instruction")
+        )
+        if not isinstance(descriptions, list):
+            raise ValueError("edit query must be a per-task description list")
+        described_types = [
+            str(item.get("task_type", ""))
+            for item in descriptions
+            if isinstance(item, dict)
+        ]
+        if described_types != task_types or len(described_types) != len(descriptions):
+            raise ValueError("edit query descriptions do not map exactly to task_type")
+        if any(not str(item.get("description", "")).strip() for item in descriptions):
+            raise ValueError("edit query contains an empty task description")
+    elif task == "image-repair":
+        instruction = str(record.get("instruction", "")).strip()
+        if instruction != "Repair the provided web project.":
+            raise ValueError("image-repair instruction must not disclose injected bug tasks")
+
+
 def validate_image(path: Path) -> None:
     with Image.open(path) as raw:
         raw.verify()
@@ -182,6 +208,7 @@ def main() -> None:
                         task_types = list(record.get("task_type", []))
                         if not 1 <= len(task_types) <= 7 or len(task_types) != len(set(task_types)):
                             raise ValueError("task_type count must be 1--7 and distinct")
+                        validate_instruction_contract(record, task_types)
                         distribution[len(task_types)] += 1
                         patches = record["response"]
                         mapping = Counter(str(patch.get("task_type", "")) for patch in patches)

@@ -21,6 +21,7 @@ from WebCoding_Data.scripts.pack_construct_v2_release import (
 from WebCoding_Data.scripts.audit_construct_v2_release import (
     apply_exact as audit_apply_exact,
     changed_ratio,
+    validate_instruction_contract,
     validate_image,
 )
 
@@ -138,6 +139,34 @@ def test_release_audit_rejects_non_reversible_exact_patch() -> None:
         audit_apply_exact(
             [{"path": "index.html", "code": "x y"}],
             [{"path": "index.html", "search": "x", "replace": "y"}],
+        )
+
+
+def test_release_audit_enforces_edit_query_task_mapping() -> None:
+    valid = {
+        "task": "text-editing",
+        "instruction": {
+            "description": [
+                {"task_type": "Accordion", "description": "Add accessible accordion panels."},
+                {"task_type": "Dark Mode", "description": "Add a persistent dark-mode toggle."},
+            ]
+        },
+    }
+    validate_instruction_contract(valid, ["Accordion", "Dark Mode"])
+    valid["instruction"]["description"][1]["task_type"] = "Carousel"
+    with pytest.raises(ValueError, match="map exactly"):
+        validate_instruction_contract(valid, ["Accordion", "Dark Mode"])
+
+
+def test_release_audit_rejects_repair_bug_disclosure() -> None:
+    validate_instruction_contract(
+        {"task": "image-repair", "instruction": "Repair the provided web project."},
+        ["Occlusion"],
+    )
+    with pytest.raises(ValueError, match="must not disclose"):
+        validate_instruction_contract(
+            {"task": "image-repair", "instruction": "Fix the injected occlusion bug."},
+            ["Occlusion"],
         )
 
 
