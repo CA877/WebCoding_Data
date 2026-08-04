@@ -74,7 +74,10 @@ def validate_image(path: Path) -> None:
             raise ValueError(f"image is too small: {raw.size}")
         preview = raw.convert("L")
         preview.thumbnail((128, 128))
-        if ImageStat.Stat(preview).stddev[0] < 1.0:
+        # Some valid applications are intentionally sparse (for example a
+        # blank writing canvas with a small toolbar).  Pure/near-solid failed
+        # captures remain below 0.1, while antialiased real UI content passes.
+        if ImageStat.Stat(preview).stddev[0] < 0.1:
             raise ValueError("image is near-uniform/blank")
 
 

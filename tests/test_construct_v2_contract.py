@@ -21,6 +21,7 @@ from WebCoding_Data.scripts.pack_construct_v2_release import (
 from WebCoding_Data.scripts.audit_construct_v2_release import (
     apply_exact as audit_apply_exact,
     changed_ratio,
+    validate_image,
 )
 
 
@@ -148,6 +149,19 @@ def test_release_audit_recomputes_pixel_ratio(tmp_path: Path) -> None:
     changed.putpixel((0, 0), (0, 0, 0))
     changed.save(right)
     assert changed_ratio(left, right) == pytest.approx(0.01)
+
+
+def test_release_audit_rejects_solid_capture_but_accepts_sparse_ui(tmp_path: Path) -> None:
+    blank = tmp_path / "blank.png"
+    sparse = tmp_path / "sparse.png"
+    Image.new("RGB", (400, 400), "white").save(blank)
+    canvas = Image.new("RGB", (400, 400), "white")
+    for x in range(20, 381):
+        canvas.putpixel((x, 20), (80, 80, 80))
+    canvas.save(sparse)
+    with pytest.raises(ValueError, match="near-uniform"):
+        validate_image(blank)
+    validate_image(sparse)
 
 
 def test_release_provenance_is_portable_and_proves_token_gate(tmp_path: Path) -> None:

@@ -30,6 +30,7 @@ def screenshot_project(
     browser_proxy: str = "",
     width: int = 1920,
     height: int = 1080,
+    settle_ms: int = 3000,
 ) -> Path:
     project_dir = project_dir.resolve()
     handler = functools.partial(_QuietHandler, directory=str(project_dir))
@@ -51,7 +52,7 @@ def screenshot_project(
                 wait_until="domcontentloaded",
                 timeout=60_000,
             )
-            page.wait_for_timeout(1500)
+            page.wait_for_timeout(settle_ms)
             page.screenshot(path=str(out), full_page=True, animations="disabled",
                             caret="hide", timeout=90_000)
             browser.close()
@@ -69,6 +70,8 @@ def main() -> int:
     ap.add_argument("--browser-proxy", default="")
     ap.add_argument("--width", type=int, default=1920)
     ap.add_argument("--height", type=int, default=1080)
+    ap.add_argument("--settle-ms", type=int, default=3000,
+                    help="Wait after DOMContentLoaded so timed intro/loading overlays can finish.")
     ap.add_argument("--workers", type=int, default=1)
     args = ap.parse_args()
     projects = args.projects
@@ -78,11 +81,13 @@ def main() -> int:
     assert projects is not None
     if args.workers < 1:
         ap.error("--workers must be positive")
+    if args.settle_ms < 0:
+        ap.error("--settle-ms must be non-negative")
 
     def capture(index_project):
         index, project = index_project
         return project, screenshot_project(
-            project, args.port, args.browser_proxy, args.width, args.height
+            project, args.port, args.browser_proxy, args.width, args.height, args.settle_ms
         )
 
     ok = errors = 0

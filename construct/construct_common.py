@@ -562,7 +562,11 @@ def screenshot_project_to_dir(project_dir: Path, out_dir: Path, browser_proxy: s
                         response = page.goto(f"http://127.0.0.1:{port}/{quote(rel)}", wait_until="domcontentloaded", timeout=20_000)
                         if response is None or response.status >= 400:
                             raise RuntimeError(f"local_http_status:{response.status if response else 'none'}")
-                        page.wait_for_timeout(1000)
+                        # Timed intro/loading overlays in real projects often
+                        # disappear around 2--2.5 seconds after window.load.
+                        # Capture the settled application rather than a splash
+                        # screen; the value remains configurable for audits.
+                        page.wait_for_timeout(int(os.environ.get("SCREENSHOT_SETTLE_MS", "3000")))
                         dest = out_dir / f"{page_key}__{vp_name}.jpg"
                         page.screenshot(path=str(dest), full_page=full_page, type="jpeg", quality=92,
                                         animations="disabled", caret="hide", timeout=90000)
