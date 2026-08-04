@@ -1334,38 +1334,68 @@ do not use fuzzy, abbreviated, or placeholder search text.
 
 {src_code_context}"""
 
-            result = self._generate(
-                messages=[
-                    {
-                        "role": "system",
-                        "content": "Output ONLY XML. No explanations, no markdown fences, no commentary.",
-                    },
-                    {"role": "user", "content": prompt},
-                ],
-                max_retries=self.max_retries,
-            )
             source_map = {item["path"]: item["code"] for item in src_code}
-            snapped_mods = []
-            for mod in result["modified_files"]:
-                snapped = dict(mod)
-                snapped["search"] = _snap_to_source(
-                    mod["search"], source_map.get(mod["path"], "")
-                )
-                snapped_mods.append(snapped)
-            validate_patch_paths_for_context(generation_data, snapped_mods)
-            self._validate_task_patch_mapping(result["description"], snapped_mods, task_types)
-            validate_patch_round_trip(
-                src_code, generation_data.get("full_code", src_code), snapped_mods
-            )
-            return {
-                "task": "edit",
-                "task_type": task_types,
-                "description": result["description"],
-                "resources": generation_data.get("resources", []),
-                "label_modified_files": snapped_mods,
-                "llm_raw_response": result.get("raw_response"),
-                "llm_metadata": result.get("llm_metadata"),
-            }
+            validation_error = ""
+            last_error: Exception | None = None
+            for validation_attempt in range(1, self.max_retries + 1):
+                retry_instruction = ""
+                if validation_error:
+                    retry_instruction = f"""
+
+VALIDATION FEEDBACK FROM THE PREVIOUS ATTEMPT:
+{validation_error}
+Regenerate the complete XML response from the original code. Every search is
+applied sequentially, so patches must be non-overlapping and each search must
+still occur exactly once after all earlier patches. Do not reuse text created
+by another patch as a later search target.
+"""
+                try:
+                    result = self._generate(
+                        messages=[
+                            {
+                                "role": "system",
+                                "content": "Output ONLY XML. No explanations, no markdown fences, no commentary.",
+                            },
+                            {"role": "user", "content": prompt + retry_instruction},
+                        ],
+                        # This outer loop retries both transport/parsing and
+                        # strict semantic validation without multiplying two
+                        # independent retry budgets.
+                        max_retries=1,
+                    )
+                    snapped_mods = []
+                    for mod in result["modified_files"]:
+                        snapped = dict(mod)
+                        snapped["search"] = _snap_to_source(
+                            mod["search"], source_map.get(mod["path"], "")
+                        )
+                        snapped_mods.append(snapped)
+                    validate_patch_paths_for_context(generation_data, snapped_mods)
+                    self._validate_task_patch_mapping(result["description"], snapped_mods, task_types)
+                    validate_patch_round_trip(
+                        src_code, generation_data.get("full_code", src_code), snapped_mods
+                    )
+                    metadata = dict(result.get("llm_metadata") or {})
+                    metadata["validation_attempt"] = validation_attempt
+                    return {
+                        "task": "edit",
+                        "task_type": task_types,
+                        "description": result["description"],
+                        "resources": generation_data.get("resources", []),
+                        "label_modified_files": snapped_mods,
+                        "llm_raw_response": result.get("raw_response"),
+                        "llm_metadata": metadata,
+                    }
+                except Exception as exc:  # noqa: BLE001
+                    last_error = exc
+                    validation_error = f"{type(exc).__name__}: {exc}"
+                    print(
+                        f"Forward-edit validation attempt "
+                        f"{validation_attempt}/{self.max_retries} failed: {validation_error}"
+                    )
+            raise RuntimeError(
+                f"forward-edit generation failed after {self.max_retries} validated attempts: {last_error}"
+            ) from last_error
 
         def process_single_generation_entry(self, *args, **kwargs) -> list[dict[str, Any]]:
             raise NotImplementedError

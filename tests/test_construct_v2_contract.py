@@ -8,6 +8,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from WebCoding_Data.construct.construct_common import (
     apply_search_replace_exact,
     balanced_task_count,
+    build_forward_edit_synthesizer,
     validate_patch_round_trip,
 )
 from WebCoding_Data.construct.v2_records import repair_records
@@ -83,3 +84,40 @@ def test_text_repair_release_balances_counts_and_keeps_image_pairs() -> None:
         count: sum(record["metadata"]["task_count"] == count for record in selected)
         for count in range(1, 8)
     } == {count: 3 for count in range(1, 8)}
+
+
+def test_forward_edit_retries_strict_validation_with_feedback() -> None:
+    synthesizer = build_forward_edit_synthesizer(
+        "test-key", None, "test-model", max_retries=3
+    )
+    calls = []
+
+    def fake_generate(*, messages, max_retries):
+        calls.append(messages)
+        search = "missing" if len(calls) == 1 else "<main>"
+        return {
+            "description": [{"task_type": "Accordion", "description": "Add an accordion"}],
+            "modified_files": [{
+                "path": "index.html",
+                "task_type": "Accordion",
+                "search": search,
+                "replace": "<main class=\"accordion\">",
+            }],
+            "raw_response": "<xml />",
+            "llm_metadata": {"model": "test-model"},
+        }
+
+    synthesizer._generate = fake_generate
+    result = synthesizer.generate_forward_pair(
+        {
+            "dst_code": [{"path": "index.html", "code": "<main>content</main>"}],
+            "full_code": [{"path": "index.html", "code": "<main>content</main>"}],
+            "model_context": '<code_context><file path="index.html"><main>content</main></file></code_context>',
+            "resources": [],
+        },
+        ["Accordion"],
+    )
+
+    assert len(calls) == 2
+    assert "VALIDATION FEEDBACK" in calls[1][1]["content"]
+    assert result["llm_metadata"]["validation_attempt"] == 2
