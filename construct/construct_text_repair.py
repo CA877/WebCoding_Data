@@ -183,7 +183,11 @@ def main() -> None:
                 if instance_id not in text_ids:
                     append_jsonl(text_v2_jsonl, text_record)
                     text_ids.add(instance_id)
-                if image_record is not None and instance_id not in image_ids:
+                target_has_room = (
+                    not args.image_repair_target
+                    or len(image_ids) < args.image_repair_target
+                )
+                if image_record is not None and instance_id not in image_ids and target_has_room:
                     append_jsonl(image_v2_jsonl, image_record)
                     image_ids.add(instance_id)
                 done_ids.add(instance_id)
@@ -232,7 +236,11 @@ def main() -> None:
                 if result["status"] == "ok":
                     text_record, image_record = repair_records(result)
                     append_jsonl(text_v2_jsonl, text_record)
-                    if image_record is not None:
+                    target_has_room = (
+                        not args.image_repair_target
+                        or image_ok < args.image_repair_target
+                    )
+                    if image_record is not None and target_has_room:
                         append_jsonl(image_v2_jsonl, image_record)
                         image_ok += 1
                 done += 1
