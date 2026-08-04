@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
+"""Text-generation task: LLM reads project code → outputs PRD.
+
+Output: a single JSONL file, one line per project.
+"""
 from __future__ import annotations
 
 import argparse
-import shutil
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 import sys
@@ -13,43 +16,28 @@ if str(REPO_ROOT) not in sys.path:
 
 from WebCoding_Data.construct.construct_common import (
     append_jsonl,
-    base_info,
-    build_file_manifest,
-    collect_resources,
-    copy_project,
     generate_prd_from_code,
-    infer_page_bucket,
-    info_to_training_record,
     iter_project_dirs,
-    read_code_bundle,
-    safe_write_json,
 )
 
 
 def _process_one(project_dir: Path, args) -> dict:
-    """Process a single project. Returns manifest record."""
-    instance_dir = args.output_dir / project_dir.name
-    if instance_dir.exists():
-        if not args.overwrite:
-            return {"instance_id": project_dir.name, "status": "skip_existing"}
-        shutil.rmtree(instance_dir)
-    instance_dir.mkdir(parents=True, exist_ok=True)
+    """Process a single project. Returns a JSONL record."""
     try:
-        instruction = generate_prd_from_code(project_dir)
-        copy_project(project_dir, instance_dir / "dst")
-
-        info = base_info(project_dir.name, "text-generation")
-        info["page_type"] = infer_page_bucket(project_dir)
-        info["instruction"] = instruction
-        info["dst_code"] = read_code_bundle(project_dir, code_only=True)
-        info["file_manifest"] = build_file_manifest(project_dir)
-        info["resources"] = collect_resources(project_dir)
-        info["meta"] = {"source_project": str(project_dir)}
-        safe_write_json(instance_dir / "info.json", info)
-        return {"instance_id": project_dir.name, "status": "ok", "_info": info}
+        prd = generate_prd_from_code(project_dir)
+        return {
+            "instance_id": project_dir.name,
+            "task": "text-generation",
+            "status": "ok",
+            "llm_response": prd,
+        }
     except Exception as exc:  # noqa: BLE001
-        shutil.rmtree(instance_dir, ignore_errors=True)
-        return {"instance_id": project_dir.name, "status": "error", "error": f"{type(exc).__name__}: {exc}"}
+        return {
+            "instance_id": project_dir.name,
+            "task": "text-generation",
+            "status": "error",
+            "error": f"{type(exc).__name__}: {exc}",
+        }
 
 
 def main() -> None:
@@ -63,9 +51,24 @@ def main() -> None:
     args = parser.parse_args()
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    manifest = args.output_dir / "manifest_text_generation.jsonl"
-    train_jsonl = args.output_dir / "text-generation.jsonl"
+    out_jsonl = args.output_dir / "text-generation.jsonl"
+
+    # Skip already-done instances (resume support)
+    done_ids: set[str] = set()
+    if not args.overwrite and out_jsonl.exists():
+        import json
+        for line in out_jsonl.read_text().splitlines():
+            if line.strip():
+                try:
+                    rec = json.loads(line)
+                    if rec.get("status") == "ok":
+                        done_ids.add(rec["instance_id"])
+                except json.JSONDecodeError:
+                    pass
+        print(f"Resuming: {len(done_ids)} already done")
+
     projects = iter_project_dirs(args.input_dir, args.limit, args.offset)
+    projects = [p for p in projects if p.name not in done_ids]
     total = len(projects)
     print(f"text-generation: {total} projects, {args.workers} worker(s)")
 
@@ -75,26 +78,15 @@ def main() -> None:
     with ThreadPoolExecutor(max_workers=args.workers) as pool:
         futures = {pool.submit(_process_one, p, args): p for p in projects}
         for future in as_completed(futures):
-            project_dir = futures[future]
-            try:
-                result = future.result()
-            except Exception as exc:  # noqa: BLE001
-                result = {"instance_id": project_dir.name, "status": "error", "error": f"Worker crash: {exc}"}
-            # 写 manifest（不含 _info）
-            manifest_record = {k: v for k, v in result.items() if k != "_info"}
-            append_jsonl(manifest, manifest_record)
-            # 写训练 JSONL
-            if result.get("_info"):
-                record = info_to_training_record(result["_info"])
-                if record:
-                    append_jsonl(train_jsonl, record)
+            result = future.result()
+            append_jsonl(out_jsonl, result)
             done += 1
             status = result["status"]
             if status == "ok":
                 ok += 1
             elif status == "error":
                 errors += 1
-            tag = f" — {result['error'][:80]}" if status == "error" else ""
+            tag = f" — {result.get('error', '')[:80]}" if status == "error" else ""
             print(f"  [{done}/{total}] {result['instance_id']}: {status}{tag}")
     print(f"text-generation done: {ok} ok, {errors} errors, {done - ok - errors} skipped")
 

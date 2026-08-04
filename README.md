@@ -14,7 +14,7 @@
   │    → validate（Console 错误检查）
   │
   ├─ WebCode2M 域名重爬
-  │    → extract_webcode2m_urls.py（提取域名 URL）
+  │    → extract_all_webcode2m_urls.py（提取全量域名 URL）
   │    → crawl（Playwright 爬取，自带 clean + JS 保留）
   │    → validate（Console 错误检查）
   │
@@ -93,11 +93,13 @@ python3 construct/validate_webcode2m_task_dirs.py \
 ```
 .
 ├── preprocess/
-│   ├── playwright_crawl.py              # 主力脚本（crawl/expand/clean/validate）
-│   ├── extract_webcode2m_urls.py        # 从 WebCode2M 提取域名 URL
-│   └── README.md                        # 预处理详细文档
+│   ├── pipeline_a/                      # WebRenderBench 样本处理
+│   ├── pipeline_b/                      # WebCode2M 抓取后处理
+│   ├── pipeline_c/                      # 资源闭包与质量门禁
+│   ├── pipeline_d/                      # 历史最终 DOM 实验（仅供对照）
+│   ├── playwright_crawl.py              # Playwright 抓取与资源保存
+│   └── run_server.sh                    # Pipeline A/B 主入口
 ├── construct/
-│   ├── construct_webcode2m_dataset.py   # 七类任务构造入口
 │   ├── construct_common.py              # 共享工具库
 │   ├── construct_text_generation.py     # text-generation
 │   ├── construct_image_generation.py    # image-generation
@@ -105,14 +107,16 @@ python3 construct/validate_webcode2m_task_dirs.py \
 │   ├── construct_text_editing.py        # text-editing
 │   ├── construct_image_editing.py       # image-editing
 │   ├── construct_text_repair.py         # text-repair
-│   ├── construct_image_repair.py        # image-repair
-│   ├── add_js.py                        # LLM 生成 Vanilla JS
-│   ├── human_like_playwright_record.py  # 视频录制
-│   └── validate_webcode2m_task_dirs.py  # 输出验证器
+│   └── construct_image_repair.py        # image-repair
+├── scripts/                             # 审计、query 构造与通用上传工具
+├── tests/                               # 当前流水线测试
+├── datasets/                            # 本地数据及参考快照（Git 忽略）
+├── runs/                                # 实验输出（Git 忽略）
+├── docs/                                # 按主题归类的本地资料（Git 忽略，入口见 docs/README.md）
+├── third_party/                         # 第三方参考仓库（Git 忽略）
+├── web-coding-agent/                    # 独立 Git 仓库：Harness 实现
 ├── .env.example                         # API 凭据模板
-├── AGENTS.md                            # 工作原则 + 服务器信息
-├── CLAUDE.md                            # Claude 指令
-└── 数据构造规划.md                        # 完整构造规划
+└── AGENTS.md                            # 当前协作与服务器规则（Git 忽略）
 ```
 
 ## 模型配置
@@ -132,4 +136,4 @@ python3 construct/validate_webcode2m_task_dirs.py \
 
 不要提交 API key、`.env`、生成结果截图/视频或日志。
 
-详细构造规划见 [数据构造规划.md](数据构造规划.md)。
+历史构造规划已归档到 `docs/archive/`。执行任务时只把根 `README.md`、`AGENTS.md` 和对应源码 README 当作当前规范；`docs/reports/` 与 `docs/archive/` 仅用于追溯。

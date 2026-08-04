@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-"""image-editing: text-editing + src_screenshot.
+"""Validate image attributes already embedded in current edit records.
 
-Reads text-editing output, screenshots the original project as src_screenshot.
+Pipeline C/rescue already stores the reviewed local-render screenshots in each
+source project's project-level screenshots.  Re-rendering here is wasteful and
+can produce a different network state, so this adapter only validates records.
 """
 from __future__ import annotations
 
 import argparse
 import json
-import shutil
 from pathlib import Path
 import sys
 
@@ -15,60 +16,55 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from WebCoding_Data.construct.construct_common import (
-    append_jsonl,
-    safe_write_json,
-    screenshot_project_to_dir,
-)
+from WebCoding_Data.construct.construct_common import append_jsonl, existing_final_screenshots
 
 
-def iter_pair_instances(root: Path, limit: int = 0) -> list[tuple[str, Path]]:
-    pairs = []
-    for bucket in ("sp", "mp"):
-        bucket_dir = root / bucket
-        if not bucket_dir.exists():
-            continue
-        for instance_dir in sorted(p for p in bucket_dir.iterdir() if p.is_dir()):
-            pairs.append((bucket, instance_dir))
-    return pairs[:limit] if limit > 0 else pairs
+def _screenshots(project: Path) -> list[dict[str, str]]:
+    return existing_final_screenshots(project)
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--input-dir", type=Path, required=True, help="text-editing dataset root")
-    parser.add_argument("--output-dir", type=Path, required=True)
-    parser.add_argument("--limit", type=int, default=0)
+    parser = argparse.ArgumentParser(description="Validate/copy unified edit records; never re-screenshot.")
+    parser.add_argument("--records-jsonl", type=Path, required=True)
+    parser.add_argument("--output-jsonl", type=Path, required=True)
     parser.add_argument("--overwrite", action="store_true")
     args = parser.parse_args()
 
-    args.output_dir.mkdir(parents=True, exist_ok=True)
-    manifest = args.output_dir / "manifest_image_editing.jsonl"
-
-    for bucket, src_instance_dir in iter_pair_instances(args.input_dir, args.limit):
-        dst_instance_dir = args.output_dir / bucket / src_instance_dir.name
-        if dst_instance_dir.exists():
-            if not args.overwrite:
-                append_jsonl(manifest, {"instance_id": src_instance_dir.name, "bucket": bucket, "status": "skip_existing"})
+    if args.output_jsonl.exists() and args.overwrite:
+        args.output_jsonl.unlink()
+    done: set[str] = set()
+    if args.output_jsonl.exists():
+        for line in args.output_jsonl.read_text(encoding="utf-8").splitlines():
+            try:
+                record = json.loads(line)
+                if record.get("status") == "ok": done.add(record["instance_id"])
+            except (json.JSONDecodeError, KeyError):
                 continue
-            shutil.rmtree(dst_instance_dir)
+
+    total = ok = errors = 0
+    for line in args.records_jsonl.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        record = json.loads(line); instance_id = record.get("instance_id", "")
+        if record.get("status") != "ok" or instance_id in done:
+            continue
+        total += 1
         try:
-            shutil.copytree(src_instance_dir, dst_instance_dir)
-            info = json.loads((dst_instance_dir / "info.json").read_text(encoding="utf-8"))
-
-            source_project = Path(info["meta"]["source_project"])
-            if not source_project.exists():
-                raise FileNotFoundError(f"source project not found: {source_project}")
-
-            # src_screenshot: original project (before editing)
-            src_screens = screenshot_project_to_dir(source_project, dst_instance_dir / "src_screenshots")
-
-            info["src_screenshot"] = src_screens
-            # dst_screenshot stays empty for edit tasks (WebCompass format)
-            safe_write_json(dst_instance_dir / "info.json", info)
-            append_jsonl(manifest, {"instance_id": src_instance_dir.name, "bucket": bucket, "status": "ok"})
+            images = record.get("images") or {}
+            if not images.get("dst_screenshot"):
+                project = Path(record["source_project"])
+                images["dst_screenshot"] = _screenshots(project)
+                images.setdefault("src_screenshot", [])
+            for image in [*images.get("src_screenshot", []), *images.get("dst_screenshot", [])]:
+                if not Path(image["path"]).is_file():
+                    raise FileNotFoundError(image["path"])
+            payload = {**record, "images": images, "screenshot_source": "project_embedded_final_screenshots"}
+            append_jsonl(args.output_jsonl, payload); ok += 1
         except Exception as exc:  # noqa: BLE001
-            shutil.rmtree(dst_instance_dir, ignore_errors=True)
-            append_jsonl(manifest, {"instance_id": src_instance_dir.name, "bucket": bucket, "status": "error", "error": f"{type(exc).__name__}: {exc}"})
+            append_jsonl(args.output_jsonl, {"instance_id": instance_id, "task": "image-editing",
+                                             "status": "error", "error": f"{type(exc).__name__}: {exc}"})
+            errors += 1
+    print(f"image-editing adapter done: {ok} ok, {errors} errors, {total} considered")
 
 
 if __name__ == "__main__":

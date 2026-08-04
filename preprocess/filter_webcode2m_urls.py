@@ -138,8 +138,7 @@ def reject_reason(url: str) -> str | None:
         return "malformed_host"
     if any(ch in host for ch in ("_", ")", "(", ",")):
         return "bad_host_chars"
-    if path not in {"", "/"}:
-        return "path_url"
+    # Allow URLs with paths — only reject known noise
     if any(s in host for s in BAD_SUBSTRINGS):
         return "noise_substring"
     if any(host.endswith(s) for s in BAD_SUFFIXES):

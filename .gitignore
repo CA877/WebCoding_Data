@@ -2,6 +2,13 @@
 .env
 .env.*
 !.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*credentials*.json
+*service-account*.json
+*secrets*.json
 
 # Python
 __pycache__/
@@ -20,6 +27,12 @@ outputs/
 remote_results/
 results/
 logs/
+runs/
+datasets/
+artifacts/
+bundles/
+transfer_package*/
+*-transfer-*.tar.gz
 *.log
 *.jsonl.tmp
 *.webm
@@ -82,6 +95,21 @@ build/
 
 # Nested repositories copied in for reference should not bring their Git object DB.
 **/.git/
+
+# Local documentation, reports, papers, and reference repositories.
+# Keep these files on disk; they are intentionally excluded from the public code snapshot.
+docs/
+参考文档/
+参考数据集/
+WebGen-Agent/
+third_party/
+web-coding-agent/
+
+# Internal agent/project notes may contain machine paths or infrastructure details.
+AGENTS.md
+CLAUDE.md
+STATUS.md
+TODO.md
 
 # Environment files with non-standard names, e.g. `.task.env`.
 *.env

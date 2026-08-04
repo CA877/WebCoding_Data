@@ -463,45 +463,106 @@ def localize_resources(html: str, page_url: str, resources_dir: Path,
     fallback_idx = 0
     download_count = 0
 
-    # Process <img>, <source>, and <input type="image"> tags
-    # NOTE: Skip image downloads — keep original URLs (fast mode)
+    # --- Fix JS-gated visibility ---
+    # Remove classes/attributes that hide elements until JS runs
+    JS_GATED_ATTRS = ("data-hide-prejs", "data-js-loaded", "data-motion-enter")
+    for attr_name in JS_GATED_ATTRS:
+        for tag in list(soup.find_all(attrs={attr_name: True})):
+            del tag[attr_name]
+            # If the element has inline style hiding it, remove the hiding
+            style = tag.get("style", "")
+            if style:
+                style = re.sub(r'display\s*:\s*none\s*;?\s*', '', style)
+                style = re.sub(r'visibility\s*:\s*hidden\s*;?\s*', '', style)
+                style = re.sub(r'opacity\s*:\s*0\s*;?\s*', '', style)
+                if style.strip():
+                    tag["style"] = style
+                else:
+                    del tag["style"]
+
+    # Fix .hydrated pattern — add class if missing to avoid empty rendering
+    # Also handle WP Rocket data-wpr-* lazy loading
+    for tag in list(soup.find_all(attrs={"data-wpr-lazyrender": True})):
+        del tag["data-wpr-lazyrender"]
+        style = tag.get("style", "")
+        if style:
+            style = re.sub(r'content-visibility\s*:\s*auto\s*;?\s*', '', style)
+            if style.strip():
+                tag["style"] = style
+            else:
+                del tag["style"]
+
+    # --- Fix lazy-loaded images: move data-src → src ---
+    LAZY_SRC_ATTRS = ("data-src", "data-lazy-src", "nitro-lazy-src",
+                      "data-original", "data-lazy", "data-cke-saved-src")
+
     for tag in list(soup.find_all(["img", "source", "input"])):
         if tag.name == "input" and (tag.get("type") or "").lower() != "image":
             continue
-        for attr in ("src", "data-src", "data-lazy-src", "data-cke-saved-src",
-                      "nitro-lazy-src", "data-original", "data-lazy"):
+
+        # Find the best real image URL from lazy-load attributes
+        real_url = None
+        for attr in LAZY_SRC_ATTRS:
             val = tag.get(attr)
-            if not val or val.startswith("data:") or val.startswith("./resources/"):
-                continue
-            abs_url = urljoin(page_url, val)
-            if abs_url.startswith("http"):
-                # Keep original URL — don't download, don't replace
-                tag[attr] = abs_url
+            if val and not val.startswith("data:") and not val.startswith("./resources/"):
+                abs_url = urljoin(page_url, val)
+                if abs_url.startswith("http"):
+                    real_url = abs_url
+                    break
+
+        # Current src
+        cur_src = tag.get("src", "")
+        src_is_placeholder = (
+            not cur_src
+            or cur_src.startswith("data:")
+            or "placeholder" in cur_src.lower()
+            or "blank" in cur_src.lower()
+            or cur_src.endswith(".svg") and len(cur_src) < 100
+        )
+
+        # Move real URL to src if current src is a placeholder
+        if real_url and src_is_placeholder:
+            tag["src"] = real_url
+        elif cur_src and not cur_src.startswith("data:") and not cur_src.startswith("./resources/"):
+            # Normalize existing src to absolute URL
+            abs_src = urljoin(page_url, cur_src)
+            if abs_src.startswith("http"):
+                tag["src"] = abs_src
+
+        # Clean up lazy-load attributes (no longer needed)
+        for attr in LAZY_SRC_ATTRS:
+            if tag.get(attr):
+                del tag[attr]
+
+        # Remove srcset (causes confusion with our URL handling)
         try:
             if tag.get("srcset"):
                 del tag["srcset"]
+            if tag.get("data-srcset"):
+                del tag["data-srcset"]
         except (AttributeError, TypeError):
             pass
 
-    # Process data-src on any element — keep original URLs, skip downloads
+        # Remove loading="lazy" — we want immediate rendering
+        if tag.get("loading"):
+            del tag["loading"]
+
+    # Also fix data-src on non-image elements (e.g. divs with background)
     for tag in list(soup.find_all(attrs={"data-src": True})):
+        if tag.name in ("img", "source", "input"):
+            continue  # already handled above
         val = tag["data-src"]
         if val.startswith("data:") or val.startswith("./resources/"):
             continue
         abs_url = urljoin(page_url, val)
         if abs_url.startswith("http"):
-            tag["data-src"] = abs_url
+            # Move to inline background-image style
+            existing_style = tag.get("style", "")
+            if "background" not in existing_style.lower():
+                tag["style"] = f"background-image: url('{abs_url}'); {existing_style}".strip()
+        del tag["data-src"]
 
-    # Clean up lazy attributes — keep original URLs
-    LAZY_ATTRS = ("data-lazy-src", "data-src", "nitro-lazy-src", "data-original", "data-lazy")
-    for img in soup.find_all("img"):
-        # Remove loading="lazy" — we want immediate rendering
-        if img.get("loading"):
-            del img["loading"]
-
-    # Deduplicate adjacent <img> tags with the same src (from noscript unwrap).
-    # Only remove if the previous kept img has the same src — logos/decorations
-    # legitimately reappear in different sections.
+    # Deduplicate adjacent <img> tags with the same src (from noscript unwrap)
     all_imgs = list(soup.find_all("img"))
     prev_src = ""
     for img in all_imgs:
@@ -511,7 +572,7 @@ def localize_resources(html: str, page_url: str, resources_dir: Path,
         else:
             prev_src = cur_src
 
-    # Remove CKEditor artifacts and other data-*-src/href with remote URLs
+    # Remove remaining data-*-src/href attributes (CKEditor, etc.)
     for tag in soup.find_all(True):
         attrs_to_remove = [k for k in tag.attrs
                           if k.startswith("data-cke-saved-") or
@@ -592,14 +653,9 @@ def localize_resources(html: str, page_url: str, resources_dir: Path,
         # Only download non-image resources (fonts); skip images
         url_path = urlparse(abs_url).path.lower()
         ext = Path(url_path).suffix if url_path else ""
-        is_non_image = ext in _NON_IMAGE_EXTS
-        if is_non_image:
-            if download_count >= MAX_RESOURCES_PER_PAGE:
-                return 'url("")'
-            local = download_resource(session, abs_url, resources_dir, fallback_index=-1)
-            download_count += 1
-            if local:
-                return f"url({local})"
+        # Skip all non-CSS/JS downloads (images, fonts, etc.)
+        # Fonts → empty url() (browser fallback); images → keep original URL
+        if ext in {".woff", ".woff2", ".ttf", ".otf", ".eot"}:
             return 'url("")'
         # Keep original image URL — don't download
         return match.group(0)
@@ -907,6 +963,39 @@ def detect_language(html: str) -> str:
 # Core crawl logic
 # ---------------------------------------------------------------------------
 
+
+def _scroll_page(page: Page) -> None:
+    """Scroll page top-to-bottom to trigger IntersectionObserver lazy loading."""
+    try:
+        page.evaluate("""
+            async () => {
+                const delay = ms => new Promise(r => setTimeout(r, ms));
+                const height = document.body.scrollHeight;
+                const step = window.innerHeight;
+                for (let y = 0; y < height; y += step) {
+                    window.scrollTo(0, y);
+                    await delay(100);
+                }
+                window.scrollTo(0, 0);
+                await delay(500);
+            }
+        """)
+        page.wait_for_timeout(1000)
+    except Exception:
+        pass
+
+
+def _take_screenshot(page: Page, path: Path) -> None:
+    """Take a full-page screenshot with viewport-only fallback."""
+    try:
+        page.screenshot(path=str(path), full_page=True, timeout=30000)
+    except Exception:
+        try:
+            page.screenshot(path=str(path), full_page=False, timeout=10000)
+        except Exception:
+            pass  # screenshot failure is non-fatal
+
+
 def snapshot_page(
     page: Page,
     url: str,
@@ -968,6 +1057,12 @@ def crawl_site(url: str, output_dir: Path, browser: Browser,
             page.close()
             return {"status": "wrong_language", "url": url, "lang": lang}
 
+        # Scroll page to trigger lazy-loaded images (IntersectionObserver)
+        _scroll_page(page)
+
+        # Screenshot — capture before localization to get the real rendered page
+        _take_screenshot(page, output_dir / "screenshot.png")
+
         # Localize images
         index_html = localize_resources(index_html, url, resources_dir, session)
 
@@ -1015,11 +1110,16 @@ def crawl_site(url: str, output_dir: Path, browser: Browser,
             if not validate_page(sub_html):
                 continue
 
+            # Scroll + screenshot for sub-page
+            _scroll_page(page)
+            filename = safe_filename(sub_url, i + 1, used_names)
+            screenshot_name = filename.replace(".html", "_screenshot.png")
+            _take_screenshot(page, output_dir / screenshot_name)
+
             # Localize images
             sub_html = localize_resources(sub_html, sub_url, resources_dir, session)
 
             # Save
-            filename = safe_filename(sub_url, i + 1, used_names)
             (output_dir / filename).write_text(sub_html, encoding="utf-8")
             url_to_file[sub_url] = filename
             pages_added += 1
@@ -1393,8 +1493,7 @@ def clean_project_fast(project_dir: Path, session: requests.Session | None = Non
     # Remove only image/video files from resources/ — keep CSS, JS, and fonts
     resources_dir = project_dir / "resources"
     resources_dir.mkdir(exist_ok=True)
-    _keep_exts = {".css", ".js", ".jsx", ".ts", ".tsx",
-                  ".woff", ".woff2", ".ttf", ".otf", ".eot"}
+    _keep_exts = {".css", ".js", ".jsx", ".ts", ".tsx"}
     for f in list(resources_dir.iterdir()) if resources_dir.exists() else []:
         if f.is_file() and f.suffix.lower() not in _keep_exts:
             f.unlink()

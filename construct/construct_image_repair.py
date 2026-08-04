@@ -22,9 +22,13 @@ from WebCoding_Data.construct.construct_common import (
     apply_search_replace_local,
     read_code_bundle,
     safe_write_json,
+    repair_visual_difference,
     screenshot_project_to_dir,
     write_code_bundle_from_source,
 )
+
+# Compatibility alias for the focused visual-gate test and older callers.
+_visual_difference = repair_visual_difference
 
 
 def iter_pair_instances(root: Path, limit: int = 0) -> list[tuple[str, Path]]:
@@ -43,6 +47,7 @@ def main() -> None:
     parser.add_argument("--input-dir", type=Path, required=True, help="text-repair dataset root")
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--limit", type=int, default=0)
+    parser.add_argument("--browser-proxy", default="", help="Optional HTTP proxy for allowed remote image URLs during local-HTTP screenshots.")
     parser.add_argument("--overwrite", action="store_true")
     args = parser.parse_args()
 
@@ -66,7 +71,7 @@ def main() -> None:
                 raise FileNotFoundError(f"source project not found: {source_project}")
 
             # dst_screenshot: clean state (original project)
-            dst_screens = screenshot_project_to_dir(source_project, dst_instance_dir / "dst_screenshots")
+            dst_screens = screenshot_project_to_dir(source_project, dst_instance_dir / "dst_screenshots", args.browser_proxy)
 
             # src_screenshot: defective state (apply patches to inject defects)
             # label_modified_files is in fix direction (search=defective, replace=clean)
@@ -76,17 +81,22 @@ def main() -> None:
                 for p in info.get("label_modified_files", [])
             ]
             clean_code = read_code_bundle(source_project)
-            defective_code, apply_errors = apply_search_replace_local(clean_code, defect_patches, strict_mode=False)
+            defective_code, apply_errors = apply_search_replace_local(clean_code, defect_patches, strict_mode=True)
+            if apply_errors:
+                raise RuntimeError(f"unexpected defect patch apply errors: {apply_errors}")
 
             with tempfile.TemporaryDirectory() as tmp:
                 tmp_dir = Path(tmp) / "defective"
                 write_code_bundle_from_source(source_project, defective_code, tmp_dir)
-                src_screens = screenshot_project_to_dir(tmp_dir, dst_instance_dir / "src_screenshots")
+                src_screens = screenshot_project_to_dir(tmp_dir, dst_instance_dir / "src_screenshots", args.browser_proxy)
+
+            def absolute(records: list[dict]) -> list[dict]:
+                return [{**record, "path": str(dst_instance_dir / record["path"])} for record in records]
+            visual_delta = repair_visual_difference(absolute(dst_screens), absolute(src_screens))
 
             info["src_screenshot"] = src_screens
             info["dst_screenshot"] = dst_screens
-            if apply_errors:
-                info["meta"]["screenshot_apply_errors"] = apply_errors
+            info.setdefault("meta", {})["image_repair_visual_delta"] = visual_delta
             safe_write_json(dst_instance_dir / "info.json", info)
             append_jsonl(manifest, {"instance_id": src_instance_dir.name, "bucket": bucket, "status": "ok"})
         except Exception as exc:  # noqa: BLE001

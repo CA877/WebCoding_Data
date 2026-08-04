@@ -1,3 +1,0 @@
-"""
-WebCompass evaluation scripts.
-"""

@@ -218,97 +218,350 @@ def candidate_indices(page: Page, selector: str, max_count: int = 8) -> Iterable
     return range(count)
 
 
-def run_story(page: Page, recorder: HumanRecorder) -> None:
+# ---------------------------------------------------------------------------
+# Page discovery – scan the DOM once to learn what interactive elements exist
+# ---------------------------------------------------------------------------
+
+def _page_dimensions(page: Page) -> dict:
+    """Return scrollHeight, viewport height, and current scroll position."""
+    return page.evaluate("""() => ({
+        scroll_height: document.body.scrollHeight || document.documentElement.scrollHeight,
+        viewport_height: window.innerHeight,
+        scroll_y: window.scrollY,
+        viewport_width: window.innerWidth,
+    })""")
+
+
+def _discover_interactive(page: Page) -> dict:
+    """One-shot JS scan that returns counts and positions of key interactive elements.
+
+    Returns a flat dict of counts (cheap) plus lists of {selector, text} for the
+    elements that *are* worth hovering/clicking later.
+    """
+    return page.evaluate("""() => {
+        const els = (sel) => Array.from(document.querySelectorAll(sel));
+
+        // Helper: first visible text of an element (or its aria-label)
+        function label(el) {
+            const aria = el.getAttribute('aria-label') || '';
+            if (aria.trim()) return aria.trim().slice(0, 60);
+            const t = (el.textContent || '').replace(/\\s+/g, ' ').trim();
+            return t.slice(0, 60);
+        }
+
+        // Helper: is an element currently in or near the viewport?
+        function nearViewport(el) {
+            const r = el.getBoundingClientRect();
+            return r.top < window.innerHeight * 1.2 && r.bottom > -window.innerHeight * 0.3;
+        }
+
+        // ---------------------------------------------------------------
+        // Collect visible interactive elements by category
+        // ---------------------------------------------------------------
+        const take = (selector, n) =>
+            els(selector).filter(nearViewport).slice(0, n).map(el => ({
+                selector: selector,
+                text: label(el),
+                tag: el.tagName.toLowerCase(),
+                ariaExpanded: el.getAttribute('aria-expanded'),
+                role: el.getAttribute('role') || '',
+            }));
+
+        const buttons = take(
+            'button:not([disabled]), [role="button"]:not([aria-disabled="true"]), .btn, [class*="button"]', 20);
+
+        const navLinks = take(
+            'nav a[href], header a[href], [role="navigation"] a[href]', 10);
+
+        const tabs = take('[role="tab"]', 8);
+
+        const expandables = take(
+            'details summary, [aria-expanded]', 8);
+
+        const formInputs = take(
+            'input[type="text"]:not([type="hidden"]), input[type="search"], ' +
+            'input[type="email"], textarea, select', 6);
+
+        const checkboxes = take(
+            'label:has(input[type="checkbox"]), label:has(input[type="radio"])', 6);
+
+        // Cookie / consent detection
+        let cookieButton = null;
+        for (const btn of els('button, a.button, .btn, [role="button"]')) {
+            const t = (btn.textContent || '').toLowerCase();
+            if (/accept|agree|consent|got it|ok\\b|allow/i.test(t)) {
+                const parentText = ((btn.closest('div,section,aside,dialog,[role="dialog"]')||{}).textContent||'');
+                if (/cookie|privacy|gdpr|consent/i.test(parentText)) {
+                    cookieButton = {selector: 'button', text: (btn.textContent||'').trim().slice(0, 60)};
+                    break;
+                }
+            }
+        }
+
+        return {
+            scroll_height: document.body.scrollHeight || document.documentElement.scrollHeight,
+            viewport_height: window.innerHeight,
+            nav_links: navLinks,
+            buttons: buttons,
+            tabs: tabs,
+            expandables: expandables,
+            form_inputs: formInputs,
+            checkboxes: checkboxes,
+            cookie_button: cookieButton,
+            total_buttons: els('button, [role="button"]').length,
+            total_nav: els('nav a, header a, [role="navigation"] a').length,
+            total_forms: els('form').length,
+            total_inputs: els('input:not([type="hidden"]), textarea, select').length,
+        };
+    }""")
+
+
+def _element_box(page: Page, selector: str, index: int = 0) -> Optional[Dict[str, float]]:
+    """Convenience wrapper around visible_box; returns None on any failure."""
+    try:
+        return visible_box(page, selector, index)
+    except Exception:
+        return None
+
+
+def _scroll_to(page: Page, recorder: HumanRecorder, target_y: int, label: str = "scroll") -> None:
+    """Scroll from current position to *target_y* using smooth wheel gestures."""
+    current = page.evaluate("window.scrollY")
+    delta = target_y - current
+    if abs(delta) < 20:
+        return
+    # Use a few medium wheel steps so the scroll looks natural
+    steps = max(1, abs(delta) // 250)
+    step = delta / steps
+    for i in range(steps):
+        jitter = random.randint(-20, 20)
+        recorder.wheel(int(step) + jitter, f"{label}_{i + 1}")
+
+
+def _try_click_any(page: Page, recorder: HumanRecorder,
+                   candidates: list[dict], max_clicks: int = 2) -> int:
+    """Try to click up to *max_clicks* items from a discovered candidate list.
+
+    Returns the number of successful clicks.
+    """
+    clicked = 0
+    for item in candidates:
+        if clicked >= max_clicks:
+            break
+        sel = item.get("selector", "")
+        if not sel:
+            continue
+        # Find which index of this selector matches this item's text
+        try:
+            count = page.locator(sel).count()
+        except Exception:
+            continue
+        for idx in range(min(count, 12)):
+            text = locator_text(page, sel, idx)
+            if text and text[:20] == item.get("text", "")[:20]:
+                if recorder.click_selector(sel, idx, sel.replace('"', '').replace("'", "")[:20]):
+                    clicked += 1
+                    break
+        else:
+            # Fallback: try the first visible occurrence
+            if recorder.click_selector(sel, 0, sel.replace('"', '').replace("'", "")[:20]):
+                clicked += 1
+    return clicked
+
+
+def _try_hover_any(page: Page, recorder: HumanRecorder,
+                   candidates: list[dict], max_hover: int = 3) -> int:
+    """Like _try_click_any but only hovers."""
+    hovered = 0
+    for item in candidates:
+        if hovered >= max_hover:
+            break
+        sel = item.get("selector", "")
+        if not sel:
+            continue
+        if recorder.hover_selector(sel, 0, sel.replace('"', '').replace("'", "")[:20]):
+            hovered += 1
+    return hovered
+
+
+# ---------------------------------------------------------------------------
+# Main story – generic, page-structure-aware human-like interaction
+# ---------------------------------------------------------------------------
+
+def run_story(
+    page: Page,
+    recorder: HumanRecorder,
+    *,
+    type_text: str = "hello",
+    max_scroll_stops: int = 5,
+    clicks_per_stop: int = 2,
+) -> None:
+    """Record a human-like interaction video on *page*.
+
+    The function discovers what interactive elements exist on the page and then
+    follows a top-to-bottom traversal, clicking meaningful widgets as it goes.
+    Every phase is wrapped in its own try/except so a failure in one part does
+    not kill the whole recording.
+    """
+
+    # ---- Phase 0: discover the page ----------------------------------------
+    dims = _page_dimensions(page)
+    info: dict = {}
+    try:
+        info = _discover_interactive(page)
+    except Exception:
+        info = {}
+
+    total_h = info.get("scroll_height", dims.get("scroll_height", 2000))
+    vp_h = info.get("viewport_height", dims.get("viewport_height", 720))
+
+    # ---- cursor + initial view ---------------------------------------------
     recorder.install_cursor()
     recorder.pause(900, 1400, "initial_read")
     recorder.keyframe("initial")
 
-    # Read the page like a person: hover header controls and nearby controls first.
-    for selector, name in [
-        ("header button, [role=banner] button", "header_button"),
-        ("nav a, header a", "nav_link"),
-        ("main button, aside button, .btn, [role=button]", "primary_button"),
-    ]:
-        for idx in candidate_indices(page, selector, 3):
-            recorder.hover_selector(selector, idx, name)
-            break
+    # ---- Phase 1: above-the-fold -------------------------------------------
+    try:
+        _phase1_above_fold(page, recorder, info)
+    except Exception:
+        pass
 
-    # Prefer semantic paths over exhausting one widget family. For filter UIs, show
-    # both the preset controls and the checkbox controls so the video explains why
-    # those components exist.
-    clicked_semantic_control = False
-    if page.locator(".quick-select__btn").count():
-        for idx in [1, 3]:
-            if recorder.click_selector(".quick-select__btn", idx, "quick_select"):
-                clicked_semantic_control = True
+    # ---- Phase 2: progressive content walk ---------------------------------
+    try:
+        _phase2_content_walk(page, recorder, total_h, vp_h,
+                             max_scroll_stops, clicks_per_stop)
+    except Exception:
+        pass
 
-    if page.locator("label:has(input[type=checkbox])").count():
-        clicked = 0
-        for idx in range(min(page.locator("label:has(input[type=checkbox])").count(), 8)):
-            text = locator_text(page, "label:has(input[type=checkbox])", idx)
-            # After the $150+ preset in the beauty sample, the nonzero choices are
-            # Tom Ford and La Mer; in other pages this still clicks the first
-            # visible checkbox labels if no counts/text match.
-            if clicked < 2 and (not clicked_semantic_control or any(token in text for token in ["Tom Ford", "La Mer"])):
-                if recorder.click_selector("label:has(input[type=checkbox])", idx, "checkbox_label"):
-                    clicked += 1
-                    clicked_semantic_control = True
-        if clicked == 0:
-            for idx in candidate_indices(page, "label:has(input[type=checkbox])", 3):
-                if recorder.click_selector("label:has(input[type=checkbox])", idx, "checkbox_label"):
-                    clicked_semantic_control = True
-                    break
+    # ---- Phase 3: form interaction -----------------------------------------
+    try:
+        _phase3_form_interaction(page, recorder, info, type_text)
+    except Exception:
+        pass
 
-    if not clicked_semantic_control:
-        priority_clicks = [
-            ("[role=tab]", "tab"),
-            ("details summary", "details"),
-            ("button[aria-expanded]", "expand_button"),
-            ("button:has-text('Filter'), button:has-text('Menu'), button:has-text('Options')", "menu_button"),
-            ("button:not([disabled])", "button"),
-        ]
-        used = 0
-        for selector, name in priority_clicks:
-            for idx in candidate_indices(page, selector, 4):
-                if recorder.click_selector(selector, idx, name):
-                    used += 1
-                    if used >= 3:
-                        break
-            if used >= 3:
+    # ---- Phase 4: footer & card hover --------------------------------------
+    try:
+        _phase4_footer(page, recorder, info, total_h)
+    except Exception:
+        pass
+
+
+# ---------------------------------------------------------------------------
+# Phase implementations
+# ---------------------------------------------------------------------------
+
+def _phase1_above_fold(page: Page, recorder: HumanRecorder, info: dict) -> None:
+    """Interact with header/nav and the most prominent above-the-fold controls."""
+
+    # Hover 2-3 nav links to show navigation awareness
+    nav = info.get("nav_links", [])
+    if nav:
+        _try_hover_any(page, recorder, nav, max_hover=3)
+
+    # Click the most interactive-looking things first: expandables, then tabs,
+    # then generic buttons.
+    for category, max_n in [("expandables", 2), ("tabs", 2), ("buttons", 2)]:
+        items = info.get(category, [])
+        if items:
+            _try_click_any(page, recorder, items, max_clicks=max_n)
+
+    # If a cookie-consent button was detected, click it once to dismiss
+    cookie = info.get("cookie_button")
+    if cookie:
+        _try_click_any(page, recorder, [cookie], max_clicks=1)
+
+
+def _phase2_content_walk(
+    page: Page, recorder: HumanRecorder,
+    total_h: int, vp_h: int,
+    max_stops: int, clicks_per_stop: int,
+) -> None:
+    """Scroll down the page in segments, pausing at each stop to interact."""
+
+    # Compute scroll-stop Y positions: spread across the page height, skipping
+    # the very top (already covered) and very bottom (covered by phase 4).
+    if total_h <= vp_h * 1.3:
+        # Short page – one stop in the middle, then done
+        stops = [total_h // 2]
+    else:
+        content_h = max(0, total_h - vp_h * 0.8)
+        step = content_h / min(max_stops, max(1, content_h // (vp_h * 1.2)))
+        stops = [int(vp_h * 0.6 + step * i) for i in range(1, min(max_stops + 1, int(content_h // step) + 1))]
+        # Clamp to page bounds
+        stops = [s for s in stops if s < total_h - 100]
+
+    if not stops:
+        return
+
+    for i, target_y in enumerate(stops, 1):
+        _scroll_to(page, recorder, target_y, f"scroll_to_stop_{i}")
+        recorder.pause(500, 1000, "section_read")
+        recorder.keyframe(f"scroll_stop_{i}")
+
+        # Re-discover what's visible now
+        try:
+            visible = _discover_interactive(page)
+        except Exception:
+            visible = {}
+
+        # Click meaningful elements in this viewport
+        _try_click_any(page, recorder, visible.get("expandables", []),
+                       max_clicks=clicks_per_stop)
+        _try_click_any(page, recorder, visible.get("tabs", []),
+                       max_clicks=clicks_per_stop)
+        _try_click_any(page, recorder, visible.get("checkboxes", []),
+                       max_clicks=1)
+        _try_click_any(page, recorder, visible.get("buttons", []),
+                       max_clicks=clicks_per_stop)
+
+
+def _phase3_form_interaction(page: Page, recorder: HumanRecorder,
+                             info: dict, type_text: str) -> None:
+    """If there is a visible text-like input, click it and type some text."""
+
+    inputs = info.get("form_inputs", [])
+    if not inputs:
+        # Fallback: try generic selectors
+        for sel in ["input[type=text]", "input[type=search]", "input[type=email]", "textarea"]:
+            box = _element_box(page, sel, 0)
+            if box:
+                inputs = [{"selector": sel, "text": ""}]
                 break
 
-    # Focus/type into text-like fields if present.
-    for selector in ["input[type=search]", "input[type=text]", "textarea"]:
-        for idx in candidate_indices(page, selector, 2):
-            box = visible_box(page, selector, idx)
-            if not box:
-                continue
-            recorder.move_to_box(box, "approach_input")
-            recorder.click_at_cursor("focus_input", text=locator_text(page, selector, idx))
-            try:
-                page.keyboard.type("serum", delay=random.randint(45, 90))
-                recorder.log("type_text", value="serum")
-                recorder.pause(500, 1000, "after_type_wait")
-                recorder.keyframe("after_type")
-                break
-            except Exception:
-                pass
-        else:
+    for item in inputs[:1]:  # only interact with one input
+        sel = item.get("selector", "")
+        if not sel:
             continue
+        box = _element_box(page, sel, 0)
+        if not box:
+            continue
+        recorder.move_to_box(box, "approach_input")
+        recorder.click_at_cursor("focus_input", text=locator_text(page, sel, 0))
+        try:
+            page.keyboard.type(type_text, delay=random.randint(45, 90))
+            recorder.log("type_text", value=type_text)
+            recorder.pause(500, 1000, "after_type_wait")
+            recorder.keyframe("after_type")
+        except Exception:
+            pass
         break
 
-    # Use real wheel gestures with uneven pauses instead of jump scrolling.
-    for i, delta in enumerate([420, 560, 360, -240, 620, 740], 1):
-        recorder.wheel(delta, f"wheel_scroll_{i}")
-        if i in {2, 4, 6}:
-            recorder.pause(650, 1400, "section_read")
-            recorder.keyframe(f"scroll_position_{i}")
 
-    # Product/card hover near the end makes layout state visible.
-    for selector in [".card", ".product-card", "article", "[role=listitem]"]:
-        for idx in candidate_indices(page, selector, 4):
-            if recorder.hover_selector(selector, idx, "content_card"):
-                return
+def _phase4_footer(page: Page, recorder: HumanRecorder,
+                   info: dict, total_h: int) -> None:
+    """Scroll near the bottom and hover remaining content cards / footer links."""
+
+    # Scroll to ~85% of the page so we see footer-area content
+    target = max(0, total_h - int(info.get("viewport_height", 720) * 0.85))
+    _scroll_to(page, recorder, target, "scroll_to_footer")
+    recorder.pause(600, 1200, "footer_read")
+    recorder.keyframe("near_bottom")
+
+    # Hover any remaining card-like or article elements
+    for sel in ["article", ".card", ".product-card", "[role=listitem]", "footer a"]:
+        for idx in candidate_indices(page, sel, 3):
+            if recorder.hover_selector(sel, idx, f"bottom_{sel[:20]}"):
+                break
 
 
 def main() -> None:
