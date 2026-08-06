@@ -1,0 +1,54 @@
+.env*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*credentials*.json
+*service-account*.json
+*secrets*.json
+workdir/
+examples/*
+!examples/*.tgz
+runs/
+/runs
+.harness/
+.claude/worktrees/
+.claude/settings.local.json
+.playwright-mcp/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+app.log
+/logs
+
+# Test coverage
+.coverage
+htmlcov/
+.pytest_cache/

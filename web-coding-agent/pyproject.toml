@@ -1,0 +1,38 @@
+[project]
+name = "web-coding-agent"
+version = "0.1.0"
+description = "Multi-agent harness for long-running autonomous coding (Planner → Generator → Evaluator)"
+requires-python = ">=3.11"
+dependencies = [
+    "claude-agent-sdk>=0.1.65",
+    "litellm>=1.50,<2.0",
+    "httpx[socks]>=0.27.0",
+    "pydantic>=2.0,<3.0",
+    "python-dotenv>=1.0.0",
+    "playwright>=1.50.0",
+    "rich>=13.0.0",
+    "tenacity>=8.2.0",
+]
+
+[project.scripts]
+harness = "src.main:cli"
+
+[tool.uv]
+package = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+namespaces = false
+
+[tool.setuptools.package-data]
+"src.utils" = ["claude_http_viewer.html", "claude_http_viewer_i18n.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+    "anyio>=4.0",
+]

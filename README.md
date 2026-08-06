@@ -22,15 +22,17 @@
 清洁的自包含项目 (~70K 个，含 HTML + CSS + JS + resources/)
   │
   ▼
-任务构造 (construct/)
+数据生产（两条互补路线）
   │
-  ├─ text-generation:   VLM 生成 PRD 文档作为指令
-  ├─ image-generation:  多视口截图作为指令
-  ├─ video-generation:  录制人类交互视频作为指令
-  ├─ text-editing:      LLM 合成编辑需求 + search/replace 实现
-  ├─ image-editing:     在 text-editing 基础上截图
-  ├─ text-repair:       反向注入缺陷 + 修复标签
-  └─ image-repair:      在 text-repair 基础上截图
+  ├─ 逆向/受控构造 (construct/)
+  │   ├─ text/image/video generation
+  │   ├─ text/image editing
+  │   └─ text/image repair
+  │
+  └─ 正向 Agent 轨迹 (web-coding-agent/)
+      ├─ planner → generator → evaluator
+      ├─ accepted baseline → edit → DOM/ARIA 回归保护
+      └─ 自然 generate/edit/repair 轨迹导出
   │
   ▼
 训练集: 7 类 × 10K = 70K 样本
@@ -108,13 +110,21 @@ python3 construct/validate_webcode2m_task_dirs.py \
 │   ├── construct_image_editing.py       # image-editing
 │   ├── construct_text_repair.py         # text-repair
 │   └── construct_image_repair.py        # image-repair
-├── scripts/                             # 审计、query 构造与通用上传工具
+├── web-coding-agent/                    # 正向 agentic 数据 producer（正式子项目）
+│   ├── src/                             # Harness 实现
+│   ├── tests/                           # Harness 回归测试
+│   ├── scripts/                         # 正向轨迹运行、评测与导出
+│   └── pyproject.toml                   # 独立 Python 环境边界
+├── web_evograph/                        # 轨迹筛选、演化与 SFT 导出实验
+├── scripts/                             # 跨 producer 审计、query 构造与发布工具
 ├── tests/                               # 当前流水线测试
 ├── datasets/                            # 本地数据及参考快照（Git 忽略）
 ├── runs/                                # 实验输出（Git 忽略）
+│   └── agentic/                         # 正向 harness 运行、seed 与轨迹
+├── logs/                                # 持久化运行日志（Git 忽略）
+│   └── agentic/                         # Harness/API/seed 同步日志
 ├── docs/                                # 按主题归类的本地资料（Git 忽略，入口见 docs/README.md）
 ├── third_party/                         # 第三方参考仓库（Git 忽略）
-├── web-coding-agent/                    # 独立 Git 仓库：Harness 实现
 ├── .env.example                         # API 凭据模板
 └── AGENTS.md                            # 当前协作与服务器规则（Git 忽略）
 ```
@@ -137,3 +147,7 @@ python3 construct/validate_webcode2m_task_dirs.py \
 不要提交 API key、`.env`、生成结果截图/视频或日志。
 
 历史构造规划已归档到 `docs/archive/`。执行任务时只把根 `README.md`、`AGENTS.md` 和对应源码 README 当作当前规范；`docs/reports/` 与 `docs/archive/` 仅用于追溯。
+
+`web-coding-agent/` 是 monorepo 中的正向数据 producer，不再作为被忽略的外来仓库。
+其源码与测试由主仓库统一版本控制；`.venv/`、`.env`、`.harness/`、运行结果和
+日志继续留在 Git 之外。正向产物统一写到 `runs/agentic/`，避免源码与训练产物混放。

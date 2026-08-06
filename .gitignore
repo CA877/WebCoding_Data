@@ -99,11 +99,13 @@ build/
 # Local documentation, reports, papers, and reference repositories.
 # Keep these files on disk; they are intentionally excluded from the public code snapshot.
 docs/
+# Harness design docs are source documentation; keep them with the agentic producer.
+!web-coding-agent/docs/
+!web-coding-agent/docs/**
 参考文档/
 参考数据集/
 WebGen-Agent/
 third_party/
-web-coding-agent/
 
 # Internal agent/project notes may contain machine paths or infrastructure details.
 AGENTS.md
