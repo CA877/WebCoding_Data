@@ -1,153 +1,42 @@
-# WebCoding_Data — 70K Web Coding 训练集构造
+# WebCoding_Data — Web Coding 数据构造与评测
 
-基于 WebRenderBench + WebCode2M 构造七类 Web Coding 训练样本，目标刷 4 个榜单：WebCompass、Design2Code、Vision2Web、FLAME-VLM-Code。
+用于网页预处理、Generate/Edit/Repair 数据构造、灵感挖掘、连续 Edit 指令生成和浏览器评测。
 
-## 流程概览
+## 模块入口
 
-```
-数据获取与清洗 (preprocess/)
-  │
-  ├─ WebRenderBench 31,765 个 MHTML 快照
-  │    → expand（扩展为多页）
-  │    → clean（图片本地化、去噪、中和外链）
-  │    → add_js（LLM 生成 Vanilla JS）
-  │    → validate（Console 错误检查）
-  │
-  ├─ WebCode2M 域名重爬
-  │    → extract_all_webcode2m_urls.py（提取全量域名 URL）
-  │    → crawl（Playwright 爬取，自带 clean + JS 保留）
-  │    → validate（Console 错误检查）
-  │
-  ▼
-清洁的自包含项目 (~70K 个，含 HTML + CSS + JS + resources/)
-  │
-  ▼
-数据生产（两条互补路线）
-  │
-  ├─ 逆向/受控构造 (construct/)
-  │   ├─ text/image/video generation
-  │   ├─ text/image editing
-  │   └─ text/image repair
-  │
-  └─ 正向 Agent 轨迹 (web-coding-agent/)
-      ├─ planner → generator → evaluator
-      ├─ accepted baseline → edit → DOM/ARIA 回归保护
-      └─ 自然 generate/edit/repair 轨迹导出
-  │
-  ▼
-训练集: 7 类 × 10K = 70K 样本
-```
+| 目录 | 用途 |
+|---|---|
+| [preprocess/](preprocess/README.md) | 网页抓取、清洗与资源处理 |
+| [construct/](construct/README.md) | 受控 Generate/Edit/Repair 构造 |
+| [instruction_augmentation/](instruction_augmentation/README.md) | 本地项目与 URL 灵感挖掘、连续 Edit 指令生成 |
+| [web-coding-agent/](web-coding-agent/README.md) | 正向 Agent 与 Harness |
+| web_evograph/ | 网页轨迹演化实验 |
+| scripts/ | 数据处理、运行与导出工具 |
+| tests/ | 行为与回归测试 |
 
-## 快速上手
+两种数据生产路线的分工见 [DATA_PRODUCERS.md](DATA_PRODUCERS.md)。
 
-### 1. 环境准备
+## 开发环境
+
+Python 3.11+，使用 uv 安装项目依赖：
 
 ```bash
-cp .env.example .env
-# 编辑 .env 填入 API key、base_url、model
-pip install playwright beautifulsoup4 python-dotenv openai Pillow
-playwright install chromium
+uv sync --frozen
+uv run playwright install chromium
 ```
 
-### 2. 预处理（以 WebRenderBench 为例）
+相关模块的运行参数见各自 README。浏览器、模型和外部数据依赖按实际任务配置。
+
+## 测试
 
 ```bash
-# 扩展为多页
-python3 preprocess/playwright_crawl.py \
-  --browser-proxy "socks5://PROXY" \
-  --requests-proxy "socks5h://PROXY" \
-  --max-pages 4 --concurrency 5 \
-  expand --input-dir /data/webrenderbench/ --output-dir /data/expanded/
-
-# 清洗
-python3 preprocess/playwright_crawl.py \
-  --requests-proxy "socks5h://PROXY" --concurrency 10 \
-  clean --input-dir /data/expanded/
-
-# 添加 JS（WebRenderBench 专用，用 LLM 生成）
-python3 construct/add_js.py \
-  --input-dir /data/expanded/ --output-dir /data/expanded_with_js/ --concurrency 5
-
-# 验证 Console 错误
-python3 preprocess/playwright_crawl.py --concurrency 5 \
-  validate --input-dir /data/expanded_with_js/
+uv run pytest -q
 ```
 
-### 3. 构造七类任务
+部分测试依赖本地数据或浏览器环境，可按模块选择测试文件。独立 Harness 的依赖和测试命令见其 README。
 
-```bash
-python3 construct/construct_webcode2m_dataset.py \
-  --input-dir /data/all_clean_projects/ \
-  --output-dir /data/70k_dataset/ \
-  --limit 10000
-```
+## 凭据与本地产物
 
-### 4. 验证
+API 密钥通过环境变量注入，变量模板见 [.env.example](.env.example)。具体模型与 endpoint 配置以对应入口为准。
 
-```bash
-python3 construct/validate_webcode2m_task_dirs.py \
-  --root /data/70k_dataset/ \
-  --expected-per-task 10000
-```
-
-## 目录结构
-
-```
-.
-├── preprocess/
-│   ├── pipeline_a/                      # WebRenderBench 样本处理
-│   ├── pipeline_b/                      # WebCode2M 抓取后处理
-│   ├── pipeline_c/                      # 资源闭包与质量门禁
-│   ├── pipeline_d/                      # 历史最终 DOM 实验（仅供对照）
-│   ├── playwright_crawl.py              # Playwright 抓取与资源保存
-│   └── run_server.sh                    # Pipeline A/B 主入口
-├── construct/
-│   ├── construct_common.py              # 共享工具库
-│   ├── construct_text_generation.py     # text-generation
-│   ├── construct_image_generation.py    # image-generation
-│   ├── construct_video_generation.py    # video-generation
-│   ├── construct_text_editing.py        # text-editing
-│   ├── construct_image_editing.py       # image-editing
-│   ├── construct_text_repair.py         # text-repair
-│   └── construct_image_repair.py        # image-repair
-├── web-coding-agent/                    # 正向 agentic 数据 producer（正式子项目）
-│   ├── src/                             # Harness 实现
-│   ├── tests/                           # Harness 回归测试
-│   ├── scripts/                         # 正向轨迹运行、评测与导出
-│   └── pyproject.toml                   # 独立 Python 环境边界
-├── web_evograph/                        # 轨迹筛选、演化与 SFT 导出实验
-├── scripts/                             # 跨 producer 审计、query 构造与发布工具
-├── tests/                               # 当前流水线测试
-├── datasets/                            # 本地数据及参考快照（Git 忽略）
-├── runs/                                # 实验输出（Git 忽略）
-│   └── agentic/                         # 正向 harness 运行、seed 与轨迹
-├── logs/                                # 持久化运行日志（Git 忽略）
-│   └── agentic/                         # Harness/API/seed 同步日志
-├── docs/                                # 按主题归类的本地资料（Git 忽略，入口见 docs/README.md）
-├── third_party/                         # 第三方参考仓库（Git 忽略）
-├── .env.example                         # API 凭据模板
-└── AGENTS.md                            # 当前协作与服务器规则（Git 忽略）
-```
-
-## 模型配置
-
-在 `.env` 中配置：
-
-| 变量 | 用途 |
-|------|------|
-| `OPENAI_API_KEY` | API 密钥 |
-| `OPENAI_BASE_URL` | API endpoint |
-| `OPENAI_MODEL` | 文本 LLM（editing/repair/add_js） |
-| `VISION_OPENAI_API_KEY` | 视觉模型 API 密钥（可选，默认同上） |
-| `VISION_OPENAI_BASE_URL` | 视觉模型 endpoint（可选，默认同上） |
-| `VISION_MODEL` | 视觉模型（PRD 生成） |
-
-## 凭据和数据
-
-不要提交 API key、`.env`、生成结果截图/视频或日志。
-
-历史构造规划已归档到 `docs/archive/`。执行任务时只把根 `README.md`、`AGENTS.md` 和对应源码 README 当作当前规范；`docs/reports/` 与 `docs/archive/` 仅用于追溯。
-
-`web-coding-agent/` 是 monorepo 中的正向数据 producer，不再作为被忽略的外来仓库。
-其源码与测试由主仓库统一版本控制；`.venv/`、`.env`、`.harness/`、运行结果和
-日志继续留在 Git 之外。正向产物统一写到 `runs/agentic/`，避免源码与训练产物混放。
+内部文档、研究草稿、机器配置、数据集、运行日志、发布产物与临时文件保留在本地，由 .gitignore 排除。模块 README 中引用的内部报告按本地研究资料管理。

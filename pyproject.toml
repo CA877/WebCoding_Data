@@ -1,0 +1,20 @@
+[project]
+name = "webcoding-data-tools"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+  "beautifulsoup4>=4.12",
+  "httpx[socks]>=0.27",
+  "openai>=1.100",
+  "pillow>=10",
+  "playwright>=1.50",
+  "tinycss2>=1.4",
+  "tokenizers>=0.21",
+  "tree-sitter>=0.25",
+  "tree-sitter-javascript>=0.25",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]

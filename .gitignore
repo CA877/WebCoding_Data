@@ -96,12 +96,16 @@ build/
 # Nested repositories copied in for reference should not bring their Git object DB.
 **/.git/
 
-# Local documentation, reports, papers, and reference repositories.
-# Keep these files on disk; they are intentionally excluded from the public code snapshot.
+# Internal documentation remains local; module READMEs remain publishable.
 docs/
-# Harness design docs are source documentation; keep them with the agentic producer.
-!web-coding-agent/docs/
-!web-coding-agent/docs/**
+/*.md
+!/README.md
+!/DATA_PRODUCERS.md
+/construct/数量安排.md
+GPTPro方案/
+paper_review/
+drafts/
+草稿/
 参考文档/
 参考数据集/
 WebGen-Agent/
@@ -115,3 +119,42 @@ TODO.md
 
 # Environment files with non-standard names, e.g. `.task.env`.
 *.env
+
+# Local agents, browser sessions, scratch work and release artifacts
+.cache/
+.claude/
+.codex/
+.harness/
+tmp/
+temp/
+local_trials/
+releases/
+eval_runs/
+repair_overlays/
+playwright-report/
+test-results/
+blob-report/
+*.bak
+*.orig
+*.swp
+*.sqlite
+*.sqlite3
+*.db
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+*.7z
+*.safetensors
+*.pt
+*.pth
+/webcode2m_all_urls.txt
+*credentials*.yaml
+*credentials*.yml
+*secrets*.yaml
+*secrets*.yml
+*storage_state*.json
+*storage-state*.json
+cookies*.json
+id_rsa
+id_ed25519
