@@ -16,6 +16,17 @@
 
 两种数据生产路线的分工见 [DATA_PRODUCERS.md](DATA_PRODUCERS.md)。
 
+## 合作者阅读入口
+
+主流程：`URL / 本地网页 → 灵感库 → Top-K 灵感召回 → Edit 指令链 → Harness 实现与测试 → 数据导出`。
+
+- **灵感库构建**：[构建入口](scripts/mine_live_url_capability_pool.py)，输出 `capability_pool.jsonl`。
+- **灵感召回**：[召回与规划](instruction_augmentation/one_shot_capability_retrieval.py)，根据目标网页生成 query、召回 Top-K 并规划任务。
+- **Edit 链生成**：[运行入口](scripts/run_linear_edit_query_augmentation.py)，详细流程见 [模块说明](instruction_augmentation/README.md)。
+- **Harness**：[模块说明](web-coding-agent/README.md)、[链调度](web-coding-agent/scripts/run_batch.py)、[数据导出](web-coding-agent/scripts/export_trajectory_dataset.py)。源码直接包含在本仓库，普通 clone 即可获取。
+
+Harness 使用自己的依赖环境，在 `web-coding-agent/` 内运行 `uv sync --frozen` 和 `uv run pytest -q`。向 Harness 提供已验收的 Seed 与完整 `sequences/*.json`，以保留顺序、依赖和验收信息。
+
 ## 开发环境
 
 Python 3.11+，使用 uv 安装项目依赖：

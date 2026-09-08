@@ -47,6 +47,29 @@ def test_determine_passed_rejects_failed_regression_even_when_sprint_passed():
     assert determine_passed(grades) is False
 
 
+def test_behavior_only_edit_does_not_fail_on_unreviewed_visual_scores():
+    grades = {
+        "sprint_passed": True,
+        "regression_passed": True,
+        "overall_passed": True,
+        "phase_results": {
+            "render_gate": "pass",
+            "ui_functionality": "pass",
+            "appearance": "skipped",
+            "source_inspection": "pass",
+        },
+        "visual_evidence_decision": {"status": "not_required"},
+        "criteria": {
+            "design_quality": {"score": 1.0},
+            "functionality": {"score": 6.0},
+            "originality": {"score": 1.0},
+            "craft": {"score": 1.0},
+        },
+    }
+
+    assert determine_passed(grades) is True
+
+
 def test_one_fail():
     grades = {
         "criteria": {

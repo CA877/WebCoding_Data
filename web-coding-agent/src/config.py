@@ -14,10 +14,13 @@ DEFAULT_PLANNER_BUDGET_USD = 2.0
 DEFAULT_GENERATOR_BUDGET_USD = 80.0
 DEFAULT_EVALUATOR_BUDGET_USD = 10.0
 DEFAULT_MAX_ROUNDS = 3
+DEFAULT_EDIT_MAX_ROUNDS = 10
+DEFAULT_EDIT_FULL_REPLAY_INTERVAL = 5
+DEFAULT_PLANNER_MAX_TURNS = 24
 DEFAULT_GENERATOR_MAX_TURNS = 50
 DEFAULT_EVALUATOR_MAX_TURNS = 30
-DEFAULT_MAX_DELIVERABLES_PER_SPRINT = 5
-DEFAULT_MAX_EXIT_CRITERIA_PER_SPRINT = 5
+DEFAULT_MAX_DELIVERABLES_PER_SPRINT = 10
+DEFAULT_MAX_EXIT_CRITERIA_PER_SPRINT = 10
 DEFAULT_FRONTEND_PORT = 5173
 DEFAULT_BACKEND_PORT = 8000
 DEFAULT_PLAYWRIGHT_HEADLESS = False
@@ -29,7 +32,7 @@ DEFAULT_DESIGN_IMAGE_SIZE = "1024x1024"
 DEFAULT_DESIGN_IMAGE_TIMEOUT_SECONDS = 180
 DEFAULT_VISION_ENDPOINT_TYPE = "anthropic"
 DEFAULT_VISION_MAX_TOKENS = 4096
-DEFAULT_VISION_MAX_RETRIES = 3
+DEFAULT_VISION_MAX_RETRIES = 0
 DEFAULT_VISION_TIMEOUT_SECONDS = 300
 DEFAULT_VISION_RETRY_BASE_DELAY_SECONDS = 2.0
 DEFAULT_SDK_MAX_BUFFER_SIZE = 8 * 1024 * 1024
@@ -38,7 +41,7 @@ DEFAULT_OPENAI_TOOL_RESULT_CHARS = 8000
 DEFAULT_MINIMALITY_MAX_ATOMS = 12
 DEFAULT_MINIMALITY_ORACLE_TIMEOUT_SECONDS = 240
 DEFAULT_MINIMAL_PATH_MAX_PATCH_LINES = 120
-DEFAULT_MINIMAL_PATH_MAX_TOUCHED_FILES = 3
+DEFAULT_MINIMAL_PATH_MAX_TOUCHED_FILES = 6
 
 
 def _env_str(name: str, default: str = "") -> str:
@@ -116,6 +119,9 @@ class HarnessConfig:
             "MINIMAL_PATH_MAX_TOUCHED_FILES", DEFAULT_MINIMAL_PATH_MAX_TOUCHED_FILES
         )
     )
+    allow_paid_resume_call: bool = field(
+        default_factory=lambda: _env_bool("ALLOW_PAID_RESUME_CALL", False)
+    )
 
     planner_model: str = field(
         default_factory=lambda: _env_str("PLANNER_MODEL", DEFAULT_MODEL)
@@ -127,6 +133,9 @@ class HarnessConfig:
         default_factory=lambda: _env_str("EVALUATOR_MODEL", DEFAULT_MODEL)
     )
     evaluator_mode: str = field(default_factory=lambda: _env_str("EVALUATOR_MODE", "full"))
+    evaluator_evidence_route: str = field(
+        default_factory=lambda: _env_str("EVALUATOR_EVIDENCE_ROUTE", "llm")
+    )
     final_project_mode: bool = field(default_factory=lambda: _env_bool("FINAL_PROJECT_MODE", False))
     planner_scope_mode: str = field(
         default_factory=lambda: _env_str(
@@ -221,12 +230,33 @@ class HarnessConfig:
     max_budget_usd: float = field(
         default_factory=lambda: _env_float("MAX_BUDGET_USD", DEFAULT_MAX_BUDGET_USD)
     )
-    planner_budget_usd: float = DEFAULT_PLANNER_BUDGET_USD
-    generator_budget_usd: float = DEFAULT_GENERATOR_BUDGET_USD
-    evaluator_budget_usd: float = DEFAULT_EVALUATOR_BUDGET_USD
+    planner_budget_usd: float = field(
+        default_factory=lambda: _env_float("PLANNER_BUDGET_USD", DEFAULT_PLANNER_BUDGET_USD)
+    )
+    generator_budget_usd: float = field(
+        default_factory=lambda: _env_float("GENERATOR_BUDGET_USD", DEFAULT_GENERATOR_BUDGET_USD)
+    )
+    evaluator_budget_usd: float = field(
+        default_factory=lambda: _env_float("EVALUATOR_BUDGET_USD", DEFAULT_EVALUATOR_BUDGET_USD)
+    )
 
     max_rounds: int = field(
         default_factory=lambda: _env_int("MAX_ROUNDS", DEFAULT_MAX_ROUNDS)
+    )
+    edit_max_rounds: int = field(
+        default_factory=lambda: _env_int(
+            "EDIT_MAX_ROUNDS", DEFAULT_EDIT_MAX_ROUNDS
+        )
+    )
+    edit_full_replay_interval: int = field(
+        default_factory=lambda: _env_int(
+            "EDIT_FULL_REPLAY_INTERVAL", DEFAULT_EDIT_FULL_REPLAY_INTERVAL
+        )
+    )
+    planner_max_turns: int = field(
+        default_factory=lambda: _env_int(
+            "PLANNER_MAX_TURNS", DEFAULT_PLANNER_MAX_TURNS
+        )
     )
     generator_max_turns: int = field(
         default_factory=lambda: _env_int(

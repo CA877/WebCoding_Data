@@ -84,7 +84,78 @@ class OpenAIToolExecutor:
             self.mutation_policy.observe_result(
                 name, args, ok=result.ok, output=result.output
             )
+            if (
+                result.ok
+                and result.changed
+                and name in {"write_file", "apply_patch"}
+                and str(args.get("path") or "").replace("\\", "/").startswith(
+                    "frontend/"
+                )
+                and callable(
+                    getattr(self.mutation_policy, "observe_validation", None)
+                )
+            ):
+                validation_ok, validation_output = await self._validate_source_mutation(
+                    str(args["path"])
+                )
+                self.mutation_policy.observe_validation(
+                    ok=validation_ok,
+                    output=validation_output,
+                    tool="harness_auto_validation",
+                )
+                if validation_ok:
+                    result.output += "\nHarness validation passed after this mutation."
+                else:
+                    return ToolResult(
+                        False,
+                        result.output
+                        + "\nHarness validation failed after this mutation:\n"
+                        + validation_output,
+                        changed=True,
+                    )
         return result
+
+    async def _validate_source_mutation(self, relative_path: str) -> tuple[bool, str]:
+        """Run zero-model-token checks at a minimal-path mutation boundary."""
+
+        frontend = self.workdir / "frontend"
+        outputs: list[str] = []
+        if (frontend / ".git").is_dir():
+            proc = await asyncio.create_subprocess_exec(
+                "git",
+                "diff",
+                "--check",
+                cwd=frontend,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.STDOUT,
+            )
+            output, _ = await asyncio.wait_for(
+                proc.communicate(), self.command_timeout
+            )
+            text = output.decode(errors="replace")
+            if text:
+                outputs.append(text)
+            if proc.returncode != 0:
+                return False, "".join(outputs) or "git diff --check failed"
+        target = self._path(relative_path)
+        if target.suffix.lower() in {".js", ".mjs", ".cjs"} and target.is_file():
+            proc = await asyncio.create_subprocess_exec(
+                "node",
+                "--check",
+                str(target),
+                cwd=frontend,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.STDOUT,
+            )
+            output, _ = await asyncio.wait_for(
+                proc.communicate(), self.command_timeout
+            )
+            text = output.decode(errors="replace")
+            if text:
+                outputs.append(text)
+            if proc.returncode != 0:
+                return False, "".join(outputs) or "node --check failed"
+        return True, "".join(outputs)
 
     async def _execute_unobserved(
         self, name: str, args: dict[str, Any]

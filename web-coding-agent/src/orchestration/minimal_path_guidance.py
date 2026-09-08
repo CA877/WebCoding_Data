@@ -12,14 +12,25 @@ boundary rather than a prompt preference.
 
 from __future__ import annotations
 
+import difflib
+import hashlib
 import json
 import re
 from pathlib import Path
 from typing import Any, Iterable
+from urllib.parse import urlsplit
 
 
-PLAN_VERSION = "minimal-path-plan-v2"
-SUPPORTED_PLAN_VERSIONS = {"minimal-path-plan-v1", PLAN_VERSION}
+PLAN_VERSION = "minimal-path-plan-v6"
+SOURCE_SELECTION_STRATEGY = "typed-selectors-balanced-hotspots-v4"
+SUPPORTED_PLAN_VERSIONS = {
+    "minimal-path-plan-v1",
+    "minimal-path-plan-v2",
+    "minimal-path-plan-v3",
+    "minimal-path-plan-v4",
+    "minimal-path-plan-v5",
+    PLAN_VERSION,
+}
 CODE_EXTENSIONS = {
     ".css",
     ".ets",
@@ -39,6 +50,26 @@ CODE_EXTENSIONS = {
     ".wxml",
     ".wxss",
 }
+
+
+def expected_fragment_consumes_scope_slot(contract: dict[str, Any]) -> bool:
+    """Whether a new-fragment postcondition widens the mutable DOM surface."""
+    return re.fullmatch(
+        r"\[data-testid\s*=\s*(['\"])[^'\"]+\1\]",
+        str(contract.get("selector") or "").strip(),
+    ) is None
+
+
+def effective_patch_line_count(before: str, after: str) -> int:
+    """Count semantic line replacements, excluding unchanged context lines."""
+    matcher = difflib.SequenceMatcher(
+        a=before.splitlines(), b=after.splitlines(), autojunk=False
+    )
+    return sum(
+        max(old_end - old_start, new_end - new_start)
+        for tag, old_start, old_end, new_start, new_end in matcher.get_opcodes()
+        if tag != "equal"
+    )
 BEHAVIOR_EXTENSIONS = {".ets", ".js", ".jsx", ".qml", ".svelte", ".ts", ".tsx", ".vue"}
 MARKUP_EXTENSIONS = {
     ".ets",
@@ -57,6 +88,8 @@ INTERACTION_ACTIONS = {
     "click",
     "dblclick",
     "drag",
+    "drag_and_drop",
+    "emulate_media",
     "fill",
     "focus",
     "hover",
@@ -65,9 +98,12 @@ INTERACTION_ACTIONS = {
     "scroll",
     "select",
     "select_option",
+    "set_hash",
+    "set_input_files",
     "tap",
     "type",
     "uncheck",
+    "wait_for",
 }
 IGNORED_PARTS = {
     ".git",
@@ -97,6 +133,14 @@ _ROUTE_COMPONENT_RE = re.compile(
 _DEFAULT_IMPORT_RE = re.compile(
     r"import\s+([A-Za-z_$][\w$]*)\s+from\s+['\"]([^'\"]+)['\"]"
 )
+_NAMED_IMPORT_RE = re.compile(
+    r"import\s*\{([^}]+)\}\s*from\s*['\"]([^'\"]+)['\"]", re.S
+)
+_REGISTER_ROUTE_RE = re.compile(
+    r"\bregisterRoute\(\s*['\"]([^'\"]+)['\"]\s*,\s*([A-Za-z_$][\w$]*)\s*\)"
+)
+_CSS_CUSTOM_PROPERTY_RE = re.compile(r"(--[A-Za-z_][\w-]*)\s*:")
+_CSS_CUSTOM_PROPERTY_USE_RE = re.compile(r"var\(\s*(--[A-Za-z_][\w-]*)")
 _MUTATING_SHELL_RE = re.compile(
     r"(?:^|(?:&&|\|\||;)\s*|\s)(?:cp|install|mkdir|mv|patch|rm|tee|touch|truncate)\s|"
     r"(?:^|\s)(?:npm|pnpm|yarn)\s+(?:add|install|create)\b|"
@@ -160,7 +204,7 @@ def _target_checks(plan: dict[str, Any], sprint_num: int) -> list[dict[str, Any]
 def _extract_selectors(checks: list[dict[str, Any]]) -> list[str]:
     selectors: set[str] = set()
     for key, value in _walk_strings(checks):
-        if key in {"selector", "locator"} and value.strip():
+        if key in {"selector", "locator", "source_selector", "target_selector"} and value.strip():
             selectors.add(value.strip())
         for match in _QUERY_SELECTOR_RE.finditer(value):
             selectors.add(match.group(1).strip())
@@ -173,7 +217,7 @@ def _selector_tokens(selectors: list[str]) -> list[str]:
     tokens: set[str] = set(selectors)
     patterns = (
         re.compile(r"#([A-Za-z_][\w:-]*)"),
-        re.compile(r"\.([A-Za-z_][\w:-]*)"),
+        re.compile(r"\.([A-Za-z_][\w-]*)"),
         re.compile(r"\[(?:data-testid|aria-label|name|role)\s*=\s*['\"]?([^'\"\]]+)"),
     )
     for selector in selectors:
@@ -198,19 +242,130 @@ def _requested_source_roles(checks: list[dict[str, Any]]) -> set[str]:
         if isinstance(action, dict)
     }
     categories = {str(check.get("category", "")).strip().lower() for check in checks}
+    roles: set[str] = set()
     # Category expresses what the check is judging; the action can merely be
-    # the setup needed to reveal that surface (for example click before a
-    # visual assertion), so an explicit style category takes precedence.
+    # the setup needed to reveal that surface. Mixed sprints need the union:
+    # dropping behavior merely because one sibling check is visual steers a
+    # multi-page editor toward CSS while leaving interactions unimplemented.
     if categories & {"appearance", "responsive", "style", "visual"}:
-        return {"style"}
-    if actions & INTERACTION_ACTIONS or categories & {
+        roles.add("style")
+    if "assert_computed_style" in actions:
+        roles.add("style")
+    behavior_categories = categories & {
         "accessibility",
         "behavior",
         "functional",
+        "functionality",
         "interaction",
-    }:
-        return {"behavior"}
-    return {"markup"}
+        "persistence",
+        "state",
+    }
+    if behavior_categories or (
+        actions & INTERACTION_ACTIONS
+        and not categories & {"appearance", "responsive", "style", "visual"}
+    ):
+        roles.add("behavior")
+    return roles or {"markup"}
+
+
+def _repair_priority_source_roles(
+    harness_dir: Path,
+    round_num: int,
+    checks: list[dict[str, Any]],
+) -> tuple[set[str], list[str]]:
+    """Use failed typed checks to rank a repair's first source layer.
+
+    A Sprint can legitimately mix visual and functional checks. Ranking every
+    source file from that union lets selector-heavy CSS outrank the JavaScript
+    implicated by a failed interaction. The prior grade already contains the
+    executable check verdicts, so use those structured IDs without classifying
+    evaluator prose or guessing from keywords.
+    """
+    if round_num <= 1:
+        return set(), []
+    grade = _read_json(harness_dir / f"grade_round_{round_num - 1}.json", {})
+    failed_ids = sorted(
+        {
+            str(item.get("check_id"))
+            for item in grade.get("ui_checks", [])
+            if isinstance(item, dict)
+            and str(item.get("status", "")).strip().lower()
+            in {"error", "fail", "failed", "timeout"}
+            and item.get("check_id")
+        }
+    )
+    failed_set = set(failed_ids)
+    failed_checks = [
+        check for check in checks if str(check.get("id", "")) in failed_set
+    ]
+    if failed_checks:
+        browser_evidence = _read_json(
+            harness_dir / f"browser_evidence_round_{round_num - 1}.json", {}
+        )
+        checks_by_id = {str(check.get("id") or ""): check for check in failed_checks}
+
+        def disappeared_only_after_reload(item: dict[str, Any]) -> bool:
+            check = checks_by_id.get(str(item.get("check_id") or "")) or {}
+            actions = [
+                action for action in check.get("actions") or []
+                if isinstance(action, dict)
+            ]
+            steps = [
+                step for step in item.get("steps") or []
+                if isinstance(step, dict)
+            ]
+            for index, step in enumerate(steps):
+                if step.get("ok") is not False or index >= len(actions):
+                    continue
+                target = str(actions[index].get("selector") or "")
+                if not target:
+                    continue
+                for prior in range(index):
+                    if (
+                        prior < len(steps)
+                        and steps[prior].get("ok") is True
+                        and str(actions[prior].get("selector") or "") == target
+                        and any(
+                            actions[middle].get("action") == "reload"
+                            for middle in range(prior + 1, index)
+                        )
+                    ):
+                        return True
+            return False
+
+        missing_target_ids = {
+            str(item.get("check_id"))
+            for item in browser_evidence.get("checks") or []
+            if isinstance(item, dict)
+            and not disappeared_only_after_reload(item)
+            and any(
+                isinstance(step, dict)
+                and step.get("ok") is False
+                and step.get("action") in {"assert_visible", "wait_for"}
+                and "waiting for locator" in str(step.get("error") or "")
+                and "locator resolved to" not in str(step.get("error") or "")
+                and not (
+                    isinstance(step.get("visibility_diagnostic"), dict)
+                    and int(
+                        step["visibility_diagnostic"].get("base_matched_count") or 0
+                    ) > 0
+                )
+                for step in item.get("steps") or []
+            )
+        }
+        if missing_target_ids & failed_set:
+            return {"markup"}, failed_ids
+        return _requested_source_roles(failed_checks), failed_ids
+    edit_guard = grade.get("edit_guard") if isinstance(grade, dict) else None
+    violations = edit_guard.get("violations") if isinstance(edit_guard, dict) else None
+    if edit_guard and edit_guard.get("passed") is False and isinstance(violations, list) and violations:
+        # CSS cannot add/remove semantic DOM/ARIA fragments. When every typed
+        # interaction already passed and only the semantic guard failed, route
+        # the next repair to behavior/markup source rather than selector-heavy
+        # stylesheets. This uses structured guard evidence, not evaluator prose.
+        semantic_roles = _requested_source_roles(checks) - {"style"}
+        return semantic_roles or {"markup"}, failed_ids
+    return set(), failed_ids
 
 
 def _file_source_roles(path: Path) -> set[str]:
@@ -262,21 +417,35 @@ def _source_hotspots(
         role_evidence = sorted(_file_source_roles(path) & requested_roles)
         lines = content.splitlines()
         for selector in selectors:
-            for index, line in enumerate(lines, start=1):
-                if selector in line:
-                    matches.append(
-                        {"line": index, "anchor": selector, "strength": "selector"}
-                    )
-                    score += 8
-        for token in tokens:
+            occurrences = [
+                index for index, line in enumerate(lines, start=1) if selector in line
+            ]
+            score += 8 * len(occurrences)
+            sampled = (
+                occurrences
+                if len(occurrences) <= 6
+                else [*occurrences[:3], *occurrences[-3:]]
+            )
+            matches.extend(
+                {"line": index, "anchor": selector, "strength": "selector"}
+                for index in sampled
+            )
+        for token in sorted(tokens, key=lambda item: (-len(item), item)):
             if token in selectors:
                 continue
-            for index, line in enumerate(lines, start=1):
-                if token in line:
-                    matches.append(
-                        {"line": index, "anchor": token, "strength": "token"}
-                    )
-                    score += 3
+            occurrences = [
+                index for index, line in enumerate(lines, start=1) if token in line
+            ]
+            score += 3 * len(occurrences)
+            sampled = (
+                occurrences
+                if len(occurrences) <= 6
+                else [*occurrences[:3], *occurrences[-3:]]
+            )
+            matches.extend(
+                {"line": index, "anchor": token, "strength": "token"}
+                for index in sampled
+            )
         if score and role_evidence:
             # The source layer implied by an executable action is stronger
             # evidence than the same selector appearing in incidental text.
@@ -365,14 +534,29 @@ def _normalize_route(value: Any) -> str | None:
     route = value.strip()
     if not route or "://" in route or route.startswith("//"):
         return None
-    route = route.split("?", 1)[0].split("#", 1)[0] or "/"
-    if not route.startswith("/"):
-        route = "/" + route
-    parts = [part for part in route.split("/") if part]
+    parsed = urlsplit(route)
+    if parsed.query:
+        return None
+    path = parsed.path or "/"
+    if not path.startswith("/"):
+        path = "/" + path
+    parts = [part for part in path.split("/") if part]
     if any(part in {".", ".."} for part in parts):
         return None
     normalized = "/" + "/".join(parts)
-    return "/" if normalized == "/" else normalized
+    normalized = "/" if normalized == "/" else normalized
+    if not parsed.fragment:
+        return normalized
+    fragment = parsed.fragment.rstrip("/")
+    fragment_parts = [part for part in fragment.split("/") if part]
+    if (
+        not fragment.startswith("/")
+        or "\\" in fragment
+        or "://" in fragment
+        or any(part in {".", ".."} for part in fragment_parts)
+    ):
+        return None
+    return f"{normalized}#{fragment}"
 
 
 def _static_html_route(path: Path, frontend: Path) -> str:
@@ -449,11 +633,25 @@ def _route_entries(
                 target = _resolve_reference(frontend, router, reference)
                 if target is not None:
                     imports[symbol] = _relative_to_workdir(target, workdir)
+            for raw_symbols, reference in _NAMED_IMPORT_RE.findall(content):
+                target = _resolve_reference(frontend, router, reference)
+                if target is None:
+                    continue
+                target_relative = _relative_to_workdir(target, workdir)
+                for raw_symbol in raw_symbols.split(","):
+                    parts = [item.strip() for item in raw_symbol.strip().split(" as ")]
+                    if parts and parts[-1]:
+                        imports[parts[-1]] = target_relative
             for route_raw, symbol in _ROUTE_COMPONENT_RE.findall(content):
                 route = _normalize_route(route_raw)
                 target = imports.get(symbol)
                 if route and target:
                     router_entries.setdefault(route, set()).add(target)
+            for route_raw, symbol in _REGISTER_ROUTE_RE.findall(content):
+                logical = _normalize_route(route_raw)
+                target = imports.get(symbol)
+                if logical and target:
+                    router_entries.setdefault(f"/#{logical}", set()).add(target)
     if router_entries:
         # Explicit router declarations are more authoritative than a Vite
         # index.html shell or filename convention, which otherwise makes every
@@ -490,13 +688,15 @@ def _route_scope(
     workdir: Path,
     graph: dict[str, set[str]],
     checks: list[dict[str, Any]],
+    explicit_target_routes: list[str] | None = None,
+    allow_planned_static_routes: bool = False,
 ) -> dict[str, Any]:
     entries = _route_entries(files, frontend, workdir)
     if not entries:
         fallback_entries = _entrypoints(files, frontend, workdir)
         if fallback_entries:
             entries["/"] = set(fallback_entries[:1])
-    requested = sorted(
+    check_routes = sorted(
         {
             route
             for route in (_normalize_route(check.get("route", "/")) for check in checks)
@@ -504,15 +704,87 @@ def _route_scope(
         }
         or {"/"}
     )
+    contract_routes = sorted(set(explicit_target_routes or []))
+    unexpected_check_routes = sorted(
+        set(check_routes) - set(contract_routes)
+    ) if contract_routes else []
+    # A multi-route Edit should remain route-local per sprint. The explicit
+    # contract is the run-wide upper bound, while this sprint opens only the
+    # routes for which it has executable checks. If the planner drifts outside
+    # that upper bound, keep the user-declared routes in the blocked artifact
+    # rather than accidentally legitimizing the drifted page.
+    requested = (
+        contract_routes if unexpected_check_routes else check_routes
+    )
+    missing_check_routes: list[str] = []
     resolved = {
         requested_route: _resolve_target_route(requested_route, entries)
         for requested_route in requested
     }
+    planned_route_entries: dict[str, str] = {}
+    if allow_planned_static_routes and entries:
+        for requested_route, match in list(resolved.items()):
+            if match is not None or not requested_route.endswith((".htm", ".html")):
+                continue
+            relative = requested_route.lstrip("/")
+            candidate = (frontend / relative).resolve()
+            try:
+                candidate.relative_to(frontend.resolve())
+            except ValueError:
+                continue
+            if candidate.exists():
+                continue
+            path = _relative_to_workdir(candidate, workdir)
+            entries[requested_route] = {path}
+            resolved[requested_route] = requested_route
+            planned_route_entries[requested_route] = path
+    planned_route_dependency_edges: list[dict[str, str]] = []
+    planned_dependencies: dict[str, set[str]] = {}
+    for check in checks:
+        for contract in _routed_selector_contracts(check):
+            route = str(contract.get("route") or "")
+            entry_path = planned_route_entries.get(route)
+            if entry_path is None:
+                continue
+            selector = str(contract.get("selector") or "").strip()
+            resource = re.fullmatch(
+                r"(script|link)\[(src|href)\s*=\s*(['\"])([^'\"]+)\3\]",
+                selector,
+            )
+            if resource is None or (
+                (resource.group(1), resource.group(2))
+                not in {("script", "src"), ("link", "href")}
+            ):
+                continue
+            target = _resolve_reference(
+                frontend,
+                workdir / entry_path,
+                resource.group(4),
+            )
+            if target is None:
+                continue
+            target_path = _relative_to_workdir(target, workdir)
+            if resource.group(1) == "script" and target.suffix.lower() not in BEHAVIOR_EXTENSIONS:
+                continue
+            if resource.group(1) == "link" and target.suffix.lower() not in STYLE_EXTENSIONS:
+                continue
+            planned_dependencies.setdefault(route, set()).add(target_path)
+            edge = {
+                "from": entry_path,
+                "to": target_path,
+                "kind": "planned_route_dependency",
+            }
+            if edge not in planned_route_dependency_edges:
+                planned_route_dependency_edges.append(edge)
     unresolved = sorted(route for route, match in resolved.items() if match is None)
     target_routes = sorted({match for match in resolved.values() if match is not None})
     closures = {
         route: _dependency_closure(paths, graph) for route, paths in entries.items()
     }
+    for route, dependencies in planned_dependencies.items():
+        closures.setdefault(route, set()).update(
+            _dependency_closure(dependencies, graph)
+        )
     all_paths = {_relative_to_workdir(path, workdir) for path in files}
     # Framework shells are implicit runtime dependencies rather than normal
     # page imports. Assign them to every page they wrap so a layout/global CSS
@@ -542,6 +814,25 @@ def _route_scope(
                         if candidate in all_paths:
                             implicit.add(candidate)
         closures[route].update(_dependency_closure(implicit, graph))
+    html_paths = [
+        _relative_to_workdir(path, workdir)
+        for path in files
+        if path.suffix.lower() in {".htm", ".html"}
+    ]
+    global_style_paths: set[str] = set()
+    if len(html_paths) == 1 and len(entries) > 1:
+        # A single SPA shell may be replaced by explicit router entries above.
+        # Stylesheets linked by that shell still execute on every logical route,
+        # so assign only those style dependencies globally without collapsing
+        # every route-local view imported by the app/router into one owner set.
+        global_style_paths = {
+            target
+            for target in graph.get(html_paths[0], set())
+            if Path(target).suffix.lower() in STYLE_EXTENSIONS
+        }
+        global_style_closure = _dependency_closure(global_style_paths, graph)
+        for route in entries:
+            closures[route].update(global_style_closure)
     if len(entries) == 1:
         # With no competing page, unreferenced source remains part of that
         # page's editable project surface for backward compatibility.
@@ -571,6 +862,8 @@ def _route_scope(
     status = (
         "unresolved_target_route"
         if unresolved
+        else "target_route_contract_mismatch"
+        if unexpected_check_routes or missing_check_routes
         else "multi_page_scoped"
         if len(entries) > 1
         else "single_page"
@@ -578,6 +871,10 @@ def _route_scope(
     return {
         "status": status,
         "requested_routes": requested,
+        "check_routes": check_routes,
+        "contract_allowed_routes": contract_routes,
+        "unexpected_check_routes": unexpected_check_routes,
+        "missing_check_routes": missing_check_routes,
         "target_routes": target_routes,
         "protected_routes": sorted(set(entries) - set(target_routes)),
         "unresolved_routes": unresolved,
@@ -588,6 +885,13 @@ def _route_scope(
         "target_page_entries": sorted(
             {path for route in target_routes for path in entries.get(route, set())}
         ),
+        "planned_new_route_entries": sorted(planned_route_entries.values()),
+        "planned_new_routes": sorted(planned_route_entries),
+        "planned_route_dependency_edges": sorted(
+            planned_route_dependency_edges,
+            key=lambda item: (item["from"], item["to"]),
+        ),
+        "global_style_paths": sorted(global_style_paths),
         "route_local_paths": sorted(route_local),
         "target_shared_paths": sorted(target_shared),
         "cross_route_shared_paths": sorted(cross_shared),
@@ -598,6 +902,781 @@ def _route_scope(
     }
 
 
+def _route_symbol_candidates(route: str) -> list[str]:
+    """Derive conservative source symbols from one literal browser route.
+
+    This is a mechanical bridge for static multi-page projects that intentionally
+    keep route modules in one shared JavaScript file (for example
+    ``discovery.html`` -> ``const Discovery = {...}``).  It does not guess product
+    semantics: only exact PascalCase forms of literal route path segments qualify.
+    """
+
+    parsed = urlsplit(route)
+    logical = parsed.fragment if parsed.fragment else parsed.path
+    parts = [part for part in logical.strip("/").split("/") if part]
+    if not parts:
+        return ["Index"]
+    parts[-1] = Path(parts[-1]).stem
+
+    def pascal(value: str) -> str:
+        return "".join(
+            piece[:1].upper() + piece[1:]
+            for piece in re.split(r"[^A-Za-z0-9_$]+", value)
+            if piece
+        )
+
+    candidates = [pascal(parts[-1]), pascal("-".join(parts))]
+    return list(dict.fromkeys(item for item in candidates if item))
+
+
+def _design_system_context(files: list[Path], workdir: Path) -> dict[str, Any]:
+    """Index existing CSS custom properties without interpreting product semantics."""
+
+    definitions: dict[str, set[str]] = {}
+    usage_counts: dict[str, int] = {}
+    style_paths: list[str] = []
+    for path in files:
+        try:
+            content = path.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        relative = _relative_to_workdir(path, workdir)
+        if path.suffix.lower() in STYLE_EXTENSIONS:
+            style_paths.append(relative)
+        for name in _CSS_CUSTOM_PROPERTY_RE.findall(content):
+            definitions.setdefault(name, set()).add(relative)
+        for name in _CSS_CUSTOM_PROPERTY_USE_RE.findall(content):
+            usage_counts[name] = usage_counts.get(name, 0) + 1
+    tokens = [
+        {
+            "name": name,
+            "defined_in": sorted(paths),
+            "usage_count": int(usage_counts.get(name, 0)),
+        }
+        for name, paths in sorted(definitions.items())
+    ][:128]
+    return {
+        "status": "tokens_found" if tokens else "no_css_custom_properties",
+        "css_custom_properties": tokens,
+        "style_source_paths": sorted(set(style_paths)),
+        "guidance": (
+            "Reuse listed custom properties before adding literal colors, spacing, "
+            "radii, typography, or timing values; add a token only when the target "
+            "semantic cannot be expressed by an existing one."
+        ),
+    }
+
+
+_STRONG_CSS_ID_RE = re.compile(r"#[A-Za-z_][\w-]*")
+_STRONG_CSS_ATTR_RE = re.compile(
+    r"\[(?:data-testid|data-page)\s*=\s*(?:['\"][^'\"]+['\"]|[^\]\s]+)\]",
+    re.I,
+)
+
+
+def _strong_css_anchors(selectors: Iterable[str]) -> list[str]:
+    anchors: set[str] = set()
+    for selector in selectors:
+        value = str(selector)
+        anchors.update(_STRONG_CSS_ID_RE.findall(value))
+        anchors.update(match.group(0) for match in _STRONG_CSS_ATTR_RE.finditer(value))
+    return sorted(anchors)
+
+
+def _css_skip_comment(content: str, index: int) -> int | None:
+    if not content.startswith("/*", index):
+        return index
+    end = content.find("*/", index + 2)
+    return None if end < 0 else end + 2
+
+
+def _css_rule_end(content: str, opening: int) -> int | None:
+    depth = 1
+    index = opening + 1
+    quote: str | None = None
+    while index < len(content):
+        char = content[index]
+        if quote is not None:
+            if char == "\\":
+                index += 2
+                continue
+            if char == quote:
+                quote = None
+            index += 1
+            continue
+        if char in {"'", '"'}:
+            quote = char
+            index += 1
+            continue
+        if content.startswith("/*", index):
+            comment_end = _css_skip_comment(content, index)
+            if comment_end is None:
+                return None
+            index = comment_end
+            continue
+        if char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth == 0:
+                return index + 1
+        index += 1
+    return None
+
+
+def _css_rule_has_nested_block(content: str, opening: int, end: int) -> bool:
+    """Detect CSS nesting without interpreting declarations.
+
+    A shared-sheet rule containing another block is outside the v1 selector
+    model. Rejecting it is safer than assuming that the top-level anchor also
+    scopes nested `&`, `@scope`, or conditional rules.
+    """
+
+    index = opening + 1
+    quote: str | None = None
+    while index < end - 1:
+        char = content[index]
+        if quote is not None:
+            if char == "\\":
+                index += 2
+                continue
+            if char == quote:
+                quote = None
+            index += 1
+            continue
+        if char in {"'", '"'}:
+            quote = char
+            index += 1
+            continue
+        if content.startswith("/*", index):
+            comment_end = _css_skip_comment(content, index)
+            if comment_end is None or comment_end > end:
+                return True
+            index = comment_end
+            continue
+        if char == "{":
+            return True
+        index += 1
+    return False
+
+
+def _css_top_level_units(content: str) -> tuple[list[dict[str, Any]], str | None]:
+    """Parse bounded top-level CSS rules without interpreting declarations."""
+
+    units: list[dict[str, Any]] = []
+    index = 0
+    while index < len(content):
+        while index < len(content):
+            if content[index].isspace():
+                index += 1
+                continue
+            if content.startswith("/*", index):
+                comment_end = _css_skip_comment(content, index)
+                if comment_end is None:
+                    return [], "unterminated CSS comment"
+                index = comment_end
+                continue
+            break
+        if index >= len(content):
+            break
+        start = index
+        quote: str | None = None
+        paren_depth = 0
+        bracket_depth = 0
+        boundary: str | None = None
+        while index < len(content):
+            char = content[index]
+            if quote is not None:
+                if char == "\\":
+                    index += 2
+                    continue
+                if char == quote:
+                    quote = None
+                index += 1
+                continue
+            if char in {"'", '"'}:
+                quote = char
+                index += 1
+                continue
+            if content.startswith("/*", index):
+                comment_end = _css_skip_comment(content, index)
+                if comment_end is None:
+                    return [], "unterminated CSS comment"
+                index = comment_end
+                continue
+            if char == "(":
+                paren_depth += 1
+            elif char == ")":
+                paren_depth -= 1
+                if paren_depth < 0:
+                    return [], "unbalanced CSS parentheses"
+            elif char == "[":
+                bracket_depth += 1
+            elif char == "]":
+                bracket_depth -= 1
+                if bracket_depth < 0:
+                    return [], "unbalanced CSS brackets"
+            elif paren_depth == 0 and bracket_depth == 0 and char in {"{", ";", "}"}:
+                boundary = char
+                break
+            index += 1
+        if boundary is None:
+            return [], "CSS top-level rule has no terminator"
+        if boundary == "}":
+            return [], "unexpected top-level CSS closing brace"
+        prelude = content[start:index].strip()
+        if not prelude:
+            return [], "CSS rule has an empty selector or at-rule prelude"
+        if boundary == ";":
+            end = index + 1
+            if not prelude.startswith("@"):
+                return [], "only at-rules may terminate with a top-level semicolon"
+            kind = "at_rule"
+        else:
+            opening = index
+            end = _css_rule_end(content, index)
+            if end is None:
+                return [], "unbalanced CSS rule block"
+            kind = "at_rule" if prelude.startswith("@") else "style_rule"
+        units.append(
+            {
+                "kind": kind,
+                "prelude": prelude,
+                "start": start,
+                "end": end,
+                "raw": content[start:end],
+                "has_nested_block": (
+                    boundary == "{" and _css_rule_has_nested_block(content, opening, end)
+                ),
+            }
+        )
+        index = end
+    return units, None
+
+
+def _split_css_selector_list(selector: str) -> list[str] | None:
+    output: list[str] = []
+    start = 0
+    paren_depth = 0
+    bracket_depth = 0
+    quote: str | None = None
+    index = 0
+    while index < len(selector):
+        char = selector[index]
+        if quote is not None:
+            if char == "\\":
+                index += 2
+                continue
+            if char == quote:
+                quote = None
+            index += 1
+            continue
+        if char in {"'", '"'}:
+            quote = char
+        elif char == "(":
+            paren_depth += 1
+        elif char == ")":
+            paren_depth -= 1
+        elif char == "[":
+            bracket_depth += 1
+        elif char == "]":
+            bracket_depth -= 1
+        elif char == "," and paren_depth == 0 and bracket_depth == 0:
+            output.append(selector[start:index].strip())
+            start = index + 1
+        if paren_depth < 0 or bracket_depth < 0:
+            return None
+        index += 1
+    if quote is not None or paren_depth != 0 or bracket_depth != 0:
+        return None
+    output.append(selector[start:].strip())
+    return output if all(output) else None
+
+
+def _selector_parenthesis_depths(selector: str) -> list[int]:
+    depths = [0] * (len(selector) + 1)
+    depth = 0
+    quote: str | None = None
+    index = 0
+    while index < len(selector):
+        depths[index] = depth
+        char = selector[index]
+        if quote is not None:
+            if char == "\\":
+                if index + 1 < len(depths):
+                    depths[index + 1] = depth
+                index += 2
+                continue
+            if char == quote:
+                quote = None
+        elif char in {"'", '"'}:
+            quote = char
+        elif char == "(":
+            depth += 1
+        elif char == ")":
+            depth = max(0, depth - 1)
+        index += 1
+    depths[len(selector)] = depth
+    return depths
+
+
+def _css_anchor_pattern(anchor: str) -> re.Pattern[str] | None:
+    if anchor.startswith("#"):
+        return re.compile(rf"(?<![\w-]){re.escape(anchor)}(?![\w-])")
+    match = re.fullmatch(
+        r"\[(data-testid|data-page)\s*=\s*(['\"]?)([^'\"\]]+)\2\]",
+        anchor,
+        re.I,
+    )
+    if match:
+        name, _quote, value = match.groups()
+        return re.compile(
+            rf"\[\s*{re.escape(name)}\s*=\s*(['\"]?){re.escape(value.strip())}\1\s*\]",
+            re.I,
+        )
+    return None
+
+
+def _selector_branch_is_target_scoped(branch: str, anchors: Iterable[str]) -> bool:
+    depths = _selector_parenthesis_depths(branch)
+    for anchor in anchors:
+        pattern = _css_anchor_pattern(str(anchor))
+        if pattern is None:
+            continue
+        for match in pattern.finditer(branch):
+            if depths[match.start()] != 0:
+                continue
+            suffix = branch[match.end() :]
+            suffix_depths = _selector_parenthesis_depths(suffix)
+            if any(
+                char in {"+", "~"} and suffix_depths[index] == 0
+                for index, char in enumerate(suffix)
+            ):
+                continue
+            return True
+    return False
+
+
+def _css_rule_is_target_scoped(selector: str, anchors: Iterable[str]) -> bool:
+    branches = _split_css_selector_list(selector)
+    return bool(branches) and all(
+        _selector_branch_is_target_scoped(branch, anchors)
+        for branch in branches or []
+    )
+
+
+def _target_scoped_css_spans(
+    content: str, units: list[dict[str, Any]], anchors: Iterable[str]
+) -> list[tuple[int, int]]:
+    spans: list[tuple[int, int]] = []
+    for unit in units:
+        if (
+            unit.get("kind") != "style_rule"
+            or unit.get("has_nested_block")
+            or not _css_rule_is_target_scoped(str(unit.get("prelude", "")), anchors)
+        ):
+            continue
+        start = int(unit["start"])
+        end = int(unit["end"])
+        while start > 0 and content[start - 1].isspace():
+            start -= 1
+        while end < len(content) and content[end].isspace():
+            end += 1
+        spans.append((start, end))
+    merged: list[tuple[int, int]] = []
+    for start, end in sorted(spans):
+        if merged and start <= merged[-1][1]:
+            merged[-1] = (merged[-1][0], max(end, merged[-1][1]))
+        else:
+            merged.append((start, end))
+    return merged
+
+
+def _range_is_covered(start: int, end: int, spans: Iterable[tuple[int, int]]) -> bool:
+    return start == end or any(left <= start and end <= right for left, right in spans)
+
+
+def _validate_target_scoped_css(
+    before: str, after: str, allowed_anchors: Iterable[str]
+) -> str | None:
+    """Allow only rule changes whose every selector branch stays under a target anchor."""
+
+    anchors = [str(item) for item in allowed_anchors if str(item).strip()]
+    if not anchors:
+        return "Shared stylesheet has no stable target-scoped selector anchor."
+    before_units, before_error = _css_top_level_units(before)
+    after_units, after_error = _css_top_level_units(after)
+    if before_error or after_error:
+        return "Shared stylesheet could not be parsed safely: " + str(
+            after_error or before_error
+        )
+    before_spans = _target_scoped_css_spans(before, before_units, anchors)
+    after_spans = _target_scoped_css_spans(after, after_units, anchors)
+    changed = False
+    matcher = difflib.SequenceMatcher(a=before, b=after, autojunk=False)
+    for tag, old_start, old_end, new_start, new_end in matcher.get_opcodes():
+        if tag == "equal":
+            continue
+        changed = True
+        if not _range_is_covered(old_start, old_end, before_spans) or not _range_is_covered(
+            new_start, new_end, after_spans
+        ):
+            return (
+                "Shared CSS edits must change only target-scoped rules, and every selector "
+                "branch must contain one allowed ID/data anchor outside functional pseudo-classes."
+            )
+    if not changed:
+        return "Shared CSS exact patch does not change the stylesheet."
+    return None
+
+
+def _balanced_brace_end(content: str, opening: int) -> int | None:
+    """Return the exclusive end of a balanced JS-like brace block."""
+
+    depth = 0
+    state = "code"
+    quote = ""
+    escaped = False
+    index = opening
+    while index < len(content):
+        char = content[index]
+        following = content[index + 1] if index + 1 < len(content) else ""
+        if state == "line_comment":
+            if char == "\n":
+                state = "code"
+        elif state == "block_comment":
+            if char == "*" and following == "/":
+                state = "code"
+                index += 1
+        elif state == "string":
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == quote:
+                state = "code"
+        elif char == "/" and following == "/":
+            state = "line_comment"
+            index += 1
+        elif char == "/" and following == "*":
+            state = "block_comment"
+            index += 1
+        elif char in {"'", '"', "`"}:
+            state = "string"
+            quote = char
+        elif char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth == 0:
+                return index + 1
+            if depth < 0:
+                return None
+        index += 1
+    return None
+
+
+def _named_source_region(content: str, symbol: str) -> dict[str, Any] | None:
+    """Locate one exact top-level route module and its optional module banner."""
+
+    escaped = re.escape(symbol)
+    patterns = (
+        (
+            "object",
+            re.compile(
+                rf"(?:\b(?:const|let|var)\s+|\bwindow\.){escaped}\s*=\s*\{{",
+                re.M,
+            ),
+        ),
+        (
+            "class",
+            re.compile(rf"\bclass\s+{escaped}\b[^{{]*\{{", re.M),
+        ),
+        (
+            "function",
+            re.compile(
+                rf"\b(?:async\s+)?function\s+{escaped}\s*\([^)]*\)\s*\{{",
+                re.M,
+            ),
+        ),
+    )
+    matches = [
+        (kind, match)
+        for kind, pattern in patterns
+        for match in pattern.finditer(content)
+    ]
+    if len(matches) != 1:
+        return None
+    kind, match = matches[0]
+    opening = content.find("{", match.start(), match.end())
+    end = _balanced_brace_end(content, opening)
+    if opening < 0 or end is None:
+        return None
+    if end < len(content) and content[end] == ";":
+        end += 1
+    start = match.start()
+    prefix = content[:start]
+    banner = re.search(
+        rf"/\*[^{{}}]{{0,240}}\b{escaped}\b[^{{}}]{{0,240}}\*/\s*$",
+        prefix,
+        re.I | re.S,
+    )
+    if banner is not None:
+        start = banner.start()
+    return {
+        "symbol": symbol,
+        "kind": kind,
+        "start": start,
+        "end": end,
+        "start_line": content.count("\n", 0, start) + 1,
+        "end_line": content.count("\n", 0, end) + 1,
+    }
+
+
+def _source_contains_css_anchor(content: str, anchor: str) -> bool:
+    if anchor.startswith("#"):
+        value = re.escape(anchor[1:])
+        return bool(re.search(rf"(?<![\w-]){value}(?![\w-])", content))
+    match = re.fullmatch(
+        r"\[(data-testid|data-page)\s*=\s*(['\"]?)([^'\"\]]+)\2\]",
+        anchor,
+        re.I,
+    )
+    if not match:
+        return False
+    name, _quote, value = match.groups()
+    return bool(re.search(rf"(?<![\w-]){re.escape(value.strip())}(?![\w-])", content, re.I))
+
+
+def _target_css_anchors(
+    *,
+    checks: list[dict[str, Any]],
+    route_scope: dict[str, Any],
+    by_path: dict[str, Path],
+) -> list[str]:
+    candidates = _strong_css_anchors(_extract_selectors(checks))
+    protected_routes = set(route_scope.get("protected_routes") or [])
+    owners = route_scope.get("path_owners") or {}
+    output: list[str] = []
+    for anchor in candidates:
+        conflict = False
+        for relative, path_owners in owners.items():
+            if not (set(path_owners or []) & protected_routes):
+                continue
+            path = by_path.get(str(relative))
+            if path is None or path.suffix.lower() in STYLE_EXTENSIONS:
+                continue
+            try:
+                content = path.read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                continue
+            if _source_contains_css_anchor(content, anchor):
+                conflict = True
+                break
+        if not conflict:
+            output.append(anchor)
+    return sorted(set(output))
+
+
+def _guarded_shared_regions(
+    *,
+    route_scope: dict[str, Any],
+    files: list[Path],
+    workdir: Path,
+    checks: list[dict[str, Any]],
+    requested_roles: set[str],
+) -> list[dict[str, Any]]:
+    """Open only statically named target-route modules in shared source files."""
+
+    by_path = {_relative_to_workdir(path, workdir): path for path in files}
+    output: list[dict[str, Any]] = []
+    css_anchors = _target_css_anchors(
+        checks=checks,
+        route_scope=route_scope,
+        by_path=by_path,
+    )
+    state_intent = any(
+        str(check.get("category", "")).lower() in {"persistence", "state"}
+        or any(
+            isinstance(action, dict)
+            and action.get("action")
+            in {"assert_storage_value", "set_storage_value"}
+            for action in check.get("actions", [])
+        )
+        for check in checks
+    )
+    scope_terms: set[str] = set()
+    for route in route_scope.get("target_routes") or []:
+        for symbol in _route_symbol_candidates(str(route)):
+            scope_terms.update(_identifier_terms(symbol))
+    for selector in _extract_selectors(checks):
+        scope_terms.update(_identifier_terms(selector))
+    for check in checks:
+        scope_terms.update(_identifier_terms(str(check.get("id", ""))))
+    scope_terms -= {
+        "action",
+        "button",
+        "control",
+        "controls",
+        "data",
+        "info",
+        "initial",
+        "item",
+        "items",
+        "next",
+        "page",
+        "pagination",
+        "prev",
+        "previous",
+        "state",
+        "storage",
+    }
+    for relative in route_scope.get("cross_route_shared_paths") or []:
+        path = by_path.get(str(relative))
+        if path is None:
+            continue
+        if path.suffix.lower() in STYLE_EXTENSIONS:
+            if "style" in requested_roles and css_anchors:
+                output.append(
+                    {
+                        "path": str(relative),
+                        "route": "shared-target-style",
+                        "symbol": "stylesheet",
+                        "kind": "css_stylesheet",
+                        "mutation_mode": "target_scoped_css",
+                        "allowed_anchors": css_anchors,
+                        "protected_routes": sorted(
+                            route_scope.get("protected_routes") or []
+                        ),
+                    }
+                )
+            continue
+        if path.suffix.lower() not in BEHAVIOR_EXTENSIONS:
+            continue
+        try:
+            content = path.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        for route in route_scope.get("target_routes") or []:
+            for symbol in _route_symbol_candidates(str(route)):
+                region = _named_source_region(content, symbol)
+                if region is None:
+                    continue
+                output.append(
+                    {
+                        "path": str(relative),
+                        "route": str(route),
+                        "symbol": symbol,
+                        "kind": str(region["kind"]),
+                        "start_line": int(region["start_line"]),
+                        "end_line": int(region["end_line"]),
+                    }
+                )
+                break
+        if state_intent and "behavior" in requested_roles:
+            for symbol in _state_container_symbols(content):
+                region = _named_source_region(content, symbol)
+                if region is None:
+                    continue
+                output.append(
+                    {
+                        "path": str(relative),
+                        "route": "shared-target-state",
+                        "symbol": symbol,
+                        "kind": str(region["kind"]),
+                        "start_line": int(region["start_line"]),
+                        "end_line": int(region["end_line"]),
+                        "mutation_mode": "additive_target_members",
+                        "allowed_terms": sorted(scope_terms),
+                    }
+                )
+    return sorted(output, key=lambda item: (item["path"], item["route"], item["symbol"]))
+
+
+def _identifier_terms(value: str) -> set[str]:
+    pieces = re.sub(r"([a-z0-9])([A-Z])", r"\1 \2", value)
+    return {
+        item.lower()
+        for item in re.split(r"[^A-Za-z0-9]+", pieces)
+        if len(item) >= 3
+    }
+
+
+def _state_container_symbols(content: str) -> list[str]:
+    symbols = re.findall(
+        r"\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*\{",
+        content,
+    )
+    symbols.extend(re.findall(r"\bclass\s+([A-Za-z_$][\w$]*)\b", content))
+    candidates = {
+        symbol for symbol in symbols if {"state", "store"} & _identifier_terms(symbol)
+    }
+    return sorted(candidates)
+
+
+_ADDITIVE_GENERIC_IDENTIFIERS = {
+    "async",
+    "const",
+    "false",
+    "let",
+    "null",
+    "page",
+    "pagesize",
+    "return",
+    "save",
+    "set",
+    "state",
+    "this",
+    "true",
+    "var",
+}
+
+
+def _validate_additive_target_members(
+    before: str, after: str, allowed_terms: Iterable[str]
+) -> str | None:
+    """Allow additions whose new identifiers are tied to the selected views.
+
+    This is deliberately lexical and fail-closed. It is an online path guard,
+    while browser frames and counterfactual replay remain the acceptance proof.
+    """
+
+    terms = {str(item).lower() for item in allowed_terms if str(item).strip()}
+    matcher = difflib.SequenceMatcher(a=before, b=after, autojunk=False)
+    novel: set[str] = set()
+    for tag, old_start, old_end, new_start, new_end in matcher.get_opcodes():
+        if tag == "equal":
+            continue
+        old_chunk = before[old_start:old_end]
+        new_chunk = after[new_start:new_end]
+        old_ids = set(re.findall(r"[A-Za-z_$][\w$]*", old_chunk))
+        new_ids = set(re.findall(r"[A-Za-z_$][\w$]*", new_chunk))
+        removed = {item for item in old_ids - new_ids if item.lower() not in {"const", "let", "var"}}
+        if removed:
+            return (
+                "Additive shared-state edits cannot remove or replace existing identifiers: "
+                + ", ".join(sorted(removed))
+            )
+        novel.update(item for item in new_ids - old_ids if len(item) >= 3)
+    disallowed = sorted(
+        token
+        for token in novel
+        if token.lower() not in _ADDITIVE_GENERIC_IDENTIFIERS
+        and not any(term in token.lower() for term in terms)
+    )
+    if disallowed:
+        return (
+            "Additive shared-state edits may introduce only target-named members; "
+            "unscoped identifiers: "
+            + ", ".join(disallowed)
+        )
+    if novel and not any(
+        any(term in token.lower() for term in terms) for token in novel
+    ):
+        return "Additive shared-state edit contains no target-named member."
+    return None
+
+
 def discover_page_routes(workdir: Path) -> list[str]:
     """Return statically owned browser routes when a project has many pages."""
     frontend = workdir / "frontend"
@@ -606,6 +1685,75 @@ def discover_page_routes(workdir: Path) -> list[str]:
         return []
     entries = _route_entries(files, frontend, workdir)
     return sorted(entries) if len(entries) > 1 else []
+
+
+def _route_isolation_strategy(
+    *,
+    route_scope: dict[str, Any],
+    files: list[Path],
+    workdir: Path,
+    requested_roles: set[str],
+) -> dict[str, Any]:
+    """Plan a route-local companion when a static page has no behavior owner.
+
+    This is a guidance decision, not merely a validator exception: an Edit for
+    a new interactive page should not wrap or rewrite an already accepted
+    page's script when a small page-local module provides a narrower change
+    cone.
+    """
+    if (
+        "behavior" not in requested_roles
+        or route_scope.get("status") != "multi_page_scoped"
+    ):
+        return {"status": "not_applicable", "routes": []}
+    owners = route_scope.get("path_owners") or {}
+    behavior_paths = sorted(
+        _relative_to_workdir(path, workdir)
+        for path in files
+        if path.suffix.lower() in BEHAVIOR_EXTENSIONS
+    )
+    planned: list[dict[str, str]] = []
+    all_existing = {_relative_to_workdir(path, workdir) for path in files}
+    for route in route_scope.get("target_routes") or []:
+        route_owned_behavior = [
+            path
+            for path in behavior_paths
+            if route in set(owners.get(path) or [])
+        ]
+        if route_owned_behavior:
+            continue
+        html_entries = [
+            path
+            for path in (route_scope.get("route_entries") or {}).get(route, [])
+            if Path(path).suffix.lower() in {".htm", ".html"}
+        ]
+        if not html_entries:
+            continue
+        entry = sorted(html_entries)[0]
+        companion = str(Path(entry).with_suffix(".js")).replace("\\", "/")
+        if companion in all_existing:
+            continue
+        planned.append(
+            {
+                "route": str(route),
+                "entry_path": entry,
+                "planned_companion_path": companion,
+                **(
+                    {"planned_style_path": str(Path(entry).with_suffix(".css")).replace("\\", "/")}
+                    if "style" in requested_roles
+                    and str(Path(entry).with_suffix(".css")).replace("\\", "/") not in all_existing
+                    else {}
+                ),
+            }
+        )
+    if not planned:
+        return {"status": "not_applicable", "routes": []}
+    return {
+        "status": "recommended",
+        "routes": planned,
+        "reason": "interactive static route has no route-owned behavior source",
+        "preserve_existing_behavior_sources": behavior_paths,
+    }
 
 
 def _entrypoints(files: list[Path], frontend: Path, workdir: Path) -> list[str]:
@@ -640,7 +1788,7 @@ def _dom_scope(
     for root in baseline.get("roots", []):
         if not isinstance(root, dict) or not isinstance(root.get("key"), str):
             continue
-        if baseline.get("version") == 3 and root.get("route") not in target_route_set:
+        if baseline.get("routes") and root.get("route") not in target_route_set:
             continue
         key = str(root["key"])
         anchors = {
@@ -658,7 +1806,7 @@ def _dom_scope(
         )
         if evidence:
             matches.append({"root": key, "evidence": evidence})
-    if baseline.get("version") == 3:
+    if baseline.get("routes"):
         allowed = []
         route_counts: dict[str, int] = {}
         roots_by_key = {
@@ -696,18 +1844,457 @@ def _dom_scope(
     return allowed, allow_new, matches
 
 
+def _selector_compounds(selector: str) -> list[str]:
+    """Split a CSS selector on top-level combinators without parsing attributes."""
+    compounds: list[str] = []
+    current: list[str] = []
+    bracket_depth = 0
+    paren_depth = 0
+    quote: str | None = None
+    for char in selector.strip():
+        if quote is not None:
+            current.append(char)
+            if char == quote:
+                quote = None
+            continue
+        if char in {"'", '"'}:
+            quote = char
+            current.append(char)
+        elif char == "[":
+            bracket_depth += 1
+            current.append(char)
+        elif char == "]":
+            bracket_depth = max(0, bracket_depth - 1)
+            current.append(char)
+        elif char == "(":
+            paren_depth += 1
+            current.append(char)
+        elif char == ")":
+            paren_depth = max(0, paren_depth - 1)
+            current.append(char)
+        elif bracket_depth == 0 and paren_depth == 0 and (
+            char.isspace() or char in {">", "+", "~"}
+        ):
+            value = "".join(current).strip()
+            if value:
+                compounds.append(value)
+            current = []
+        else:
+            current.append(char)
+    value = "".join(current).strip()
+    if value:
+        compounds.append(value)
+    return compounds
+
+
+def _selector_anchor_variants(selector: str) -> set[str]:
+    """Return stable leaf-anchor forms used by semantic DOM snapshots."""
+    normalized = re.sub(
+        r"=\s*'([^']*)'", lambda match: f'="{match.group(1)}"', selector.strip()
+    )
+    variants = {selector.strip(), normalized}
+    for value in (selector.strip(), normalized):
+        compounds = _selector_compounds(value)
+        if compounds:
+            variants.add(compounds[-1])
+        # A stable class/id can follow a tag in a compound selector
+        # (``a.sidebar-item``). Remove attribute bodies first so dots inside
+        # data values are not mistaken for class anchors.
+        without_attributes = re.sub(r"\[[^\]]*\]", "", value)
+        variants.update(
+            match.group(0)
+            for match in re.finditer(r"[#.][A-Za-z_][\w-]*", without_attributes)
+        )
+    return {item for item in variants if item}
+
+
+def _selector_base(selector: str) -> str:
+    compounds = _selector_compounds(selector)
+    value = compounds[0] if compounds else selector
+    return re.sub(r":{1,2}[A-Za-z_-][\w-]*(?:\([^)]*\))?", "", value)
+
+
+def _routed_selector_contracts(check: dict[str, Any]) -> list[dict[str, Any]]:
+    """Bind selectors to the route active at their typed-action position."""
+    initial_route = _normalize_route(check.get("route", "/"))
+    if initial_route is None:
+        return []
+    current_route = initial_route
+    contracts: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    actions = [action for action in check.get("actions", []) if isinstance(action, dict)]
+    state_changed = bool(
+        check.get("category") == "persistence"
+        and actions
+        and actions[0].get("action") == "reload"
+    )
+    for action in actions:
+        if not isinstance(action, dict):
+            continue
+        for selector in _extract_selectors([action]):
+            exact_count = action.get("action") == "assert_count"
+            count = action.get("count") if exact_count else 1
+            if not isinstance(count, int) or isinstance(count, bool) or count < 1:
+                count = 1
+            unique_identity = bool(
+                re.fullmatch(
+                    r"(?:#[A-Za-z_][\w-]*|\[(?:data-testid|aria-label)\s*=\s*(['\"])[^'\"]+\1\]|a\[href\s*=\s*(['\"])[^'\"]+\2\])",
+                    selector.strip(),
+                )
+            )
+            contracts.append(
+                {
+                    "route": current_route,
+                    "selector": selector,
+                    "min_count": min(count, 50),
+                    "max_count": min(count, 50) if exact_count or unique_identity else 50,
+                    "action_types": [str(action.get("action") or "")],
+                    "after_state_change": state_changed,
+                }
+            )
+            seen.add(selector)
+        if str(action.get("action") or "") in INTERACTION_ACTIONS:
+            state_changed = True
+        if action.get("action") == "assert_url":
+            next_route = _normalize_route(action.get("value", ""))
+            if next_route is not None:
+                current_route = next_route
+    # Preserve support for selectors carried by older check-level fields while
+    # keeping typed action selectors route-aware.
+    for selector in _extract_selectors([check]):
+        if selector not in seen:
+            contracts.append(
+                {
+                    "route": initial_route,
+                    "selector": selector,
+                    "max_count": 1,
+                    "action_types": ["check_level"],
+                }
+            )
+    return contracts
+
+
+def _fragment_dom_scope(
+    baseline: dict[str, Any],
+    checks: list[dict[str, Any]],
+    target_routes: list[str],
+    *,
+    existing_source_selectors: set[str] | None = None,
+    expected_new_routes: set[str] | None = None,
+) -> tuple[list[str], list[dict[str, Any]], list[dict[str, Any]], list[str]]:
+    """Resolve each action selector to the deepest stable semantic fragment."""
+    if baseline.get("version") != 4:
+        return [], [], [], []
+    fragments = {
+        str(item["key"]): item
+        for item in baseline.get("fragments", [])
+        if isinstance(item, dict) and item.get("key")
+    }
+
+    def depth(key: str) -> int:
+        value = 0
+        parent = (fragments.get(key) or {}).get("parent_key")
+        visited = {key}
+        while isinstance(parent, str) and parent and parent not in visited:
+            visited.add(parent)
+            value += 1
+            parent = (fragments.get(parent) or {}).get("parent_key")
+        return value
+
+    allowed: list[str] = []
+    expected_new: list[dict[str, Any]] = []
+    evidence: list[dict[str, Any]] = []
+    unresolved: list[str] = []
+    target_set = set(target_routes)
+    source_selectors = existing_source_selectors or set()
+    new_route_set = expected_new_routes or set()
+    routed: dict[tuple[str, str], dict[str, Any]] = {}
+    continued_state: dict[str, bool] = {}
+    for check in checks:
+        check_id = str(check.get("id") or "") if isinstance(check, dict) else ""
+        part_match = re.fullmatch(r"(.+)__part(\d+)", check_id)
+        continuation_key = part_match.group(1) if part_match else check_id
+        contracts = _routed_selector_contracts(check)
+        if part_match and int(part_match.group(2)) > 1 and continued_state.get(continuation_key):
+            for contract in contracts:
+                contract["after_state_change"] = True
+        if any(
+            isinstance(action, dict)
+            and str(action.get("action") or "") in INTERACTION_ACTIONS
+            for action in (check.get("actions") or [])
+        ):
+            continued_state[continuation_key] = True
+        for contract in contracts:
+            route = str(contract["route"])
+            if route not in target_set:
+                continue
+            key = (route, str(contract["selector"]))
+            prior = routed.get(key)
+            if prior is None:
+                routed[key] = contract
+            else:
+                prior["max_count"] = max(
+                    int(prior["max_count"]), int(contract["max_count"])
+                )
+                prior["min_count"] = max(
+                    int(prior.get("min_count", 1)), int(contract.get("min_count", 1))
+                )
+                prior["action_types"] = sorted(set(
+                    list(prior.get("action_types") or [])
+                    + list(contract.get("action_types") or [])
+                ))
+                # A selector that is produced by any interaction remains a
+                # conditional runtime fragment even if a continuation check
+                # later reasserts it after reload. The guard snapshots a fresh
+                # browser without replaying those actions, so requiring it at
+                # rest creates a false missing-addition regression.
+                prior["after_state_change"] = bool(
+                    prior.get("after_state_change")
+                    or contract.get("after_state_change")
+                )
+
+    pending_new: list[dict[str, Any]] = []
+    source_variants = {
+        variant
+        for selector in source_selectors
+        for variant in _selector_anchor_variants(selector)
+    }
+    for contract in routed.values():
+        route = str(contract["route"])
+        selector = str(contract["selector"])
+        variants = _selector_anchor_variants(selector)
+        candidates = [
+            key
+            for key, item in fragments.items()
+            if str(item.get("route", "/")) == route
+            and bool(
+                variants
+                & {
+                    str(anchor)
+                    for anchor in item.get("anchors", [])
+                    if isinstance(anchor, str)
+                }
+            )
+        ]
+        if candidates:
+            selected = max(candidates, key=lambda key: (depth(key), key))
+            if selected not in allowed:
+                allowed.append(selected)
+            evidence.append(
+                {
+                    "selector": selector,
+                    "route": route,
+                    "fragment": selected,
+                    "candidate_count": len(candidates),
+                    "resolution": "baseline_fragment",
+                }
+            )
+            continue
+        if variants & source_variants:
+            evidence.append(
+                {
+                    "selector": selector,
+                    "route": route,
+                    "resolution": "runtime_state_source_anchor",
+                }
+            )
+            continue
+        # Check-level contracts are preservation anchors, never new target
+        # requirements. In particular, a hash route such as ``#gallery`` may
+        # look like an id selector without denoting a DOM node.
+        action_types = set(contract.get("action_types") or [])
+        if action_types == {"check_level"}:
+            evidence.append(
+                {
+                    "selector": selector,
+                    "route": route,
+                    "resolution": "unresolved_source_anchor_ignored",
+                }
+            )
+            continue
+        if route in new_route_set:
+            evidence.append(
+                {
+                    "selector": selector,
+                    "route": route,
+                    "resolution": "covered_by_expected_new_route",
+                }
+            )
+            continue
+        target_observation = any(
+            action.startswith("assert_") or action in {"check_level", "wait_for"}
+            for action in action_types
+        )
+        compounds = _selector_compounds(selector) or [selector]
+        terminal = compounds[-1]
+        terminal_without_attributes = re.sub(r"\[[^\]]*\]", "", terminal)
+        navigation = re.fullmatch(
+            r"a\[href\s*=\s*(['\"])([^'\"]+)\1\]",
+            terminal,
+        )
+        navigation_route = (
+            _normalize_route(navigation.group(2)) if navigation is not None else None
+        )
+        planned_root = compounds[0]
+        planned_root_without_attributes = re.sub(
+            r"\[[^\]]*\]", "", planned_root
+        )
+        strong = bool(
+            re.search(
+                r"(?:^|[^\\])(?:#|\.)[A-Za-z_-]",
+                terminal_without_attributes + " " + planned_root_without_attributes,
+            )
+            or terminal.startswith("[data-testid=")
+            or terminal.startswith("[aria-label=")
+            or planned_root.startswith("[data-testid=")
+            or planned_root.startswith("[aria-label=")
+            or navigation_route in target_set
+        )
+        if not target_observation and not strong:
+            evidence.append(
+                {
+                    "selector": selector,
+                    "route": route,
+                    "resolution": "runtime_source_control",
+                    "action_types": sorted(action_types),
+                }
+            )
+            continue
+        if strong:
+            pending_new.append(
+                {
+                    "route": contract["route"],
+                    "selector": contract["selector"],
+                    "max_count": contract["max_count"],
+                    "min_count": contract.get("min_count", 1),
+                    "after_state_change": bool(contract.get("after_state_change")),
+                }
+            )
+        else:
+            unresolved.append(f"{route}::{selector}")
+
+    for contract in pending_new:
+        selector = str(contract["selector"])
+        compounds = _selector_compounds(selector)
+
+        def testid_value(value: str) -> str:
+            match = re.search(
+                r"\[data-testid\s*=\s*(['\"])([^'\"]+)\1\]", value
+            )
+            return match.group(2) if match is not None else ""
+
+        child_testid = testid_value(selector)
+        covering = next(
+            (
+                other
+                for other in pending_new
+                if other is not contract
+                and other["route"] == contract["route"]
+                and (
+                    (
+                        len(compounds) > 1
+                        and _selector_base(str(other["selector"]))
+                        == _selector_base(compounds[0])
+                    )
+                    or (
+                        bool(contract.get("after_state_change"))
+                        and bool(testid_value(str(other["selector"])))
+                        and child_testid.startswith(
+                            testid_value(str(other["selector"])) + "-"
+                        )
+                    )
+                )
+            ),
+            None,
+        )
+        if covering is not None:
+            evidence.append(
+                {
+                    "selector": selector,
+                    "route": contract["route"],
+                    "resolution": "covered_by_expected_subtree",
+                    "covering_selector": covering["selector"],
+                }
+            )
+            continue
+        expected_new.append(
+            {
+                "route": contract["route"],
+                "selector": contract["selector"],
+                **(
+                    {"min_count": 0}
+                    if contract.get("after_state_change")
+                    else (
+                        {"min_count": contract["min_count"]}
+                        if contract["min_count"] != contract["max_count"]
+                        else {}
+                    )
+                ),
+                "max_count": contract["max_count"],
+            }
+        )
+    allowed_set = set(allowed)
+    collapsed_allowed: list[str] = []
+    for key in allowed:
+        parent = (fragments.get(key) or {}).get("parent_key")
+        visited = {key}
+        covered = False
+        while isinstance(parent, str) and parent and parent not in visited:
+            if parent in allowed_set:
+                covered = True
+                break
+            visited.add(parent)
+            parent = (fragments.get(parent) or {}).get("parent_key")
+        if not covered:
+            collapsed_allowed.append(key)
+    return collapsed_allowed, expected_new, evidence, sorted(set(unresolved))
+
+
 def _scope_payload(plan: dict[str, Any]) -> dict[str, Any]:
     dom = plan["dom_change_cone"]
     return {
-        "schema_version": "edit-scope-v3",
+        "schema_version": "edit-scope-v4",
         "owner": "harness",
         "plan": f".harness/{plan_name(int(plan['round']))}",
         "baseline": dom.get("baseline"),
         "allowed_root_keys": list(dom.get("allowed_root_keys", [])),
         "allow_new_roots": bool(dom.get("allow_new_roots", False)),
+        "allowed_fragment_keys": list(dom.get("allowed_fragment_keys", [])),
+        "expected_new_fragments": list(dom.get("expected_new_fragments", [])),
+        "expected_new_routes": list(dom.get("expected_new_routes", [])),
         "target_routes": list((plan.get("route_scope") or {}).get("target_routes", [])),
         "protected_routes": list((plan.get("route_scope") or {}).get("protected_routes", [])),
     }
+
+
+def _stable_source_anchor_checks(
+    atomic_plan: dict[str, Any], target_routes: list[str]
+) -> list[dict[str, Any]]:
+    """Expose grounded target containers to the DOM complement guard.
+
+    Action checks often name only the new control. A filtering Edit also
+    intentionally changes the pre-existing results container, so a stable
+    planner source anchor such as ``#view-gallery`` must define that target
+    subtree. Positional selectors remain excluded because they are not stable
+    preservation boundaries.
+    """
+    route = target_routes[0] if target_routes else "/"
+    selectors = [
+        str(anchor).strip()
+        for anchor in atomic_plan.get("source_anchors") or []
+        if isinstance(anchor, str)
+        and re.fullmatch(
+            r"(?:#[A-Za-z_][\w-]*|\[(?:data-testid|aria-label)\s*=\s*(['\"])[^'\"]+\1\])",
+            anchor.strip(),
+        )
+    ]
+    return [
+        {
+            "route": route,
+            "actions": [{"action": "check_level", "selector": selector}],
+        }
+        for selector in dict.fromkeys(selectors)
+    ]
 
 
 def ensure_minimal_path_plan(
@@ -725,7 +2312,9 @@ def ensure_minimal_path_plan(
     existing = _read_json(path, None)
     if (
         isinstance(existing, dict)
-        and existing.get("schema_version") in SUPPORTED_PLAN_VERSIONS
+        and existing.get("schema_version") == PLAN_VERSION
+        and existing.get("source_selection_strategy") == SOURCE_SELECTION_STRATEGY
+        and existing.get("status") != "blocked"
     ):
         scope_path = harness_dir / f"edit_scope_round_{round_num}.json"
         if not scope_path.exists():
@@ -737,9 +2326,15 @@ def ensure_minimal_path_plan(
     selectors = _extract_selectors(checks)
     tokens = _selector_tokens(selectors)
     requested_roles = _requested_source_roles(checks)
+    priority_roles, failed_check_ids = (
+        _repair_priority_source_roles(harness_dir, round_num, checks)
+        if mode == "repair"
+        else (set(), [])
+    )
+    requested_roles |= priority_roles
     baseline_candidates = (
-        harness_dir / f"repair_dom_source_round_{round_num}.json",
         harness_dir / f"edit_dom_source_sprint_{sprint_num}.json",
+        harness_dir / f"repair_dom_source_round_{round_num}.json",
         harness_dir / "edit_dom_baseline.json",
     )
     baseline_path = next((item for item in baseline_candidates if item.is_file()), None)
@@ -751,12 +2346,35 @@ def ensure_minimal_path_plan(
     )
     graph, edges = _dependency_graph(files, frontend, workdir)
     entries = _entrypoints(files, frontend, workdir)
+    edit_task_contract = _read_json(harness_dir / "edit_task_contract.json", {})
+    explicit_target_routes = edit_task_contract.get("requested_target_routes")
+    if not isinstance(explicit_target_routes, list):
+        explicit_target_routes = []
     route_scope = _route_scope(
         files=files,
         frontend=frontend,
         workdir=workdir,
         graph=graph,
         checks=checks,
+        explicit_target_routes=[str(item) for item in explicit_target_routes],
+        allow_planned_static_routes=(
+            mode == "generate"
+            and (
+                not (workdir / "seed_manifest.json").is_file()
+                # A forward Edit may turn one accepted HTML shell into a real
+                # multi-page site, but only for pathnames the caller placed in
+                # the run-wide Edit authorization ceiling.  Planner checks
+                # still have to cover every requested route below, so this
+                # does not grant arbitrary file creation.
+                or bool(explicit_target_routes)
+            )
+        ),
+    )
+    isolation_strategy = _route_isolation_strategy(
+        route_scope=route_scope,
+        files=files,
+        workdir=workdir,
+        requested_roles=requested_roles,
     )
     allowed_roots, allow_new_roots, root_evidence = _dom_scope(
         baseline,
@@ -764,39 +2382,194 @@ def ensure_minimal_path_plan(
         tokens,
         list(route_scope.get("target_routes") or []),
     )
-    admissible_paths = set(route_scope["route_local_paths"]) | set(
-        route_scope["target_shared_paths"]
+    atomic_plan = _read_json(harness_dir / "atomic_edit_plan.json", {})
+    dom_checks = checks + _stable_source_anchor_checks(
+        atomic_plan,
+        list(route_scope.get("target_routes") or []),
+    )
+    allowed_fragments, expected_new_fragments, fragment_evidence, unresolved_fragments = (
+        _fragment_dom_scope(
+            baseline,
+            dom_checks,
+            list(route_scope.get("target_routes") or []),
+            existing_source_selectors={
+                str(match.get("anchor"))
+                for hotspot in all_hotspots
+                for match in hotspot.get("matches", [])
+                if isinstance(match, dict)
+                and match.get("strength") == "selector"
+                and match.get("anchor")
+            },
+            expected_new_routes=set(route_scope.get("planned_new_routes") or []),
+        )
+    )
+    planned_companions = {
+        str(path)
+        for item in isolation_strategy.get("routes", [])
+        if isinstance(item, dict)
+        for path in (item.get("planned_companion_path"), item.get("planned_style_path"))
+        if path
+    }
+    isolation_entries = {
+        str(item["entry_path"])
+        for item in isolation_strategy.get("routes", [])
+        if isinstance(item, dict) and item.get("entry_path")
+    }
+    planned_route_entries = set(route_scope.get("planned_new_route_entries") or [])
+    guarded_shared_regions = _guarded_shared_regions(
+        route_scope=route_scope,
+        files=files,
+        workdir=workdir,
+        checks=checks,
+        requested_roles=requested_roles,
+    )
+    guarded_shared_paths = {
+        str(item["path"]) for item in guarded_shared_regions
+    }
+    guarded_style_paths = {
+        str(item["path"])
+        for item in guarded_shared_regions
+        if item.get("mutation_mode") == "target_scoped_css"
+    }
+    admissible_paths = (
+        set(route_scope["route_local_paths"])
+        | set(route_scope["target_shared_paths"])
+        | guarded_shared_paths
+        | planned_companions
     )
     hotspots = [
         item for item in all_hotspots if str(item.get("path")) in admissible_paths
     ]
+    routing_roles = priority_roles or requested_roles
+    if routing_roles:
+        hotspots.sort(
+            key=lambda item: (
+                0 if set(item.get("role_evidence") or []) & routing_roles else 1,
+                0 if item.get("role_evidence") else 1,
+                -int(item["score"]),
+                str(item["path"]),
+            )
+        )
     scores = {
         path: score for path, score in all_scores.items() if path in admissible_paths
     }
 
     ranked = [str(item["path"]) for item in hotspots]
+    if not ranked and len(route_scope.get("target_routes") or []) == 1:
+        # A plan may intentionally assert only new target test IDs, yielding no
+        # lexical hit in the accepted source. For one route, prefer a route-
+        # local source layer implied by executable check types. Do not promote
+        # a cross-route guarded file from role evidence alone: the route entry
+        # is the safer first mutation and can unlock that shared dependency.
+        # For multiple target routes, retain one entrypoint per route so a
+        # generic role match cannot silently collapse the change cone.
+        ranked = sorted(
+            _relative_to_workdir(path, workdir)
+            for path in files
+            if _relative_to_workdir(path, workdir) in admissible_paths
+            and _relative_to_workdir(path, workdir) not in guarded_shared_paths
+            and _file_source_roles(path) & routing_roles
+        )
+    if requested_roles == {"style"}:
+        ranked = list(dict.fromkeys([*sorted(guarded_style_paths), *ranked]))
+    elif guarded_style_paths:
+        # A mixed behavior/style contract should begin in its best behavior or
+        # markup owner. The guarded global stylesheet remains one validation
+        # edge away instead of monopolizing the first mutation merely because
+        # its selectors have a strong lexical score.
+        ranked = list(
+            dict.fromkeys(
+                [
+                    *(path for path in ranked if path not in guarded_style_paths),
+                    *(path for path in ranked if path in guarded_style_paths),
+                ]
+            )
+        )
     target_entries = list(route_scope["target_page_entries"])
-    initial = ranked[:1] if ranked else target_entries[:1]
-    seeds = ranked[:max_touched_files]
-    if not seeds:
-        seeds = target_entries[:1]
-    local: list[str] = list(dict.fromkeys(seeds))
-    # A fallback entry point is useful only together with its direct imports;
-    # that is the smallest executable source unit for common static/SPA seeds.
-    if not ranked:
-        for seed in list(local):
-            for dependency in sorted(_dependency_neighbors(graph, seed)):
-                if (
-                    dependency in admissible_paths
-                    and dependency not in local
-                    and len(local) < max_touched_files
-                ):
-                    local.append(dependency)
+    if isolation_strategy.get("status") == "recommended":
+        # The page entry is the first small mutation: connect it to the planned
+        # route-local companion. Existing behavior sources remain protected.
+        initial = sorted(isolation_entries)[:1]
+        local = sorted(isolation_entries)
+    else:
+        if len(route_scope.get("target_routes") or []) > 1:
+            owners = route_scope.get("path_owners") or {}
+            per_route_initial: list[str] = []
+            planned_route_set = set(route_scope.get("planned_new_routes") or [])
+            for route in route_scope.get("target_routes") or []:
+                candidate = (
+                    next(
+                        (
+                            path
+                            for path in target_entries
+                            if route in set(owners.get(path) or [])
+                            and path not in per_route_initial
+                        ),
+                        None,
+                    )
+                    if route in planned_route_set
+                    else next(
+                        (
+                            path
+                            for path in ranked
+                            if route in set(owners.get(path) or [])
+                        ),
+                        None,
+                    )
+                )
+                if candidate is None:
+                    candidate = next(
+                        (
+                            path
+                            for path in target_entries
+                            if route in set(owners.get(path) or [])
+                            and path not in per_route_initial
+                        ),
+                        None,
+                    )
+                if candidate and candidate not in per_route_initial:
+                    per_route_initial.append(candidate)
+            initial = per_route_initial or (ranked[:1] if ranked else target_entries[:1])
+        else:
+            initial = ranked[:1] if ranked else target_entries[:1]
+        if mode == "repair" and round_num > 1:
+            # A repair may need to correct any file changed by the immediately
+            # preceding failed attempt.  Keep that cone exact: reuse only
+            # trace-backed prior touched paths that remain locally admissible,
+            # instead of forcing a meaningless mutation in the newly ranked
+            # first path merely to unlock the actual defective file.
+            prior_state = _read_json(
+                harness_dir / state_name(round_num - 1), {}
+            )
+            prior_touched = [
+                str(path)
+                for path in prior_state.get("touched_paths") or []
+                if str(path) in admissible_paths
+            ]
+            if prior_touched:
+                initial = list(dict.fromkeys([*initial, *prior_touched]))[
+                    :max_touched_files
+                ]
+        seeds = ranked[:max_touched_files]
+        if not seeds:
+            seeds = target_entries[:1]
+        local = list(dict.fromkeys(seeds))
+        # A fallback entry point is useful only together with its direct imports;
+        # that is the smallest executable source unit for common static/SPA seeds.
+        if not ranked:
+            for seed in list(local):
+                for dependency in sorted(_dependency_neighbors(graph, seed)):
+                    if (
+                        dependency in admissible_paths
+                        and dependency not in local
+                        and len(local) < max_touched_files
+                    ):
+                        local.append(dependency)
     # The hotspot table retains rank/score evidence.  The executable allowlist
     # is sorted so repeated runs expose a stable path order to models/tools.
     local = sorted(local)
 
-    dependencies: list[str] = []
+    dependencies: list[str] = sorted(planned_companions)
     for seed in local:
         for dependency in sorted(_dependency_neighbors(graph, seed)):
             if (
@@ -805,22 +2578,107 @@ def ensure_minimal_path_plan(
                 and dependency not in dependencies
             ):
                 dependencies.append(dependency)
+    for shared_style in sorted(guarded_style_paths):
+        if shared_style not in local and shared_style not in dependencies:
+            dependencies.append(shared_style)
+    for edge in route_scope.get("planned_route_dependency_edges") or []:
+        target = str(edge.get("to") or "")
+        if target and target not in local and target not in dependencies:
+            dependencies.append(target)
+    dependencies.sort()
     all_paths = [_relative_to_workdir(item, workdir) for item in files]
     protected = sorted(set(all_paths) - set(local) - set(dependencies))
     executable_edges = [
         edge
         for edge in edges
-        if edge["from"] in admissible_paths and edge["to"] in admissible_paths
+        if edge["from"] in admissible_paths
+        and edge["to"] in admissible_paths
+        and (
+            isolation_strategy.get("status") != "recommended"
+            or (
+                edge["from"] in set(local) | set(dependencies)
+                and edge["to"] in set(local) | set(dependencies)
+            )
+        )
     ]
+    executable_edges.extend(
+        {
+            "from": str(item["entry_path"]),
+            "to": str(path),
+            "kind": (
+                "planned_route_style"
+                if path == item.get("planned_style_path")
+                else "planned_route_companion"
+            ),
+        }
+        for item in isolation_strategy.get("routes", [])
+        if isinstance(item, dict)
+        for path in (item.get("planned_companion_path"), item.get("planned_style_path"))
+        if path
+    )
+    executable_edges.extend(
+        dict(edge)
+        for edge in route_scope.get("planned_route_dependency_edges") or []
+        if isinstance(edge, dict)
+        and edge.get("from") in admissible_paths
+        and edge.get("to") in admissible_paths
+    )
+    style_owners = route_scope.get("path_owners") or {}
+    executable_edge_keys = {
+        (str(edge.get("from")), str(edge.get("to")))
+        for edge in executable_edges
+    }
+    for shared_style in sorted(guarded_style_paths):
+        owner_routes = set(style_owners.get(shared_style) or [])
+        for route in route_scope.get("target_routes") or []:
+            if route not in owner_routes:
+                continue
+            for entry_path in (route_scope.get("route_entries") or {}).get(route, []):
+                if entry_path in admissible_paths:
+                    edge_key = (str(entry_path), shared_style)
+                    if edge_key not in executable_edge_keys:
+                        executable_edges.append(
+                            {
+                                "from": str(entry_path),
+                                "to": shared_style,
+                                "kind": "guarded_shared_style",
+                            }
+                        )
+                        executable_edge_keys.add(edge_key)
+    fragment_routes = {
+        str(item.get("key")): str(item.get("route", "/"))
+        for item in baseline.get("fragments", [])
+        if isinstance(item, dict) and item.get("key")
+    }
+    fragment_route_counts = {
+        route: sum(
+            1 for key in allowed_fragments if fragment_routes.get(key) == route
+        )
+        + sum(
+            1
+            for contract in expected_new_fragments
+            if contract.get("route") == route
+            # Exact, count-bounded test IDs do not widen access to any
+            # existing source fragment. They are postconditions inside the
+            # already bounded target root, not independent mutable regions.
+            and expected_fragment_consumes_scope_slot(contract)
+        )
+        for route in route_scope.get("target_routes", [])
+    }
     status = (
         "blocked"
         if route_scope["unresolved_routes"]
+        or route_scope["unexpected_check_routes"]
+        or route_scope["missing_check_routes"]
+        or bool(unresolved_fragments)
+        or any(count > 4 for count in fragment_route_counts.values())
         else "ready"
         if local and checks
         else "advisory"
     )
     plan = {
         "schema_version": PLAN_VERSION,
+        "source_selection_strategy": SOURCE_SELECTION_STRATEGY,
         "owner": "harness",
         "round": round_num,
         "sprint": sprint_num,
@@ -832,7 +2690,10 @@ def ensure_minimal_path_plan(
             "selectors": selectors,
             "selector_tokens": tokens,
             "requested_source_roles": sorted(requested_roles),
+            "priority_source_roles": sorted(priority_roles),
+            "failed_check_ids": failed_check_ids,
         },
+        "design_system_context": _design_system_context(files, workdir),
         "dom_change_cone": {
             "baseline": (
                 f".harness/{baseline_path.name}" if baseline_path is not None else None
@@ -840,16 +2701,29 @@ def ensure_minimal_path_plan(
             "allowed_root_keys": allowed_roots,
             "allow_new_roots": allow_new_roots,
             "root_evidence": root_evidence,
+            "allowed_fragment_keys": allowed_fragments,
+            "expected_new_fragments": expected_new_fragments,
+            "expected_new_routes": list(route_scope.get("planned_new_routes") or []),
+            "fragment_evidence": fragment_evidence,
+            "unresolved_fragment_selectors": unresolved_fragments,
         },
         "source_change_cone": {
             "local_paths": local,
             "initial_paths": initial,
             "dependency_paths": dependencies,
+            "planned_new_paths": sorted(planned_companions | planned_route_entries),
             "protected_paths": protected,
             "dependency_edges": executable_edges,
-            "hotspots": hotspots,
+            "guarded_shared_regions": guarded_shared_regions,
+            "hotspots": [
+                item
+                for item in hotspots
+                if isolation_strategy.get("status") != "recommended"
+                or str(item.get("path")) in set(local) | set(dependencies)
+            ],
             "entrypoints": entries,
             "path_scores": scores,
+            "route_isolation_strategy": isolation_strategy,
         },
         "budgets": {
             "max_patch_lines": max(1, int(max_patch_lines)),
@@ -889,6 +2763,15 @@ class MinimalPathPolicy:
             if isinstance(item, dict) and item.get("path")
         ]
         fallback_initial = hotspots[:1] or sorted(self.local_paths)[:1]
+        if str(plan.get("mode") or "") == "repair" and self.round_num > 1:
+            prior_state = _read_json(
+                self.workdir / ".harness" / state_name(self.round_num - 1), {}
+            )
+            configured_initial.update(
+                str(path)
+                for path in prior_state.get("touched_paths") or []
+                if str(path) in self.local_paths
+            )
         self.initial_paths = configured_initial or set(fallback_initial)
         self.dependency_paths = set(cone.get("dependency_paths") or [])
         self.protected_paths = set(cone.get("protected_paths") or [])
@@ -896,6 +2779,10 @@ class MinimalPathPolicy:
         self.cross_route_shared_paths = set(
             route_scope.get("cross_route_shared_paths") or []
         )
+        self.guarded_shared_regions: dict[str, list[dict[str, Any]]] = {}
+        for item in cone.get("guarded_shared_regions") or []:
+            if isinstance(item, dict) and item.get("path") and item.get("symbol"):
+                self.guarded_shared_regions.setdefault(str(item["path"]), []).append(item)
         self.off_target_paths = set(route_scope.get("off_target_paths") or [])
         self.dependency_edges = {
             (str(item.get("from")), str(item.get("to")))
@@ -907,7 +2794,37 @@ class MinimalPathPolicy:
         self.max_touched_files = max(1, int(budgets.get("max_touched_files", 3)))
         self.state_path = self.workdir / ".harness" / state_name(self.round_num)
         state = _read_json(self.state_path, {})
-        self.observed_paths: set[str] = set(state.get("observed_paths") or [])
+        context = _read_json(
+            self.workdir / ".harness" / f"edit_context_round_{self.round_num}.json",
+            {},
+        )
+        self.preloaded_regions: dict[str, list[str]] = {}
+        if isinstance(context, dict) and context.get("schema_version") in {
+            "edit-context-v1",
+            "edit-context-v2",
+        }:
+            for item in context.get("source_windows") or []:
+                if isinstance(item, dict) and item.get("path") and item.get("content"):
+                    self.preloaded_regions.setdefault(str(item["path"]), []).append(
+                        str(item["content"])
+                    )
+            for outline in context.get("source_outlines") or []:
+                if not isinstance(outline, dict) or not outline.get("path"):
+                    continue
+                for entry in outline.get("entries") or []:
+                    if isinstance(entry, dict) and entry.get("content"):
+                        self.preloaded_regions.setdefault(str(outline["path"]), []).append(
+                            str(entry["content"])
+                        )
+        historical_observed = set(state.get("observed_paths") or [])
+        self.tool_observed_paths: set[str] = set(
+            state.get("tool_observed_paths") or historical_observed
+        )
+        self.observed_paths: set[str] = (
+            historical_observed
+            | self.tool_observed_paths
+            | set(self.preloaded_regions)
+        )
         self.touched_paths: set[str] = set(state.get("touched_paths") or [])
         self.mutation_revision = int(state.get("mutation_revision") or 0)
         self.validation_attempt_revision = int(
@@ -1003,6 +2920,8 @@ class MinimalPathPolicy:
                 "owner": "harness",
                 "round": self.round_num,
                 "observed_paths": sorted(self.observed_paths),
+                "tool_observed_paths": sorted(self.tool_observed_paths),
+                "preloaded_paths": sorted(self.preloaded_regions),
                 "touched_paths": sorted(self.touched_paths),
                 "mutation_revision": self.mutation_revision,
                 "validation_attempt_revision": self.validation_attempt_revision,
@@ -1032,6 +2951,16 @@ class MinimalPathPolicy:
     def _patch_pairs(tool: str, tool_input: dict[str, Any]) -> list[tuple[str, str]]:
         normalized = tool.lower()
         if normalized in {"write", "write_file"}:
+            copy_pairs = tool_input.get("_harness_copy_pairs")
+            if tool_input.get("_harness_copy_from") and isinstance(copy_pairs, list):
+                return [
+                    (
+                        str(item.get("old_text", "")),
+                        str(item.get("new_text", "")),
+                    )
+                    for item in copy_pairs
+                    if isinstance(item, dict)
+                ]
             return [("", str(tool_input.get("content", "")))]
         if normalized in {"apply_patch", "edit"}:
             old = tool_input.get("old_text", tool_input.get("old_string", ""))
@@ -1115,6 +3044,117 @@ class MinimalPathPolicy:
             None,
         )
 
+    def _current_guarded_spans(
+        self, relative: str, content: str
+    ) -> list[tuple[int, int]]:
+        spans: list[tuple[int, int]] = []
+        for contract in self.guarded_shared_regions.get(relative, []):
+            region = _named_source_region(content, str(contract.get("symbol", "")))
+            if region is not None and str(region.get("kind")) == str(contract.get("kind")):
+                spans.append((int(region["start"]), int(region["end"])))
+        return spans
+
+    def _guarded_contract_for_span(
+        self, relative: str, content: str, start: int, end: int
+    ) -> dict[str, Any] | None:
+        for contract in self.guarded_shared_regions.get(relative, []):
+            region = _named_source_region(content, str(contract.get("symbol", "")))
+            if (
+                region is not None
+                and str(region.get("kind")) == str(contract.get("kind"))
+                and int(region["start"]) <= start
+                and end <= int(region["end"])
+            ):
+                return contract
+        return None
+
+    def _guarded_projection(
+        self, relative: str, content: str
+    ) -> tuple[str | None, str | None]:
+        contracts = self.guarded_shared_regions.get(relative, [])
+        regions: list[tuple[int, int, str, str]] = []
+        for contract in contracts:
+            symbol = str(contract.get("symbol", ""))
+            kind = str(contract.get("kind", ""))
+            region = _named_source_region(content, symbol)
+            if region is None or str(region.get("kind")) != kind:
+                return None, (
+                    f"Guarded target-route region {symbol!r} cannot be resolved "
+                    f"uniquely in {relative}."
+                )
+            regions.append(
+                (int(region["start"]), int(region["end"]), symbol, kind)
+            )
+        regions.sort()
+        if any(left[1] > right[0] for left, right in zip(regions, regions[1:])):
+            return None, f"Guarded target-route regions overlap in {relative}."
+        parts: list[str] = []
+        cursor = 0
+        for start, end, symbol, kind in regions:
+            parts.append(content[cursor:start])
+            parts.append(f"\0HARNESS_GUARDED_REGION:{kind}:{symbol}\0")
+            cursor = end
+        parts.append(content[cursor:])
+        return "".join(parts), None
+
+    def validate_guarded_shared_file(
+        self, relative: str, *, before: str, after: str
+    ) -> str | None:
+        """Require every byte outside approved shared-file regions to stay fixed."""
+
+        if relative not in self.guarded_shared_regions:
+            return f"No guarded target-route region is authorized for {relative}."
+        contracts = self.guarded_shared_regions.get(relative, [])
+        css_contracts = [
+            item
+            for item in contracts
+            if item.get("mutation_mode") == "target_scoped_css"
+        ]
+        if css_contracts:
+            if len(css_contracts) != len(contracts):
+                return f"Shared stylesheet contracts are ambiguous for {relative}."
+            anchors = sorted(
+                {
+                    str(anchor)
+                    for item in css_contracts
+                    for anchor in item.get("allowed_anchors") or []
+                }
+            )
+            return _validate_target_scoped_css(before, after, anchors)
+        before_projection, before_error = self._guarded_projection(relative, before)
+        if before_error:
+            return before_error
+        after_projection, after_error = self._guarded_projection(relative, after)
+        if after_error:
+            return after_error
+        if before_projection != after_projection:
+            return (
+                f"Committed Edit changed bytes outside the guarded target-route "
+                f"region in {relative}."
+            )
+        for contract in self.guarded_shared_regions.get(relative, []):
+            if contract.get("mutation_mode") != "additive_target_members":
+                continue
+            before_region = _named_source_region(
+                before, str(contract.get("symbol", ""))
+            )
+            after_region = _named_source_region(
+                after, str(contract.get("symbol", ""))
+            )
+            if before_region is None or after_region is None:
+                return (
+                    "Additive shared-state region cannot be resolved after the Edit: "
+                    + str(contract.get("symbol", ""))
+                )
+            error = _validate_additive_target_members(
+                before[int(before_region["start"]) : int(before_region["end"])],
+                after[int(after_region["start"]) : int(after_region["end"])],
+                contract.get("allowed_terms") or [],
+            )
+            if error:
+                return error
+        return None
+
     def observe_result(
         self,
         tool: str,
@@ -1134,6 +3174,7 @@ class MinimalPathPolicy:
             _absolute, relative = resolved_path
             if relative.startswith("frontend/"):
                 self.observed_paths.add(relative)
+                self.tool_observed_paths.add(relative)
                 self._record(
                     decision="observe",
                     tool=tool,
@@ -1242,6 +3283,7 @@ class MinimalPathPolicy:
         owned_artifacts = {
             f".harness/{plan_name(self.round_num)}",
             f".harness/edit_scope_round_{self.round_num}.json",
+            f".harness/edit_context_round_{self.round_num}.json",
             f".harness/{ledger_name(self.round_num)}",
             f".harness/{state_name(self.round_num)}",
         }
@@ -1256,7 +3298,9 @@ class MinimalPathPolicy:
         if absolute.suffix.lower() not in CODE_EXTENSIONS:
             return None
 
-        if relative in self.cross_route_shared_paths:
+        cross_route_shared = relative in self.cross_route_shared_paths
+        guarded_shared = relative in self.guarded_shared_regions
+        if cross_route_shared and not guarded_shared:
             owners = (
                 (self.plan.get("route_scope") or {})
                 .get("path_owners", {})
@@ -1265,7 +3309,8 @@ class MinimalPathPolicy:
             return self._deny(
                 tool,
                 relative,
-                "This source is shared with non-target routes and is closed for this Edit: "
+                "This source is shared with non-target routes and has no mechanically "
+                "identifiable target-route region for this Edit: "
                 + ", ".join(str(item) for item in owners),
             )
         if relative in self.off_target_paths:
@@ -1346,9 +3391,23 @@ class MinimalPathPolicy:
             )
 
         pairs = self._patch_pairs(tool, tool_input)
+        if (
+            pairs
+            and absolute.exists()
+            and relative in self.preloaded_regions
+            and relative not in self.tool_observed_paths
+        ):
+            snippets = self.preloaded_regions[relative]
+            unseen = [old for old, _new in pairs if not old or not any(old in snippet for snippet in snippets)]
+            if unseen:
+                return self._deny(
+                    tool,
+                    relative,
+                    "Exact patch text falls outside the Harness-preloaded source window. "
+                    "Read only the focused missing line range before widening the patch.",
+                )
         patch_lines = sum(
-            max(len(old.splitlines()) or 1, len(new.splitlines()) or 1)
-            for old, new in pairs
+            max(1, effective_patch_line_count(old, new)) for old, new in pairs
         )
         if pairs and patch_lines > self.max_patch_lines:
             return self._deny(
@@ -1360,21 +3419,94 @@ class MinimalPathPolicy:
             )
         if pairs and absolute.is_file():
             content = absolute.read_text(encoding="utf-8", errors="replace")
-            for old, _new in pairs:
-                if not old or content.count(old) != 1:
+            source_lines = content.splitlines(keepends=True)
+            coordinate_start = tool_input.get("_harness_start_line")
+            coordinate_end = tool_input.get("_harness_end_line")
+            coordinate_sha = str(tool_input.get("_harness_source_sha256") or "")
+            css_guarded = any(
+                item.get("mutation_mode") == "target_scoped_css"
+                for item in self.guarded_shared_regions.get(relative, [])
+            )
+            css_candidate = content
+            for old, new in pairs:
+                current_content = css_candidate if css_guarded else content
+                coordinated_span: tuple[int, int] | None = None
+                if (
+                    len(pairs) == 1
+                    and isinstance(coordinate_start, int)
+                    and not isinstance(coordinate_start, bool)
+                    and isinstance(coordinate_end, int)
+                    and not isinstance(coordinate_end, bool)
+                    and 1 <= coordinate_start <= coordinate_end <= len(source_lines)
+                    and coordinate_sha
+                    == hashlib.sha256(content.encode("utf-8")).hexdigest()
+                ):
+                    span_start = sum(
+                        len(line) for line in source_lines[: coordinate_start - 1]
+                    )
+                    span_end = sum(len(line) for line in source_lines[:coordinate_end])
+                    if content[span_start:span_end] == old:
+                        coordinated_span = (span_start, span_end)
+                if not old or (
+                    coordinated_span is None and current_content.count(old) != 1
+                ):
                     return self._deny(
                         tool,
                         relative,
                         "Minimal-path exact patch must identify one unique source occurrence.",
                         patch_lines=patch_lines,
                     )
+                if guarded_shared:
+                    if css_guarded:
+                        next_content = current_content.replace(old, new, 1)
+                        css_error = self.validate_guarded_shared_file(
+                            relative,
+                            before=current_content,
+                            after=next_content,
+                        )
+                        if css_error:
+                            return self._deny(
+                                tool,
+                                relative,
+                                css_error,
+                                patch_lines=patch_lines,
+                            )
+                        css_candidate = next_content
+                    else:
+                        if coordinated_span is not None:
+                            start, end = coordinated_span
+                        else:
+                            start = content.index(old)
+                            end = start + len(old)
+                        contract = self._guarded_contract_for_span(
+                            relative, content, start, end
+                        )
+                        if contract is None:
+                            return self._deny(
+                                tool,
+                                relative,
+                                "Shared source patches must stay wholly inside one harness-owned "
+                                "guarded target-route region.",
+                                patch_lines=patch_lines,
+                            )
+                        if contract.get("mutation_mode") == "additive_target_members":
+                            additive_error = _validate_additive_target_members(
+                                old, new, contract.get("allowed_terms") or []
+                            )
+                            if additive_error:
+                                return self._deny(
+                                    tool,
+                                    relative,
+                                    additive_error,
+                                    patch_lines=patch_lines,
+                                )
 
         self._record(
             decision="allow",
             tool=tool,
             path=relative,
             reason="mutation stays inside the smallest mechanically supported cone",
-            scope_tier=tier,
+            scope_tier="guarded_shared_region" if guarded_shared else tier,
             patch_lines=patch_lines,
             expansion_reason=expansion_reason,
         )

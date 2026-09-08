@@ -112,6 +112,33 @@ def check_grades(grades: dict) -> bool:
     return True
 
 
+def _check_applicable_grades(grades: dict[str, Any]) -> bool:
+    """Do not turn omitted visual review into an unevidenced Edit repair.
+
+    The Harness, not the model, writes ``visual_evidence_decision``.  When it
+    explicitly marks a behavior-only Edit as not requiring pixels, the three
+    visual-owned rubric dimensions are descriptive and cannot reject otherwise
+    passing browser, source, and regression evidence.
+    """
+    decision = grades.get("visual_evidence_decision")
+    if not (
+        isinstance(decision, dict)
+        and decision.get("status") == "not_required"
+        and str((grades.get("phase_results") or {}).get("appearance", "")).lower()
+        == "skipped"
+    ):
+        return check_grades(grades)
+    criteria = grades.get("criteria")
+    functionality = criteria.get("functionality") if isinstance(criteria, dict) else None
+    score = functionality.get("score") if isinstance(functionality, dict) else None
+    return (
+        isinstance(score, (int, float))
+        and not isinstance(score, bool)
+        and math.isfinite(float(score))
+        and float(score) >= criterion_threshold("functionality")
+    )
+
+
 def parse_tristate(value: Any) -> bool | None:
     """将 agent 输出解析为 True / False / 未知三态值。"""
     if isinstance(value, bool):
@@ -143,7 +170,7 @@ def _has_failed_critical_ui_checks(grades: dict[str, Any]) -> bool:
 
 def _only_unverified_partial_blockers(grades: dict[str, Any]) -> bool:
     """Accept when the sole negative signal is evaluator coverage uncertainty."""
-    if not check_grades(grades) or _has_failed_critical_exit_criteria(grades):
+    if not _check_applicable_grades(grades) or _has_failed_critical_exit_criteria(grades):
         return False
     phase_results = grades.get("phase_results") or {}
     if any(str(value).lower() == "fail" for value in phase_results.values()):
@@ -223,9 +250,9 @@ def determine_passed(grades: dict[str, Any] | None) -> bool:
 
     overall_passed = parse_tristate(grades.get("overall_passed"))
     if overall_passed is not None:
-        return overall_passed and check_grades(grades)
+        return overall_passed and _check_applicable_grades(grades)
 
-    return check_grades(grades)
+    return _check_applicable_grades(grades)
 
 
 def visual_review_failure(

@@ -83,6 +83,26 @@ class FeatureList(_Artifact):
         return "feature_list.json"
 
 
+class RequirementChange(BaseModel):
+    """Planner-authored semantic update for one incremental Edit."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    requirement_id: NonEmptyString
+    relation: Literal["add", "refine", "replace", "withdraw"]
+    prior_requirement_ids: list[NonEmptyString] = Field(default_factory=list)
+    rationale: NonEmptyString
+
+
+class RequirementConflict(BaseModel):
+    """An unresolved new/old requirement conflict that blocks mutation."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    requirement_ids: list[NonEmptyString] = Field(min_length=2)
+    description: NonEmptyString
+
+
 class Sprint(BaseModel):
     """`sprint_plan.json` 中的单个 sprint。"""
 
@@ -94,6 +114,11 @@ class Sprint(BaseModel):
     feature_ids: list[str] = Field(min_length=1)
     deliverables: list[str] = Field(min_length=1)
     exit_criteria: list[str] = Field(min_length=1)
+    requirement_changes: list[RequirementChange] = Field(default_factory=list)
+    impact_tags: list[NonEmptyString] = Field(default_factory=list)
+    unresolved_conflicts: list[RequirementConflict] = Field(default_factory=list)
+    visual_evidence: Literal["required", "conditional", "not_required"] = "conditional"
+    visual_evidence_reason: str = ""
 
 
 class SprintPlan(_Artifact):
@@ -118,9 +143,15 @@ class UIVerificationCheck(BaseModel):
     expected_result: str
     critical: bool
     category: str
+    requirement_id: str | None = None
+    impact_tags: list[NonEmptyString] = Field(default_factory=list)
     # Exact same-origin browser route for this check. Optional only so older
     # single-page plans continue to load as the root route.
     route: str = "/"
+    # Exact pre-existing literals that this check depends on (for example a
+    # catalog title used by a filter contract). The generator must materialize
+    # them; they are not inferred from evaluator prose.
+    fixtures: list[str] = Field(default_factory=list, max_length=20)
     # Planner-authored, declarative browser steps.  Optional for backwards
     # compatibility with existing runs; new plans are asked to provide them.
     actions: list[dict[str, Any]] = Field(default_factory=list)
@@ -267,10 +298,19 @@ class Grades(_Artifact):
     regressions_found: list[Any] = Field(default_factory=list)
     missing_features: list[Any] = Field(default_factory=list)
     repair_instructions: list[Any] = Field(default_factory=list)
+    repair_task_descriptions: list[Any] = Field(default_factory=list)
     evaluation_infrastructure_failure: dict[str, Any] | None = None
     edit_guard: dict[str, Any] | None = None
     edit_scope_audit: str | None = None
     minimality_certificate: dict[str, Any] | None = None
+    hidden_oracle: dict[str, Any] | None = None
+    browser_action_contract_reconciliation: dict[str, Any] | None = None
+    accepted_tape_replay: dict[str, Any] | None = None
+    accepted_tape: dict[str, Any] | None = None
+    regression_selection: dict[str, Any] | None = None
+    repair_packet: dict[str, Any] | None = None
+    evidence_route: dict[str, Any] | None = None
+    visual_evidence_decision: dict[str, Any] | None = None
 
     @classmethod
     def filename(cls, *, round_num: int, **params: Any) -> str:
@@ -323,6 +363,7 @@ class HarnessState(_Artifact):
     design_status: str | None = None
     approved_concept_path: str | None = None
     background_ui_path: str | None = None
+    edit_freeze: dict[str, Any] | None = None
     timestamp: str | None = None
 
     @classmethod

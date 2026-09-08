@@ -74,18 +74,10 @@ def test_browser_screenshot_schema_exposes_distinct_page_positions():
 
 
 @pytest.mark.anyio
-async def test_openai_http_client_retries_a_transient_transport_error(monkeypatch):
+async def test_openai_http_client_never_retries_a_transport_error(monkeypatch):
     import httpx
 
     attempts = 0
-
-    class Response:
-        is_error = False
-        status_code = 200
-        text = ""
-
-        def json(self):
-            return {"choices": []}
 
     class Client:
         async def __aenter__(self):
@@ -97,27 +89,21 @@ async def test_openai_http_client_retries_a_transient_transport_error(monkeypatc
         async def post(self, *args, **kwargs):
             nonlocal attempts
             attempts += 1
-            if attempts == 1:
-                raise httpx.ConnectError("transient proxy failure")
-            return Response()
+            raise httpx.ConnectError("transient proxy failure")
 
     monkeypatch.setattr(httpx, "AsyncClient", lambda **kwargs: Client())
-    async def no_sleep(_seconds):
-        return None
-    monkeypatch.setattr("src.agents.openai_runner.asyncio.sleep", no_sleep)
     config = HarnessConfig(openai_base_url="https://example.test/v1", openai_api_key="test-key")
 
-    assert await OpenAIHTTPClient(config, 20).complete(model="qwen-test", messages=[]) == {"choices": []}
-    assert attempts == 2
+    with pytest.raises(httpx.ConnectError, match="transient proxy failure"):
+        await OpenAIHTTPClient(config, 20).complete(model="qwen-test", messages=[])
+    assert attempts == 1
 
 
 @pytest.mark.anyio
-async def test_openai_http_client_uses_slow_backoff_for_qwen_burst_limit(monkeypatch):
+async def test_openai_http_client_never_retries_qwen_burst_limit(monkeypatch):
     import httpx
 
     attempts = 0
-    waits: list[float] = []
-
     class Response:
         def __init__(self, status_code: int, text: str):
             self.status_code = status_code
@@ -138,25 +124,61 @@ async def test_openai_http_client_uses_slow_backoff_for_qwen_burst_limit(monkeyp
         async def post(self, *args, **kwargs):
             nonlocal attempts
             attempts += 1
-            if attempts == 1:
-                return Response(429, '{"code":"limit_burst_rate"}')
-            return Response(200, "")
+            return Response(429, '{"code":"limit_burst_rate"}')
 
     monkeypatch.setattr(httpx, "AsyncClient", lambda **kwargs: Client())
-
-    async def record_sleep(seconds):
-        waits.append(seconds)
-
-    monkeypatch.setattr("src.agents.openai_runner.asyncio.sleep", record_sleep)
     config = HarnessConfig(openai_base_url="https://example.test/v1", openai_api_key="test-key")
 
-    assert await OpenAIHTTPClient(config, 20).complete(model="qwen-test", messages=[]) == {"choices": []}
-    assert attempts == 2
-    assert waits == [10]
+    with pytest.raises(httpx.HTTPStatusError, match="429"):
+        await OpenAIHTTPClient(config, 20).complete(model="qwen-test", messages=[])
+    assert attempts == 1
 
 
 @pytest.mark.anyio
-async def test_openai_http_client_stops_retrying_when_total_request_budget_expires(monkeypatch):
+async def test_openai_http_client_reports_non_json_success_without_retry(monkeypatch):
+    import httpx
+
+    attempts = 0
+
+    class Response:
+        status_code = 200
+        text = "upstream protocol mismatch"
+        is_error = False
+        headers = {"content-type": "text/plain"}
+        request = httpx.Request("POST", "https://example.test/chat/completions")
+
+        def json(self):
+            raise json.JSONDecodeError("Expecting value", self.text, 0)
+
+    class Client:
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *args):
+            return None
+
+        async def post(self, *args, **kwargs):
+            nonlocal attempts
+            attempts += 1
+            return Response()
+
+    monkeypatch.setattr(httpx, "AsyncClient", lambda **kwargs: Client())
+    config = HarnessConfig(
+        openai_base_url="https://example.test", openai_api_key="test-key"
+    )
+
+    with pytest.raises(
+        RuntimeError,
+        match="non-JSON.*status=200.*content-type=text/plain",
+    ):
+        await OpenAIHTTPClient(config, 20).complete(
+            model="qwen-test", messages=[]
+        )
+    assert attempts == 1
+
+
+@pytest.mark.anyio
+async def test_openai_http_client_uses_one_bounded_request(monkeypatch):
     import httpx
 
     class Client:
@@ -169,17 +191,10 @@ async def test_openai_http_client_stops_retrying_when_total_request_budget_expir
         async def post(self, *args, **kwargs):
             raise httpx.ConnectError("proxy unavailable")
 
-    ticks = [0.0, 0.0, 1.1, 1.1]
-    def fake_monotonic():
-        return ticks.pop(0) if ticks else 1.1
     monkeypatch.setattr(httpx, "AsyncClient", lambda **kwargs: Client())
-    monkeypatch.setattr("src.agents.openai_runner.time.monotonic", fake_monotonic)
-    async def no_sleep(_seconds):
-        return None
-    monkeypatch.setattr("src.agents.openai_runner.asyncio.sleep", no_sleep)
     config = HarnessConfig(openai_base_url="https://example.test/v1", openai_api_key="test-key")
 
-    with pytest.raises(TimeoutError, match="total request budget"):
+    with pytest.raises(httpx.ConnectError, match="proxy unavailable"):
         await OpenAIHTTPClient(config, 1).complete(model="qwen-test", messages=[])
 
 
@@ -196,6 +211,125 @@ async def test_native_loop_executes_tool_and_returns_compatible_result(tmp_path:
     assert tmp_path.joinpath("x.txt").read_text() == "ok"
     assert text == "done" and not denials
     assert result.usage["input_tokens"] == 6
+
+
+@pytest.mark.anyio
+async def test_native_loop_records_usage_and_stops_before_phase_overspend(tmp_path: Path):
+    trace_path = tmp_path / "planner.jsonl"
+    client = CapturingFakeClient([
+        reply(tool_calls=[{
+            "id": "1",
+            "type": "function",
+            "function": {
+                "name": "write_file",
+                "arguments": '{"path":"partial.txt","content":"real progress"}',
+            },
+        }]),
+        reply(content="must not be requested"),
+    ])
+
+    async def incomplete_hook(*_args):
+        return {"decision": "block", "reason": "required artifact missing"}
+
+    with pytest.raises(RuntimeError, match="planner cost budget exhausted"):
+        await run_openai_agent(
+            prompt="plan",
+            config=HarnessConfig(planner_budget_usd=0.00001),
+            workdir=tmp_path,
+            model="qwen3.6-plus",
+            system_prompt="system",
+            max_turns=10,
+            allow_bash=False,
+            client=client,
+            stop_hooks=[incomplete_hook],
+            trace_path=trace_path,
+        )
+
+    assert len(client.requests) == 1
+    events = [json.loads(line) for line in trace_path.read_text().splitlines()]
+    usage_event = next(event for event in events if event["event"] == "usage")
+    assert usage_event["cumulative_usage"] == {"input_tokens": 3, "output_tokens": 2}
+    assert usage_event["estimated_cost_usd"] > usage_event["phase_budget_usd"]
+
+
+@pytest.mark.anyio
+async def test_native_loop_carries_failed_attempt_spend_across_resume(tmp_path: Path):
+    trace_path = tmp_path / "planner.jsonl"
+    trace_path.write_text(
+        "\n".join(
+            json.dumps(event)
+            for event in [
+                {"event": "run_start", "model": "deepseek-chat"},
+                {
+                    "event": "usage",
+                    "cumulative_usage": {"input_tokens": 4, "output_tokens": 3},
+                },
+                {
+                    "event": "run_error",
+                    "cumulative_usage": {"input_tokens": 4, "output_tokens": 3},
+                },
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    client = CapturingFakeClient([reply(content="done")])
+
+    result, _cost, _text, _denials = await run_openai_agent(
+        prompt="resume", config=HarnessConfig(planner_budget_usd=1),
+        workdir=tmp_path, model="deepseek-chat", system_prompt="system",
+        max_turns=2, allow_bash=False, client=client, trace_path=trace_path,
+    )
+
+    assert result.usage == {"input_tokens": 7, "output_tokens": 5}
+    events = [json.loads(line) for line in trace_path.read_text().splitlines()]
+    assert events[-2]["attempt_usage"] == {"input_tokens": 3, "output_tokens": 2}
+    assert events[-2]["cumulative_usage"] == {"input_tokens": 7, "output_tokens": 5}
+
+
+@pytest.mark.anyio
+async def test_native_loop_refuses_new_request_when_prior_attempt_spent_phase_budget(
+    tmp_path: Path,
+):
+    trace_path = tmp_path / "planner.jsonl"
+    trace_path.write_text(
+        json.dumps({"event": "run_start", "model": "qwen3.6-plus"}) + "\n"
+        + json.dumps(
+            {
+                "event": "run_error",
+                "cumulative_usage": {"input_tokens": 3, "output_tokens": 2},
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    client = CapturingFakeClient([reply(content="must not be requested")])
+
+    with pytest.raises(RuntimeError, match="planner cost budget exhausted"):
+        await run_openai_agent(
+            prompt="resume", config=HarnessConfig(planner_budget_usd=0.000001),
+            workdir=tmp_path, model="qwen3.6-plus", system_prompt="system",
+            max_turns=2, allow_bash=False, client=client, trace_path=trace_path,
+        )
+
+    assert client.requests == []
+
+
+@pytest.mark.anyio
+async def test_native_loop_sends_user_reference_images_as_multimodal_content(tmp_path: Path):
+    image = tmp_path / "reference.png"
+    image.write_bytes(b"\x89PNG\r\n\x1a\nreference")
+    client = CapturingFakeClient([reply(content="done")])
+
+    await run_openai_agent(
+        prompt="edit to match", image_paths=[image], config=HarnessConfig(),
+        workdir=tmp_path, model="deepseek-chat", system_prompt="system",
+        max_turns=2, allow_bash=False, client=client,
+    )
+
+    content = client.requests[0]["messages"][1]["content"]
+    assert content[0] == {"type": "text", "text": "edit to match"}
+    assert content[1]["type"] == "image_url"
 
 
 @pytest.mark.anyio
@@ -296,18 +430,127 @@ async def test_repeated_identical_tool_call_is_stopped(tmp_path: Path):
 
 
 @pytest.mark.anyio
+async def test_unchanged_visible_read_is_suppressed_before_repeat_breaker(tmp_path: Path):
+    (tmp_path / "source.js").write_text("const value = 1;\n")
+    repeated = lambda call_id: [{
+        "id": call_id,
+        "type": "function",
+        "function": {"name": "read_file", "arguments": '{"path":"source.js"}'},
+    }]
+    client = CapturingFakeClient([
+        reply(tool_calls=repeated("r1")),
+        reply(tool_calls=repeated("r2")),
+        reply(content="done"),
+    ])
+
+    await run_openai_agent(
+        prompt="inspect", config=HarnessConfig(), workdir=tmp_path,
+        model="deepseek-chat", system_prompt="system", max_turns=4,
+        allow_bash=False, client=client,
+    )
+
+    tool_messages = [
+        message for message in client.requests[-1]["messages"]
+        if message.get("role") == "tool"
+    ]
+    assert "const value = 1" in tool_messages[0]["content"]
+    assert tool_messages[1]["content"].startswith("UNCHANGED_READ_SUPPRESSED")
+
+
+@pytest.mark.anyio
 async def test_phase_timeout_is_hard(tmp_path: Path):
     class SlowClient:
         async def complete(self, **kwargs):
             import asyncio
             await asyncio.sleep(60)
 
+    trace_path = tmp_path / "timeout.jsonl"
     with pytest.raises(RuntimeError, match="phase timed out"):
         await run_openai_agent(
             prompt="build", config=HarnessConfig(), workdir=tmp_path, model="deepseek-chat",
             system_prompt="system", max_turns=10, allow_bash=False, client=SlowClient(),
             limits=OpenAIRunLimits(phase_timeout=0.02, request_timeout=60),
+            trace_path=trace_path,
         )
+
+    error_event = [
+        json.loads(line) for line in trace_path.read_text().splitlines()
+        if json.loads(line)["event"] == "run_error"
+    ][0]
+    assert error_event["error_type"] == "CancelledError"
+    assert error_event["cumulative_usage"] == {"input_tokens": 0, "output_tokens": 0}
+
+
+@pytest.mark.anyio
+async def test_completion_validation_is_traced_and_warns_against_rewrite(tmp_path: Path):
+    client = CapturingFakeClient([reply(content="done"), reply(content="done")])
+    hook_calls = 0
+
+    async def commit_hook(*_args):
+        nonlocal hook_calls
+        hook_calls += 1
+        if hook_calls == 1:
+            return {"decision": "block", "reason": "No `feat` commit was created."}
+        return {"decision": "complete"}
+
+    trace_path = tmp_path / "completion.jsonl"
+    await run_openai_agent(
+        prompt="build", config=HarnessConfig(), workdir=tmp_path, model="deepseek-chat",
+        system_prompt="system", max_turns=3, allow_bash=True, client=client,
+        stop_hooks=[commit_hook], trace_path=trace_path,
+    )
+
+    events = [json.loads(line) for line in trace_path.read_text().splitlines()]
+    validation = next(event for event in events if event["event"] == "completion_validation")
+    assert validation["reason"] == "No `feat` commit was created."
+    retry_messages = client.requests[1]["messages"]
+    assert any(
+        "Do not rewrite it" in str(message.get("content", ""))
+        for message in retry_messages
+    )
+
+
+@pytest.mark.anyio
+async def test_planner_receives_validation_at_progress_bundle_boundary(tmp_path: Path):
+    client = CapturingFakeClient([
+        reply(tool_calls=[{
+            "id": "progress",
+            "type": "function",
+            "function": {
+                "name": "write_file",
+                "arguments": '{"path":".harness/progress.md","content":"done"}',
+            },
+        }]),
+        reply(tool_calls=[{
+            "id": "fix",
+            "type": "function",
+            "function": {
+                "name": "write_file",
+                "arguments": '{"path":".harness/ui_verification_plan.json","content":"{}"}',
+            },
+        }]),
+    ])
+    hook_calls = 0
+
+    async def planner_hook(*_args):
+        nonlocal hook_calls
+        hook_calls += 1
+        if hook_calls == 1:
+            return {"decision": "block", "reason": "UI-001 has two assertions"}
+        return {"decision": "complete"}
+
+    await run_openai_agent(
+        prompt="plan", config=HarnessConfig(), workdir=tmp_path,
+        model="deepseek-chat", system_prompt="system", max_turns=4,
+        allow_bash=False, client=client, stop_hooks=[planner_hook],
+    )
+
+    next_messages = client.requests[1]["messages"]
+    assert any(
+        "Edit only the named invalid artifacts" in str(message.get("content", ""))
+        and "UI-001 has two assertions" in str(message.get("content", ""))
+        for message in next_messages
+    )
 
 
 def test_evaluation_policy_enters_finalization_after_browser_diagnostic_budget():
