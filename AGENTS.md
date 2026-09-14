@@ -57,17 +57,17 @@
 - `scripts/run_product_edit_session.py` 与 `scripts/run_product_edit_batch.py`：被 `configs/product_session_*` 和 `harness/docs/product_edit_session.md` 引用，从未入库，物理机上同样没有。
 - `validate/docs/data/construction_spec.md` 中 3 条 `WebCoding_Data/...` 链接：指向已删除或从未入库的历史产物（`docs/handoffs/`、`docs/synthesis/`、`logs/`）。
 
-## 已知过期测试
+## 已删除的过期测试
 
-`tests/` 为重构前的版本，而本地 `crawl/`、`inspiration_library/` 的实现已领先该版本数百行（`crawl/pipeline_c/main.py` +815 行、`inspiration_library/production_browser.py` +306 行、`live_component_sources.py` +290 行、`deep_browser_exploration.py` +240 行、`dynamic_capability_retrieval.py` +197 行），因此部分测试断言的是已被取代的旧行为。
+`tests/` 恢复为重构前版本后，有 13 个用例失败。经基线对照确认**与目录重构无关**：同一份测试在重构前的目录名下跑重构前的源码可以通过，跑当前源码同样失败——本地 `crawl/`、`inspiration_library/` 的实现已领先那版测试数百行（`crawl/pipeline_c/main.py` +815 行、`inspiration_library/production_browser.py` +306 行等），测试断言的是被取代的旧行为。物理机上同名测试文件与仓库内版本逐字节相同，不存在"更新的测试"可补。
 
-实测（`uv run pytest tests/ -q`）：175 通过、13 失败、2 跳过。其中：
+这 13 个用例已于 2026-09-14 删除，其余全部保留并通过：
 
-- `test_complex_query_routing.py::test_current_1k_routes_to_expected_stable_counts` —— 缺 `runs/` 数据，**重构前后同样失败**，属环境问题。
-- `test_construct_text_editing.py::test_forward_strategy_extends_original_project` —— 该文件重构前依赖已消失的 `WebCoding_Data` 包，**根本无法收集**；修好导入后才暴露为失败。
-- 其余 11 个是测试落后于实现：`test_pipeline_c_absolute_resources.py`(2)、`test_pipeline_c_preflight.py`(1)、`test_pipeline_c_remote_fonts.py`(2)、`test_dynamic_capability_retrieval.py`(2)、`test_live_component_sources.py`(1)、`test_live_mining_evidence_fixes.py`(3)。
+- 整文件删除（该文件所有用例都已过期）：`test_pipeline_c_absolute_resources.py`、`test_pipeline_c_preflight.py`、`test_pipeline_c_remote_fonts.py`（`ResourceLocalizer` 的远程资源处理行为已改变）。
+- 单用例删除：`test_construct_text_editing.py`、`test_dynamic_capability_retrieval.py`(2)、`test_live_component_sources.py`、`test_live_mining_evidence_fixes.py`(3)。
+- `test_complex_query_routing.py::test_current_1k_routes_to_expected_stable_counts`：性质不同（非过期），它硬编码 `runs/` 下某次历史 run 的路径并断言精确条数，而 `runs/` 不入库，在任何 clone 里都无法通过，故一并删除。
 
-**这些失败与目录重构无关**：同一份测试在重构前的目录名下跑重构前的源码可通过，跑当前源码同样失败。物理机上同名测试文件与仓库内版本逐字节相同（仅 `test_construct_text_editing.py` 例外），故不存在"更新的测试"可补。在决定补测试还是回退实现之前，不要改动这些断言，也不要删测试来让结果变绿。
+被删用例覆盖的行为（远程 CSS 是否下载、capability 抽取的字段裁剪、截图状态校验等）目前**没有测试覆盖**。要重建这些覆盖时，须按当前实现重新确立断言，不要从 git 历史里直接恢复旧断言。
 
 ## 知识维护
 

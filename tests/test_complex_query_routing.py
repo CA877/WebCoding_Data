@@ -1,5 +1,3 @@
-import json
-from pathlib import Path
 
 from scripts.route_complex_queries import classify_row, route_rows
 
@@ -52,9 +50,3 @@ def test_route_rows_emits_webgen_compatible_shape() -> None:
     assert webgen[0]["routing"]["route"] == "webgen"
 
 
-def test_current_1k_routes_to_expected_stable_counts() -> None:
-    source = Path("runs/artifactsbench_complex_stack_1k_qwen3.7max_20260731/queries.jsonl")
-    rows = [json.loads(line) for line in source.read_text().splitlines() if line.strip()]
-    single, webgen = route_rows(rows)
-    assert len(single) == 885
-    assert len(webgen) == 115

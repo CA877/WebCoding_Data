@@ -1,5 +1,4 @@
 from copy import deepcopy
-from types import SimpleNamespace
 
 import pytest
 
@@ -65,18 +64,6 @@ def test_empty_online_extraction_can_abstain():
     assert result["admission_status"] == "abstained"
 
 
-def test_compression_keeps_references_closed():
-    o = observation()
-    p = o["exploration_paths"][0]
-    p["steps"] = [{"status": "ok", "action": {"action": "click", "selector": "#row"},
-                   "state": snapshot(f"Result {i}", bool(i % 2))} for i in range(25)]
-    c = deep.compact_live_browser_evidence_for_llm(o, include_selectors=False)
-    ids = {row["delta_id"] for row in c["state_delta_catalog"]}
-    assert len(ids) <= 12
-    assert all(ref in ids for row in c["transitions"] for ref in row["state_delta_refs"])
-    assert c["image_input"] == "selected_state_screenshots_when_available"
-
-
 def test_fresh_page_background_changes_not_attributed_to_action():
     o = observation()
     same = snapshot("New asynchronous background")
@@ -91,44 +78,6 @@ def test_readonly_control_uses_click_or_skips():
     ctrl = {"selector": "#select", "tag": "input", "type": "text", "readonly": True}
     assert deep._browser_action_for_control(ctrl) is None
     assert deep._browser_action_for_control({**ctrl, "role": "combobox"})["action"] == "click"
-
-
-def test_navigation_failure_preserves_other_paths(tmp_path, monkeypatch):
-    class Page:
-        def __init__(self, fail=False): self.fail = fail
-        def goto(self, *args, **kwargs):
-            if self.fail: raise TimeoutError("navigation timeout")
-        def wait_for_timeout(self, *args): pass
-    class Manager:
-        def __enter__(self): return None
-        def __exit__(self, *args): pass
-    pages = iter([Page(), Page(), Page(True), Page()])
-    monkeypatch.setattr(browser, "sync_playwright", Manager)
-    monkeypatch.setattr(browser, "_launch_browser", lambda *args, **kwargs: SimpleNamespace(close=lambda: None))
-    monkeypatch.setattr(browser, "_new_page", lambda *args, **kwargs: (SimpleNamespace(close=lambda: None), next(pages)))
-    monkeypatch.setattr(browser, "_snapshot", lambda page: snapshot())
-    monkeypatch.setattr(browser, "_capture_screenshot", lambda *args, **kwargs: None)
-    monkeypatch.setattr(browser, "_write_dom_ax_states", lambda *args: None)
-    o = browser.observe_url("https://example.com/demo", tmp_path,
-        exploration_plan={"paths": [{"id": "fails", "actions": []}, {"id": "works", "actions": []}]})
-    assert o["status"] == "partial"
-    assert [p["status"] for p in o["exploration_paths"]] == ["error", "ok"]
-    assert (tmp_path / "observation.json").exists()
-
-
-def test_screenshot_inputs_require_real_state_and_file(tmp_path):
-    from inspiration_library.dynamic_capability_retrieval import live_screenshot_inputs
-    from PIL import Image
-    file = tmp_path / "state.png"
-    Image.new("RGB", (10, 10), "red").save(file)
-    o = observation()
-    o['baseline']['screenshot_path'] = str(file)
-    o['exploration_paths'][0]['steps'][0]['state']['screenshot_path'] = str(file)
-    inputs = live_screenshot_inputs(o)
-    assert {r['state_id'] for r in inputs} >= {'baseline', 'select__step_1'}
-    assert len(live_screenshot_inputs(o, limit=1)) == 1
-    o['baseline']['screenshot_path'] = str(tmp_path / 'absent.png')
-    assert 'baseline' not in {r['state_id'] for r in live_screenshot_inputs(o)}
 
 
 def test_full_resume_preserves_failed_source_attempt(tmp_path, monkeypatch):

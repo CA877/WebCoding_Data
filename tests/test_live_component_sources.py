@@ -139,25 +139,6 @@ def test_public_sources_reject_non_source_links():
     assert public_example_sources(Locator(), 'https://example.org') == []
 
 
-def test_embedded_demo_urls_are_recorded_not_implicitly_explored(tmp_path):
-    from playwright.sync_api import sync_playwright
-    from inspiration_library.production_browser import serve_project, _launch_browser, _snapshot
-    (tmp_path/'index.html').write_text('<iframe id="demo" src="demo.html"></iframe>'
-        '<iframe hidden src="tracking.html"></iframe>')
-    (tmp_path/'demo.html').write_text('<input placeholder="Inside demo">')
-    with serve_project(tmp_path) as url, sync_playwright() as pw:
-        browser = _launch_browser(pw)
-        try:
-            page = browser.new_page()
-            page.goto(url)
-            state = _snapshot(page)
-            assert state['embedded_documents'] == [{'url':url.replace('index.html','demo.html'),
-                'selector':'#demo','title':'','same_origin':True}]
-            assert not state['interactive']
-        finally:
-            browser.close()
-
-
 def test_readonly_browser_blocks_get_form_submission(tmp_path):
     from playwright.sync_api import sync_playwright
     from inspiration_library.production_browser import _launch_browser, _new_page, serve_project

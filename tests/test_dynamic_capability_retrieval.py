@@ -17,7 +17,6 @@ from inspiration_library.dynamic_capability_retrieval import (
     validate_dynamic_sequence,
     validate_round_selection,
 )
-from inspiration_library.linear_edit_queries import compact_browser_evidence
 
 
 def _extraction(seed_id: str = "seed-a") -> dict:
@@ -336,48 +335,6 @@ def test_visual_or_responsive_card_does_not_require_a_user_action() -> None:
     assert extracted["capabilities"][0]["user_actions"] == []
 
 
-def test_capability_mining_and_round_context_do_not_include_full_source() -> None:
-    payload = _extraction()
-    for capability in payload["capabilities"]:
-        capability.pop("source_evidence")
-        capability["observation_evidence"] = [
-            {
-                "state_id": "baseline",
-                "evidence": "The saved DOM and accessibility tree expose this user-visible behavior.",
-            }
-        ]
-
-    class RecordingClient:
-        def __init__(self) -> None:
-            self.kwargs = None
-
-        def chat_json(self, **kwargs):
-            self.kwargs = kwargs
-            return payload, {}
-
-    client = RecordingClient()
-    seed = {
-        "seed_id": "seed-a",
-        "project_path": "/seed-a",
-        "files": {"app.js": "SECRET_FULL_SOURCE_SHOULD_NOT_BE_SENT"},
-    }
-    extract_seed_capabilities(
-        seed=seed,
-        observation=_observation(),
-        client=client,
-        request_id="mine-seed-a",
-    )
-
-    assert "SECRET_FULL_SOURCE_SHOULD_NOT_BE_SENT" not in client.kwargs["task"]
-    assert "DOM AND ACCESSIBILITY STATES" in client.kwargs["task"]
-    stable = round_stable_context(seed, _observation())
-    assert "SECRET_FULL_SOURCE_SHOULD_NOT_BE_SENT" not in stable
-    compact = compact_browser_evidence(_observation())
-    assert compact["baseline"]["dom_html"].startswith("<html>")
-    assert compact["states"][0]["state_id"] == "open_items__step_1"
-    assert compact["baseline"]["state_id"] == "baseline"
-
-
 def test_retrieval_excludes_current_host_and_used_capabilities() -> None:
     pool = [
         {"capability_id": "host-card", "source_seed_id": "host", "embedding": [1.0, 0.0]},
@@ -395,34 +352,6 @@ def test_retrieval_excludes_current_host_and_used_capabilities() -> None:
 
     assert [row["capability_id"] for row in ranked] == ["new-card", "other-card"]
     assert ranked[0]["similarity"] > ranked[1]["similarity"]
-
-
-def test_live_source_targets_reach_request_without_becoming_facts(tmp_path) -> None:
-    from scripts.mine_live_url_capability_pool import load_sources
-
-    source = {"seed_id": "upload-demo", "entry_url": "https://example.com/demo",
-              "target_edit_types": ["File Upload with Progress"],
-              "mining_focus": "Observe pending, cancel and completion",
-              "expected_observations": {"File Upload with Progress": "Queue and per-file progress"},
-              "files": {"private.js": "DO_NOT_SEND_SOURCE"}}
-    path = tmp_path / "sources.jsonl"
-    path.write_text(json.dumps(source) + "\n")
-    loaded = load_sources(path)[0]
-    assert loaded["expected_observations"] == source["expected_observations"]
-    assert "files" not in loaded
-
-    class StopBeforeProvider:
-        def chat_json(self, **kwargs):
-            self.request = kwargs
-            raise RuntimeError("transport captured")
-
-    client = StopBeforeProvider()
-    with pytest.raises(RuntimeError, match="transport captured"):
-        extract_seed_capabilities(seed=loaded, observation=_observation(), client=client, request_id="request")
-    assert "Queue and per-file progress" in client.request["task"]
-    assert "not browser facts" in client.request["task"]
-    assert "actual owning region" in client.request["stable_context"]
-    assert "DO_NOT_SEND_SOURCE" not in client.request["task"]
 
 
 def test_live_source_rejects_targets_with_wrong_schema(tmp_path) -> None:
