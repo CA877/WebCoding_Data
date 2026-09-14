@@ -1,0 +1,277 @@
+{
+  "schema_version": "webcoding-verified-capability-library-v1",
+  "capabilities": [
+    {
+      "id": "structured_release_history",
+      "title": "Release history records",
+      "compatible_domains": ["cold_chain_operations"],
+      "requires": ["batch_catalog", "batch_status", "selected_ready_batch_ids"],
+      "produces": ["release_events", "persisted_release_state"],
+      "mutates": ["batch_status", "selected_ready_batch_ids", "release_summary_counts", "activity_messages", "live_status_message"],
+      "invalidates": [],
+      "state_specs": {
+        "release_events": {
+          "kind": "event_log",
+          "value_shape": "list<release_event{batch_ids,destinations,date,time}>",
+          "scope": "application",
+          "persistence": "local_device",
+          "observables": ["dom", "storage", "internal_state"]
+        },
+        "persisted_release_state": {
+          "kind": "persisted_snapshot",
+          "value_shape": "{batch_status,release_events}",
+          "scope": "application",
+          "persistence": "local_device",
+          "observables": ["dom", "storage", "internal_state"]
+        }
+      },
+      "estimated_cost": 1.0,
+      "target_value": 2.0,
+      "difficulty": "webcompass_medium",
+      "goal": "Upgrade the existing Activity Log into a refresh-consistent release history",
+      "dependency_clause": "After a successful release, prepend one history entry with the affected batch IDs, destinations, date, and time; update their statuses and summary metrics once, clear selection, and announce the result",
+      "behavior_clauses": [
+        "Keep released statuses and history consistent after refresh",
+        "With no eligible selection, the release control remains disabled and the table, metrics, and history do not change"
+      ],
+      "acceptance": [
+        "Release ready batch CC-204, refresh the page, and confirm its row remains Released, the summary counts remain correct, and exactly one history entry identifies CC-204 and Seattle Hub A",
+        "After the release clears selection, confirm the release control is disabled and the table, metrics, and history remain unchanged"
+      ],
+      "ui_regions": ["batch-table", "release-summary", "activity-history"],
+      "write_files": ["index.html", "styles.css", "script.js"],
+      "browser_checks": [
+        {
+          "id": "release_history_survives_refresh",
+          "actions": [
+            {"action": "check", "selector": "[data-select-batch=\"CC-204\"]"},
+            {"action": "click", "selector": "#releaseSelected"},
+            {"action": "wait", "milliseconds": 1600},
+            {"action": "reload"}
+          ],
+          "assertions": [
+            {"type": "text_equals", "selector": "#readyBatches", "value": "3"},
+            {"type": "text_equals", "selector": "#releasedBatches", "value": "2"},
+            {"type": "text_contains", "selector": "#releaseHistory", "value": "CC-204"},
+            {"type": "text_contains", "selector": "#releaseHistory", "value": "Seattle Hub A"},
+            {"type": "count_equals", "selector": "#releaseHistory [data-release-batch-id=\"CC-204\"]", "value": 1},
+            {"type": "property_equals", "selector": "#releaseSelected", "name": "disabled", "value": true}
+          ]
+        }
+      ],
+      "visible_preserve": ["existing status filtering", "ready-only selection"],
+      "donor_evidence": {
+        "source_config": "configs/counterexample_history_causal_pilot_3_20260824.json",
+        "case_id": "cmtt-01-release-projection-atomicity",
+        "source_project": "runs/counterexample_history_causal_pilot_3_20260824_v1/targets/cmtt-01-release-projection-atomicity",
+        "verification": "runs/counterexample_history_causal_pilot_3_20260824_v1/verification_v1/verification_results.jsonl",
+        "status": "target_browser_passed_and_fault_was_rejected",
+        "adaptation_boundary": "Reuse the verified release-to-row-summary-history behavior; represent the history entry as data so later Edits can consume it."
+      }
+    },
+    {
+      "id": "destination_release_summary",
+      "title": "Destination release summary",
+      "compatible_domains": ["cold_chain_operations"],
+      "requires": ["release_events", "batch_catalog"],
+      "produces": ["destination_release_totals"],
+      "mutates": [],
+      "invalidates": [],
+      "state_specs": {
+        "destination_release_totals": {
+          "kind": "derived_grouping",
+          "value_shape": "map<destination,{count,latest_release_time}>",
+          "scope": "page",
+          "persistence": "derived",
+          "observables": ["dom"]
+        }
+      },
+      "estimated_cost": 1.1,
+      "target_value": 2.7,
+      "difficulty": "webcompass_medium",
+      "goal": "Add a destination summary beside the release history",
+      "dependency_clause": "For each destination represented in the history, show its released batch count and most recent release time",
+      "behavior_clauses": [
+        "Releasing another batch immediately updates only its destination row",
+        "The summary covers only releases that have a corresponding history entry"
+      ],
+      "acceptance": [
+        "Release CC-204 and confirm that Seattle Hub A appears in the destination summary with a count increased by one",
+        "Release a ready batch for another destination and confirm that only the corresponding destination row changes"
+      ],
+      "ui_regions": ["destination-summary"],
+      "write_files": ["index.html", "styles.css", "script.js"],
+      "browser_checks": [
+        {
+          "id": "destination_summary_follows_release_events",
+          "actions": [
+            {"action": "check", "selector": "[data-select-batch=\"CC-204\"]"},
+            {"action": "click", "selector": "#releaseSelected"},
+            {"action": "wait", "milliseconds": 1600},
+            {"action": "check", "selector": "[data-select-batch=\"CC-211\"]"},
+            {"action": "click", "selector": "#releaseSelected"},
+            {"action": "wait", "milliseconds": 1600}
+          ],
+          "assertions": [
+            {"type": "visible", "selector": "#destinationSummary"},
+            {"type": "text_equals", "selector": "[data-release-destination=\"Seattle Hub A\"] + .status-badge", "value": "1"},
+            {"type": "text_equals", "selector": "[data-release-destination=\"Denver Central\"] + .status-badge", "value": "1"}
+          ]
+        }
+      ],
+      "visible_preserve": ["the batch-table filter", "selection behavior", "overall release metrics", "the current visual design"],
+      "donor_evidence": {
+        "source_config": "configs/counterexample_history_causal_pilot_3_20260824.json",
+        "case_id": "cmtt-01-release-projection-atomicity",
+        "source_project": "runs/counterexample_history_causal_pilot_3_20260824_v1/targets/cmtt-01-release-projection-atomicity",
+        "verification": "runs/counterexample_history_causal_pilot_3_20260824_v1/verification_v1/verification_results.jsonl",
+        "status": "target_browser_passed_and_fault_was_rejected",
+        "adaptation_relation": "The donor recomputes visible release metrics from the updated batch state. This candidate transfers that verified read-and-recalculate behavior from overall counts to release entries grouped by destination.",
+        "adaptation_boundary": "The cold-chain destination fields and wording come only from the host batch catalog; no donor UI or code is copied."
+      }
+    },
+    {
+      "id": "saved_release_views",
+      "title": "Saved release views",
+      "compatible_domains": ["cold_chain_operations"],
+      "requires": ["release_events"],
+      "produces": ["saved_release_views", "active_release_view"],
+      "mutates": [],
+      "invalidates": [],
+      "state_specs": {
+        "saved_release_views": {
+          "kind": "saved_filter_collection",
+          "value_shape": "map<view_id,{name,destination}>",
+          "scope": "application",
+          "persistence": "local_device",
+          "observables": ["dom", "storage", "internal_state"]
+        },
+        "active_release_view": {
+          "kind": "filter",
+          "value_shape": "{destination} | all",
+          "scope": "page",
+          "persistence": "memory",
+          "observables": ["dom", "ax_tree", "internal_state"]
+        }
+      },
+      "estimated_cost": 1.2,
+      "target_value": 2.7,
+      "difficulty": "webcompass_medium",
+      "goal": "Add destination filters and named saved views to the release history",
+      "dependency_clause": "Each saved view restores a destination filter over the existing release entries",
+      "behavior_clauses": [
+        "Users can save or replace a named view, change the destination filter, and later apply the view to restore the same visible history",
+        "Saved views remain available after refresh, and filtering the history does not change batch statuses or the main batch-table filter"
+      ],
+      "acceptance": [
+        "From a clean browser profile, release CC-204 for Seattle Hub A and CC-211 for Denver Central, then filter the release history to Seattle Hub A, save it as Seattle releases, switch to Denver Central, and apply the saved view; the Seattle filter and its one matching history entry are restored",
+        "Reload the page and confirm that the saved view remains available and can still be applied"
+      ],
+      "ui_regions": ["release-history-controls"],
+      "write_files": ["index.html", "styles.css", "script.js"],
+      "browser_checks": [
+        {
+          "id": "saved_release_view_restores_filter_after_refresh",
+          "actions": [
+            {"action": "check", "selector": "[data-select-batch=\"CC-204\"]"},
+            {"action": "click", "selector": "#releaseSelected"},
+            {"action": "wait", "milliseconds": 1600},
+            {"action": "check", "selector": "[data-select-batch=\"CC-211\"]"},
+            {"action": "click", "selector": "#releaseSelected"},
+            {"action": "wait", "milliseconds": 1600},
+            {"action": "select_option", "selector": "#releaseDestinationFilter", "value": "Seattle Hub A"},
+            {"action": "fill", "selector": "#savedReleaseViewName", "value": "Seattle releases"},
+            {"action": "click", "selector": "#saveReleaseView"},
+            {"action": "select_option", "selector": "#releaseDestinationFilter", "value": "Denver Central"},
+            {"action": "reload"},
+            {"action": "click", "selector": "[data-apply-release-view=\"Seattle releases\"]"}
+          ],
+          "assertions": [
+            {"type": "property_equals", "selector": "#releaseDestinationFilter", "name": "value", "value": "Seattle Hub A"},
+            {"type": "count_equals", "selector": "#releaseHistory [data-release-batch-id=\"CC-204\"]", "value": 1},
+            {"type": "count_equals", "selector": "#releaseHistory [data-release-batch-id=\"CC-211\"]", "value": 0},
+            {"type": "visible", "selector": "[data-apply-release-view=\"Seattle releases\"]"}
+          ]
+        }
+      ],
+      "visible_preserve": [],
+      "donor_evidence": {
+        "source_config": "configs/disjoint_instruction_augmentation_pilot_9_20260823.json",
+        "case_id": "igrs-02-persistent-research-set",
+        "source_project": "runs/disjoint_instruction_augmentation_pilot_9_20260823_v1/repairs_v3/igrs-02-persistent-research-set",
+        "verification": "runs/disjoint_instruction_augmentation_pilot_9_20260823_v1/verification_v1/verification_results_v1.jsonl",
+        "status": "repair_v3_browser_passed_and_export_status_ok",
+        "adaptation_relation": "The donor saves current search and filter values locally and restores both values and results after reload; the host binding changes research records to release-history entries and their destination filter.",
+        "adaptation_boundary": "Reuse the user behavior and browser checks, not donor selectors, styles, or code."
+      }
+    },
+    {
+      "id": "connect_saved_views_to_destination_summary",
+      "title": "Filtered destination report",
+      "compatible_domains": ["cold_chain_operations"],
+      "requires": ["release_events", "destination_release_totals", "active_release_view"],
+      "produces": ["filtered_destination_release_totals"],
+      "mutates": [],
+      "invalidates": [],
+      "state_specs": {
+        "filtered_destination_release_totals": {
+          "kind": "derived_grouping",
+          "value_shape": "map<destination,{filtered_count,latest_release_time}>",
+          "scope": "page",
+          "persistence": "derived",
+          "observables": ["dom"]
+        }
+      },
+      "estimated_cost": 0.8,
+      "target_value": 8.5,
+      "difficulty": "webcompass_medium_hard",
+      "goal": "Make the destination summary describe the same releases as the active saved view",
+      "dependency_clause": "When a dispatch manager applies a saved view, recompute the destination rows from the matching release entries rather than the full history",
+      "behavior_clauses": [
+        "Applying or clearing a view updates destination rows, counts, and latest times together with the visible history",
+        "Show an empty report when nothing matches, without changing batch statuses or overall release metrics"
+      ],
+      "acceptance": [
+        "From a clean browser profile, release CC-204 for Seattle Hub A and CC-211 for Denver Central, save the Seattle Hub A history filter as Seattle releases, then apply that view and confirm that the destination report contains only Seattle Hub A and its count equals the one visible matching history entry",
+        "Clear the view and confirm that all release destinations return while batch rows and release counts remain unchanged"
+      ],
+      "ui_regions": ["destination-summary", "release-history-controls"],
+      "write_files": ["index.html", "styles.css", "script.js"],
+      "browser_checks": [
+        {
+          "id": "saved_view_and_destination_summary_share_filter",
+          "actions": [
+            {"action": "check", "selector": "[data-select-batch=\"CC-204\"]"},
+            {"action": "click", "selector": "#releaseSelected"},
+            {"action": "wait", "milliseconds": 1600},
+            {"action": "check", "selector": "[data-select-batch=\"CC-211\"]"},
+            {"action": "click", "selector": "#releaseSelected"},
+            {"action": "wait", "milliseconds": 1600},
+            {"action": "select_option", "selector": "#releaseDestinationFilter", "value": "Seattle Hub A"},
+            {"action": "fill", "selector": "#savedReleaseViewName", "value": "Seattle releases"},
+            {"action": "click", "selector": "#saveReleaseView"},
+            {"action": "select_option", "selector": "#releaseDestinationFilter", "value": "Denver Central"},
+            {"action": "click", "selector": "[data-apply-release-view=\"Seattle releases\"]"}
+          ],
+          "assertions": [
+            {"type": "visible", "selector": "#destinationSummary [data-release-destination=\"Seattle Hub A\"]"},
+            {"type": "count_equals", "selector": "#destinationSummary [data-release-destination=\"Denver Central\"]", "value": 0},
+            {"type": "text_equals", "selector": "#destinationSummary [data-release-destination=\"Seattle Hub A\"] + .status-badge", "value": "1"},
+            {"type": "text_equals", "selector": "#releasedBatches", "value": "3"}
+          ]
+        }
+      ],
+      "visible_preserve": [],
+      "donor_evidence": {
+        "source_config": "configs/critical_pair_state_refinement_pilot_3_20260825.json",
+        "case_id": "botanical_compare_archive_eligibility",
+        "interaction": "critical_pair",
+        "source_project": "output/critical_pair_state_refinement/20260825_stable_pipeline_resume_replay_v1/canonical/botanical_compare_archive_eligibility/project",
+        "verification": "output/critical_pair_state_refinement/20260825_stable_pipeline_resume_replay_v1/canonical/botanical_compare_archive_eligibility/task_view.json",
+        "status": "accepted_canonical_with_two_path_browser_evidence",
+        "adaptation_relation": "The donor verifies a state change that updates one derived workspace while preserving the valid state of another. This host integration similarly lets the active release view update a derived summary without mutating batch state.",
+        "adaptation_boundary": "The join rule is host-specific and remains a candidate until target code passes its own browser check."
+      }
+    }
+  ]
+}

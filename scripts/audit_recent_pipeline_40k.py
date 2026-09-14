@@ -8,7 +8,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from preprocess.pipeline_c.qwen_token_gate import count_project_tokens
+from crawl.pipeline_c.qwen_token_gate import count_project_tokens
 
 
 def main() -> None:

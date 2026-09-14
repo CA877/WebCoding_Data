@@ -1,0 +1,152 @@
+[
+  {
+    "id": "blog_navigate_reload",
+    "actions": [
+      {
+        "action": "click",
+        "selector": "nav a[href=\"page_6c61ab56c51ed7efb0e8.html\"]"
+      },
+      {
+        "action": "reload"
+      }
+    ],
+    "assertions": [
+      {
+        "type": "url_contains",
+        "value": "page_6c61ab56c51ed7efb0e8.html"
+      },
+      {
+        "type": "text_contains",
+        "selector": "body",
+        "value": "Blog"
+      }
+    ]
+  },
+  {
+    "id": "blog_return_home",
+    "actions": [
+      {
+        "action": "click",
+        "selector": "nav a[href=\"page_6c61ab56c51ed7efb0e8.html\"]"
+      },
+      {
+        "action": "reload"
+      },
+      {
+        "action": "click",
+        "selector": "nav a[href=\"index.html\"]"
+      }
+    ],
+    "assertions": [
+      {
+        "type": "url_contains",
+        "value": "index.html"
+      },
+      {
+        "type": "text_contains",
+        "selector": "body",
+        "value": "Hi~! Thanks for checking out my site!"
+      }
+    ]
+  },
+  {
+    "id": "event_navigate_reload",
+    "actions": [
+      {
+        "action": "click",
+        "selector": "nav a[href=\"page_1a1088979fd0a65aaa73.html\"]"
+      },
+      {
+        "action": "reload"
+      }
+    ],
+    "assertions": [
+      {
+        "type": "url_contains",
+        "value": "page_1a1088979fd0a65aaa73.html"
+      },
+      {
+        "type": "text_contains",
+        "selector": "body",
+        "value": "No upcoming events!"
+      }
+    ]
+  },
+  {
+    "id": "event_return_home",
+    "actions": [
+      {
+        "action": "click",
+        "selector": "nav a[href=\"page_1a1088979fd0a65aaa73.html\"]"
+      },
+      {
+        "action": "reload"
+      },
+      {
+        "action": "click",
+        "selector": "nav a[href=\"index.html\"]"
+      }
+    ],
+    "assertions": [
+      {
+        "type": "url_contains",
+        "value": "index.html"
+      },
+      {
+        "type": "text_contains",
+        "selector": "body",
+        "value": "Hi~! Thanks for checking out my site!"
+      }
+    ]
+  },
+  {
+    "id": "gallery_navigate_reload",
+    "actions": [
+      {
+        "action": "click",
+        "selector": "nav a[href=\"page_612186e69d8f7619cf3e.html\"]"
+      },
+      {
+        "action": "reload"
+      }
+    ],
+    "assertions": [
+      {
+        "type": "url_contains",
+        "value": "page_612186e69d8f7619cf3e.html"
+      },
+      {
+        "type": "text_contains",
+        "selector": "body",
+        "value": "Kokoro Cosplay"
+      }
+    ]
+  },
+  {
+    "id": "gallery_return_home",
+    "actions": [
+      {
+        "action": "click",
+        "selector": "nav a[href=\"page_612186e69d8f7619cf3e.html\"]"
+      },
+      {
+        "action": "reload"
+      },
+      {
+        "action": "click",
+        "selector": "nav a[href=\"index.html\"]"
+      }
+    ],
+    "assertions": [
+      {
+        "type": "url_contains",
+        "value": "index.html"
+      },
+      {
+        "type": "text_contains",
+        "selector": "body",
+        "value": "Hi~! Thanks for checking out my site!"
+      }
+    ]
+  }
+]

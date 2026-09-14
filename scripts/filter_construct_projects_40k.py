@@ -13,7 +13,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from preprocess.pipeline_c.qwen_token_gate import count_project_tokens
+from crawl.pipeline_c.qwen_token_gate import count_project_tokens
 
 
 def iter_projects(path: Path):

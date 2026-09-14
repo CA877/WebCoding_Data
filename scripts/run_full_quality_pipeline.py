@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Run the unified WebCoding release quality gate.
 
-This is a thin CLI over utils/webcoding_pipeline so existing scripts can keep
+This is a thin CLI over validate so existing scripts can keep
 their specialized jobs while the final release gate has one shared implementation.
 """
 
@@ -16,7 +16,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from utils.webcoding_pipeline import run_release_quality_pipeline
+from validate import run_release_quality_pipeline
 
 
 def main() -> None:

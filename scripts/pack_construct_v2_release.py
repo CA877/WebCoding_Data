@@ -110,6 +110,25 @@ def write_provenance(production_root: Path, release_root: Path) -> dict:
 def rewrite_images(record: dict, task: str, release_root: Path) -> dict:
     mapping: dict[str, str] = {}
     instance_id = str(record["instance_id"])
+    source_project_raw = str(record.get("metadata", {}).get("source_project", ""))
+    if source_project_raw:
+        source_project = Path(source_project_raw)
+    else:
+        existing_inputs = record.get("input_images", [])
+        if not existing_inputs:
+            raise ValueError(f"cannot locate canonical clean image for {task}/{instance_id}")
+        source_project = Path(str(existing_inputs[0])).parent
+    canonical_clean = source_project / f"{instance_id}_clean.png"
+    if not canonical_clean.is_file():
+        raise FileNotFoundError(f"canonical image-generate screenshot missing: {canonical_clean}")
+    # All three image tasks refer to one physical/rendered original.  Existing
+    # production JSONLs may still contain the older per-constructor viewport
+    # JPEGs; canonicalize them while assembling the release.
+    if task == "image-edit":
+        record["input_images"] = [str(canonical_clean)]
+        record["src_screenshot"] = [str(canonical_clean)]
+    elif task == "image-repair":
+        record["dst_screenshot"] = [str(canonical_clean)]
     all_paths = []
     for key in IMAGE_KEYS:
         all_paths.extend(str(value) for value in record.get(key, []))
@@ -122,12 +141,20 @@ def rewrite_images(record: dict, task: str, release_root: Path) -> dict:
             state = "source"
         if raw in record.get("dst_screenshot", []):
             state = "destination"
-        relative = Path("images") / task / instance_id / f"{state}_{index}{source.suffix.lower()}"
+        if source.resolve() == canonical_clean.resolve():
+            # One canonical clean asset per instance, shared by generation,
+            # edit and repair JSONLs through the exact same relative path.
+            relative = Path("assets") / instance_id / "clean.png"
+        elif task == "image-repair" and state == "source":
+            relative = Path("assets") / instance_id / f"repair_defective{source.suffix.lower()}"
+        else:
+            relative = Path("assets") / instance_id / f"{task}_{state}_{index}{source.suffix.lower()}"
         link_or_copy(source, release_root / relative)
         mapping[raw] = relative.as_posix()
     for key in IMAGE_KEYS:
         record[key] = [mapping[str(value)] for value in record.get(key, [])]
     record.setdefault("metadata", {})["image_paths_relative_to"] = "release_root"
+    record["metadata"]["canonical_clean_image_shared"] = True
     return record
 
 
@@ -174,6 +201,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--production-root", type=Path, required=True)
     parser.add_argument("--release-root", type=Path, required=True)
+    parser.add_argument("--extra-text-generate", type=Path)
     args = parser.parse_args()
     jsonl_dir = args.release_root / "jsonl"
     jsonl_dir.mkdir(parents=True, exist_ok=True)
@@ -191,12 +219,37 @@ def main() -> None:
         if task == "text-repair":
             records = list(iter_source_records(source))
             records = select_balanced_text_repairs(records, paired_repair_ids)
+        elif task in {"text-generate", "image-generate"}:
+            # ArtifactsBench generation instances are held out because that
+            # benchmark contributes generation tasks to the test set.  Do not
+            # exclude WebCompass generation instances merely because
+            # WebCompass edit/repair tasks are evaluated separately.
+            base_records = (
+                record for record in iter_source_records(source)
+                if not str(record.get("instance_id", "")).startswith("artifacts")
+            )
+            if task == "text-generate" and args.extra_text_generate:
+                records = [*base_records, *iter_source_records(args.extra_text_generate)]
+            else:
+                records = base_records
         else:
             records = iter_source_records(source)
+        seen_ids: set[str] = set()
         with output.open("w", encoding="utf-8") as output_handle:
             for record in records:
+                instance_id = str(record.get("instance_id", ""))
+                if not instance_id or instance_id in seen_ids:
+                    raise ValueError(f"missing/duplicate instance_id in {task}: {instance_id!r}")
+                seen_ids.add(instance_id)
                 if task in {"text-repair", "image-repair"}:
-                    record.setdefault("metadata", {}).setdefault("visual_difference", {})[
+                    metadata = record.setdefault("metadata", {})
+                    model = str(metadata.get("construction_model", ""))
+                    metadata.setdefault(
+                        "bug_injection_method",
+                        "rule" if model == "deterministic-rule-injector-v1" else "llm",
+                    )
+                    metadata.setdefault("bug_injection_engine", model)
+                    metadata.setdefault("visual_difference", {})[
                         "minimum_changed_ratio"
                     ] = 0.01
                 if task.startswith("image-"):
@@ -207,10 +260,24 @@ def main() -> None:
             "jsonl": f"jsonl/{output_name}",
             "count": count,
             "sha256": checksum(output),
-            "image_root": f"images/{task}" if task.startswith("image-") else None,
+            "image_root": "assets" if task.startswith("image-") else None,
+            "filters": (
+                {"excluded_instance_id_prefixes": ["artifacts"]}
+                if task in {"text-generate", "image-generate"} else {}
+            ),
         }
         print(f"{task}: {count}", flush=True)
     manifest["provenance"] = write_provenance(args.production_root, args.release_root)
+    if args.extra_text_generate:
+        extra_ids = [
+            str(record["instance_id"])
+            for record in iter_source_records(args.extra_text_generate)
+        ]
+        extra_output = args.release_root / "provenance" / "extra_text_generate.ids.txt"
+        extra_output.write_text("".join(f"{value}\n" for value in extra_ids), encoding="utf-8")
+        manifest["provenance"]["extra_text_generate.ids.txt"] = {
+            "count": len(extra_ids), "sha256": checksum(extra_output)
+        }
     manifest_path = args.release_root / "manifest.json"
     manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(manifest_path)

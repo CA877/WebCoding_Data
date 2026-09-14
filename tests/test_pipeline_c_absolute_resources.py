@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from preprocess.pipeline_c.main import ResourceLocalizer
+from crawl.pipeline_c.main import ResourceLocalizer
 
 
 class AbsoluteSourceResourceTests(unittest.TestCase):

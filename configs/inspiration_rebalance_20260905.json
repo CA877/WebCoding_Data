@@ -1,0 +1,566 @@
+{
+  "schema_version": "url-rebalance-v2",
+  "purpose": "Public index discovery and candidate replacement; catalog targets are not behavior labels",
+  "catalogs": [
+    {
+      "source": "component_gallery",
+      "url": "https://component.gallery/components/accordion",
+      "selector": "h2 a.primary-link",
+      "include": "^https?://",
+      "edit_type": "Accordion",
+      "catalog_role": "catalog_component_family_only"
+    },
+    {
+      "source": "component_gallery",
+      "url": "https://component.gallery/components/breadcrumbs",
+      "selector": "h2 a.primary-link",
+      "include": "^https?://",
+      "edit_type": "Breadcrumb Navigation",
+      "catalog_role": "catalog_component_family_only"
+    },
+    {
+      "source": "component_gallery",
+      "url": "https://component.gallery/components/button",
+      "selector": "h2 a.primary-link",
+      "include": "^https?://",
+      "edit_type": "Click State",
+      "catalog_role": "catalog_component_family_only"
+    },
+    {
+      "source": "component_gallery",
+      "url": "https://component.gallery/components/carousel",
+      "selector": "h2 a.primary-link",
+      "include": "^https?://",
+      "edit_type": "Carousel",
+      "catalog_role": "catalog_component_family_only"
+    },
+    {
+      "source": "component_gallery",
+      "url": "https://component.gallery/components/checkbox",
+      "selector": "h2 a.primary-link",
+      "include": "^https?://",
+      "edit_type": "Toggle Control",
+      "catalog_role": "catalog_component_family_only"
+    },
+    {
+      "source": "component_gallery",
+      "url": "https://component.gallery/components/color-picker",
+      "selector": "h2 a.primary-link",
+      "include": "^https?://",
+      "edit_type": "Color Picker",
+      "catalog_role": "catalog_component_family_only"
+    },
+    {
+      "source": "component_gallery",
+      "url": "https://component.gallery/components/combobox",
+      "selector": "h2 a.primary-link",
+      "include": "^https?://",
+      "edit_type": "Search Autocomplete",
+      "catalog_role": "catalog_component_family_only"
+    },
+    {
+      "source": "component_gallery",
+      "url": "https://component.gallery/components/datepicker",
+      "selector": "h2 a.primary-link",
+      "include": "^https?://",
+      "edit_type": "Date Picker",
+      "catalog_role": "catalog_component_family_only"
+    },
+    {
+      "source": "component_gallery",
+      "url": "https://component.gallery/components/dropdown-menu",
+      "selector": "h2 a.primary-link",
+      "include": "^https?://",
+      "edit_type": "Dropdown",
+      "catalog_role": "catalog_component_family_only"
+    },
+    {
+      "source": "component_gallery",
+      "url": "https://component.gallery/components/file-upload",
+      "selector": "h2 a.primary-link",
+      "include": "^https?://",
+      "edit_type": "File Upload with Progress",
+      "catalog_role": "catalog_component_family_only"
+    },
+    {
+      "source": "component_gallery",
+      "url": "https://component.gallery/components/form",
+      "selector": "h2 a.primary-link",
+      "include": "^https?://",
+      "edit_type": "Form Validation",
+      "catalog_role": "catalog_component_family_only"
+    },
+    {
+      "source": "component_gallery",
+      "url": "https://component.gallery/components/modal",
+      "selector": "h2 a.primary-link",
+      "include": "^https?://",
+      "edit_type": "Modal Dialog",
+      "catalog_role": "catalog_component_family_only"
+    },
+    {
+      "source": "component_gallery",
+      "url": "https://component.gallery/components/navigation",
+      "selector": "h2 a.primary-link",
+      "include": "^https?://",
+      "edit_type": "Responsive Navigation",
+      "catalog_role": "catalog_component_family_only"
+    },
+    {
+      "source": "component_gallery",
+      "url": "https://component.gallery/components/pagination",
+      "selector": "h2 a.primary-link",
+      "include": "^https?://",
+      "edit_type": "Pagination",
+      "catalog_role": "catalog_component_family_only"
+    },
+    {
+      "source": "component_gallery",
+      "url": "https://component.gallery/components/rating",
+      "selector": "h2 a.primary-link",
+      "include": "^https?://",
+      "edit_type": "Star Rating",
+      "catalog_role": "catalog_component_family_only"
+    },
+    {
+      "source": "component_gallery",
+      "url": "https://component.gallery/components/rich-text-editor",
+      "selector": "h2 a.primary-link",
+      "include": "^https?://",
+      "edit_type": "Rich Text Editor",
+      "catalog_role": "catalog_component_family_only"
+    },
+    {
+      "source": "component_gallery",
+      "url": "https://component.gallery/components/search-input",
+      "selector": "h2 a.primary-link",
+      "include": "^https?://",
+      "edit_type": "Input-driven Update",
+      "catalog_role": "catalog_component_family_only"
+    },
+    {
+      "source": "component_gallery",
+      "url": "https://component.gallery/components/select",
+      "selector": "h2 a.primary-link",
+      "include": "^https?://",
+      "edit_type": "Select Control",
+      "catalog_role": "catalog_component_family_only"
+    },
+    {
+      "source": "component_gallery",
+      "url": "https://component.gallery/components/skeleton",
+      "selector": "h2 a.primary-link",
+      "include": "^https?://",
+      "edit_type": "Skeleton Loading",
+      "catalog_role": "catalog_component_family_only"
+    },
+    {
+      "source": "component_gallery",
+      "url": "https://component.gallery/components/spinner",
+      "selector": "h2 a.primary-link",
+      "include": "^https?://",
+      "edit_type": "Loading State",
+      "catalog_role": "catalog_component_family_only"
+    },
+    {
+      "source": "component_gallery",
+      "url": "https://component.gallery/components/stepper",
+      "selector": "h2 a.primary-link",
+      "include": "^https?://",
+      "edit_type": "Multi-step Wizard",
+      "catalog_role": "catalog_component_family_only"
+    },
+    {
+      "source": "component_gallery",
+      "url": "https://component.gallery/components/table",
+      "selector": "h2 a.primary-link",
+      "include": "^https?://",
+      "edit_type": "Data Table",
+      "catalog_role": "catalog_component_family_only"
+    },
+    {
+      "source": "component_gallery",
+      "url": "https://component.gallery/components/tabs",
+      "selector": "h2 a.primary-link",
+      "include": "^https?://",
+      "edit_type": "Tabs",
+      "catalog_role": "catalog_component_family_only"
+    },
+    {
+      "source": "component_gallery",
+      "url": "https://component.gallery/components/text-input",
+      "selector": "h2 a.primary-link",
+      "include": "^https?://",
+      "edit_type": "Focus State",
+      "catalog_role": "catalog_component_family_only"
+    },
+    {
+      "source": "component_gallery",
+      "url": "https://component.gallery/components/toast",
+      "selector": "h2 a.primary-link",
+      "include": "^https?://",
+      "edit_type": "Toast Notifications",
+      "catalog_role": "catalog_component_family_only"
+    },
+    {
+      "source": "component_gallery",
+      "url": "https://component.gallery/components/toggle",
+      "selector": "h2 a.primary-link",
+      "include": "^https?://",
+      "edit_type": "Toggle Control",
+      "catalog_role": "catalog_component_family_only"
+    },
+    {
+      "source": "component_gallery",
+      "url": "https://component.gallery/components/tooltip",
+      "selector": "h2 a.primary-link",
+      "include": "^https?://",
+      "edit_type": "Tooltip",
+      "catalog_role": "catalog_component_family_only"
+    },
+    {
+      "source": "component_gallery",
+      "url": "https://component.gallery/components/tree-view",
+      "selector": "h2 a.primary-link",
+      "include": "^https?://",
+      "edit_type": "Tree View",
+      "catalog_role": "catalog_component_family_only"
+    },
+    {
+      "source": "devexpress_demos",
+      "url": "https://js.devexpress.com/React/Demos/WidgetsGallery/",
+      "include": "^https://js\\.devexpress\\.com/React/Demos/WidgetsGallery/Demo/",
+      "demo": true,
+      "section_regex": "/Demo/([^/]+)/",
+      "section_targets": {
+        "DataGrid": "Data Table",
+        "TreeList": "Tree View",
+        "TreeView": "Tree View",
+        "HtmlEditor": "Rich Text Editor",
+        "Sortable": "Drag & Drop Interface",
+        "Draggable": "Drag & Drop Interface",
+        "FileUploader": "File Upload with Progress",
+        "Form": "Form Validation",
+        "Validation": "Async Form Validation",
+        "ScrollView": "Infinite Scroll",
+        "Stepper": "Multi-step Wizard",
+        "Popup": "Modal Dialog",
+        "Popover": "Tooltip",
+        "Tabs": "Tabs",
+        "TabPanel": "Tab Switch",
+        "ContextMenu": "Context Menu",
+        "SelectBox": "Select Control",
+        "TagBox": "Select Control",
+        "DropDownBox": "Dropdown",
+        "Autocomplete": "Search Autocomplete",
+        "DateBox": "Date Picker",
+        "DateRangeBox": "Date Picker",
+        "ColorBox": "Color Picker",
+        "Button": "Click State",
+        "CheckBox": "Toggle Control",
+        "Switch": "Toggle Control",
+        "Toast": "Toast Notifications"
+      }
+    },
+    {
+      "source": "smart_ui_demos",
+      "url": "https://www.htmlelements.com/demos/kanban/kanban-custom-tasks-styling/",
+      "include": "^https://www\\.htmlelements\\.com/demos/(?!framework/|scripts/|styles/)[^/]+/[^/]+/?$",
+      "demo": true,
+      "section_regex": "/demos/([^/]+)/",
+      "section_targets": {
+        "grid": "Data Table",
+        "table": "Data Table",
+        "tree": "Tree View",
+        "kanban": "Drag & Drop Interface",
+        "editor": "Rich Text Editor",
+        "fileupload": "File Upload with Progress",
+        "validator": "Async Form Validation",
+        "tabs": "Tabs",
+        "accordion": "Accordion",
+        "window": "Modal Dialog",
+        "tooltip": "Tooltip",
+        "toast": "Toast Notifications",
+        "breadcrumb": "Breadcrumb Navigation",
+        "carousel": "Carousel",
+        "colorpicker": "Color Picker",
+        "dateinput": "Date Picker",
+        "datepicker": "Date Picker",
+        "daterangeinput": "Date Picker",
+        "dropdownlist": "Select Control",
+        "combobox": "Search Autocomplete",
+        "switchbutton": "Toggle Control",
+        "checkbox": "Toggle Control",
+        "radiobutton": "Toggle Control",
+        "button": "Click State",
+        "rating": "Star Rating",
+        "pager": "Pagination",
+        "passwordinput": "Input-driven Update"
+      }
+    },
+    {
+      "source": "kendo_demos",
+      "url": "https://demos.telerik.com/kendo-ui/",
+      "include": "^https://demos\\.telerik\\.com/kendo-ui/[^/]+/[^/#?]+$",
+      "demo": true,
+      "section_regex": "/kendo-ui/([^/]+)/",
+      "section_targets": {
+        "grid": "Data Table",
+        "treelist": "Tree View",
+        "treeview": "Tree View",
+        "editor": "Rich Text Editor",
+        "sortable": "Drag & Drop Interface",
+        "dragdrop": "Drag & Drop Interface",
+        "upload": "File Upload with Progress",
+        "wizard": "Multi-step Wizard",
+        "stepper": "Multi-step Wizard",
+        "validator": "Form Validation",
+        "skeletoncontainer": "Skeleton Loading",
+        "scrollview": "Carousel",
+        "pager": "Pagination",
+        "window": "Modal Dialog",
+        "dialog": "Modal Dialog",
+        "tooltip": "Tooltip",
+        "tabstrip": "Tabs",
+        "notification": "Toast Notifications",
+        "breadcrumb": "Breadcrumb Navigation",
+        "colorpicker": "Color Picker",
+        "datepicker": "Date Picker",
+        "daterangepicker": "Date Picker",
+        "autocomplete": "Search Autocomplete",
+        "dropdownlist": "Select Control",
+        "switch": "Toggle Control",
+        "rating": "Star Rating"
+      }
+    },
+    {
+      "source": "particles_recipes",
+      "url": "https://particles.js.org/demos/",
+      "include": "^https://particles\\.js\\.org/demos/recipes/[^/#]+$",
+      "edit_type": "Particle Effects",
+      "demo": true
+    },
+    {
+      "source": "shadcn_auth_blocks",
+      "url": "https://ui.shadcn.com/blocks/login",
+      "include": "^https://ui\\.shadcn\\.com/view/[^/]+/login-",
+      "edit_type": "User Authentication",
+      "demo": true
+    },
+    {
+      "source": "shadcn_auth_blocks",
+      "url": "https://ui.shadcn.com/blocks/signup",
+      "include": "^https://ui\\.shadcn\\.com/view/[^/]+/signup-",
+      "edit_type": "User Authentication",
+      "demo": true
+    },
+    {
+      "source": "surveyjs_examples",
+      "url": "https://surveyjs.io/form-library/examples/multi-step-form-wizard/documentation",
+      "include": "^https://surveyjs\\.io/form-library/examples/[^/]+/(?:reactjs|angular|vuejs|jquery)(?:/)?$",
+      "demo": true
+    },
+    {
+      "source": "wijmo_demos",
+      "url": "https://demos.wijmo.com/",
+      "include": "^https://developer\\.mescius\\.com/wijmo/demos/.+/(?:purejs|react)$",
+      "demo": true,
+      "section_regex": "/wijmo/demos/([^/]+)/",
+      "section_targets": {
+        "Grid": "Data Table"
+      }
+    },
+    {
+      "source": "novu_inbox",
+      "url": "https://docs.novu.co/platform/inbox",
+      "include": "^https://(?:inbox|demo|examples|widget)\\.novu\\.(?:co|dev)",
+      "edit_type": "Notification Center",
+      "demo": true
+    },
+    {
+      "source": "vendure_storefront",
+      "url": "https://storefront.demo.vendure.io/en",
+      "include": "^https://storefront\\.demo\\.vendure\\.io/en/(?:products|collections)/[^/#?]+$",
+      "edit_type": "Shopping Cart",
+      "demo": true
+    },
+    {
+      "source": "tanstack_form_examples",
+      "url": "https://tanstack.com/form/latest/docs/framework/react/guides/validation",
+      "include": "^https://tanstack\\.com/form/latest/docs/framework/react/examples/[^/#?]+$",
+      "demo": false
+    },
+    {
+      "source": "view_transitions_demos",
+      "url": "https://view-transitions.chrome.dev/",
+      "include": "^https://view-transitions\\.chrome\\.dev/(?!.*(?:\\.png|\\.svg|#)).+",
+      "edit_type": "Page Transitions",
+      "demo": true
+    },
+    {
+      "source": "smartfront_storefronts",
+      "url": "https://smartfront.io/demos",
+      "include": "^https://(?:medusa|shopify|vendure)-demo\\.smartfront\\.io/?$",
+      "edit_type": "Shopping Cart",
+      "demo": true
+    },
+    {
+      "source": "novu_inbox_playground",
+      "url": "https://inbox.novu.co/",
+      "include": "^https://inbox\\.novu\\.co/?$",
+      "include_self": true,
+      "edit_type": "Notification Center",
+      "demo": true
+    },
+    {
+      "source": "knock_feed",
+      "url": "https://docs.knock.app/in-app-ui/react/feed",
+      "include": "^https://docs\\.knock\\.app/in-app-ui/react/feed$",
+      "include_self": true,
+      "edit_type": "Notification Center"
+    },
+    {
+      "source": "magicbell_inbox",
+      "url": "https://www.magicbell.com/inbox",
+      "include": "^https://www\\.magicbell\\.com/inbox/?$",
+      "include_self": true,
+      "edit_type": "Notification Center"
+    },
+    {
+      "source": "apexcharts_live",
+      "url": "https://apexcharts.com/javascript-chart-demos/line-charts/realtime/",
+      "include": "^https://apexcharts\\.com/javascript-chart-demos/line-charts/realtime/?$",
+      "include_self": true,
+      "edit_type": "Real-time Dashboard",
+      "demo": true
+    },
+    {
+      "source": "canvasjs_live",
+      "url": "https://canvasjs.com/javascript-charts/dynamic-live-line-chart/",
+      "include": "^https://canvasjs\\.com/javascript-charts/dynamic-live-line-chart/?$",
+      "include_self": true,
+      "edit_type": "Real-time Dashboard",
+      "demo": true
+    }
+  ],
+  "manual_targets": {
+    "https://tympanus.net/Tutorials/HorizontalParallaxGallery/index2.html": [
+      "Parallax Scrolling"
+    ],
+    "https://ui.aceternity.com/components/parallax-scroll": [
+      "Parallax Scrolling"
+    ],
+    "https://ui.aceternity.com/components/hero-parallax": [
+      "Parallax Scrolling"
+    ],
+    "https://motion.dev/examples/js-parallax": [
+      "Parallax Scrolling"
+    ],
+    "https://design.gitlab.com/components/infinite-scroll": [
+      "Infinite Scroll"
+    ],
+    "https://motion.dev/examples/react-infinite-loading": [
+      "Infinite Scroll"
+    ],
+    "https://motion.dev/examples/vue-infinite-loading": [
+      "Infinite Scroll"
+    ],
+    "https://tympanus.net/Tutorials/InfiniteScrollGSAPGallery/": [
+      "Infinite Scroll"
+    ],
+    "https://reactflow.dev/examples/interaction/undo-redo": [
+      "Undo Redo"
+    ],
+    "https://handsontable.com/docs/react-data-grid/undo-redo/": [
+      "Undo Redo"
+    ],
+    "https://preline.co/docs/dark-mode.html": [
+      "Dark Mode Toggle"
+    ],
+    "https://reactflow.dev/examples/styling/dark-mode": [
+      "Dark Mode Toggle"
+    ],
+    "https://svelteflow.dev/examples/styling/dark-mode": [
+      "Dark Mode Toggle"
+    ],
+    "https://design-system.service.gov.uk/components/cookie-banner/": [
+      "Cookie Consent"
+    ],
+    "https://getuikit.com/docs/print": [
+      "Print Stylesheet"
+    ],
+    "https://www.tabulator.info/docs/6.x/print/": [
+      "Print Stylesheet"
+    ],
+    "https://handsontable.com/docs/react-data-grid/keyboard-shortcuts/": [
+      "Keyboard Shortcuts"
+    ],
+    "https://design.gitlab.com/patterns/keyboard-shortcuts": [
+      "Keyboard Shortcuts"
+    ],
+    "https://motion.dev/examples/js-lightbox": [
+      "Image Lightbox"
+    ],
+    "https://tympanus.net/Tutorials/ShoppingCartAnimation": [
+      "Shopping Cart"
+    ],
+    "https://demo.s-cart.org/": [
+      "Shopping Cart"
+    ],
+    "https://motion.dev/examples/react-notifications-list": [
+      "Notification Center"
+    ],
+    "https://motion.dev/examples/vue-notifications-list": [
+      "Notification Center"
+    ],
+    "https://motion.dev/examples/js-notifications-list": [
+      "Notification Center"
+    ],
+    "https://dash.gallery/dash-wind-streaming/": [
+      "Real-time Dashboard"
+    ],
+    "https://surveyjs.io/form-library/examples/javascript-server-side-form-validation/reactjs": [
+      "Async Form Validation"
+    ],
+    "https://surveyjs.io/form-library/examples/javascript-async-form-validation/reactjs": [
+      "Async Form Validation"
+    ],
+    "https://surveyjs.io/form-library/examples/multi-step-form-wizard/reactjs": [
+      "Multi-step Wizard"
+    ],
+    "https://www.htmlelements.com/demos/form/checkout/": [
+      "Multi-step Wizard"
+    ],
+    "https://js.devexpress.com/React/Demos/WidgetsGallery/Demo/DataGrid/MultipleSorting/FluentBlueLight/": [
+      "Sort Control"
+    ],
+    "https://js.devexpress.com/React/Demos/WidgetsGallery/Demo/TreeList/MultipleSorting/FluentBlueLight/": [
+      "Sort Control"
+    ],
+    "https://js.devexpress.com/React/Demos/WidgetsGallery/Demo/CardView/Sorting/FluentBlueLight/": [
+      "Sort Control"
+    ],
+    "https://www.htmlelements.com/demos/cardview/filtering-and-sorting/": [
+      "Sort Control",
+      "Filter Control"
+    ],
+    "https://js.devexpress.com/React/Demos/WidgetsGallery/Demo/DataGrid/Filtering/FluentBlueLight/": [
+      "Filter Control"
+    ],
+    "https://js.devexpress.com/React/Demos/WidgetsGallery/Demo/DataGrid/FilterPanel/FluentBlueLight/": [
+      "Filter Control"
+    ],
+    "https://js.devexpress.com/React/Demos/WidgetsGallery/Demo/TreeList/FilterRow/FluentBlueLight/": [
+      "Filter Control"
+    ],
+    "https://js.devexpress.com/React/Demos/WidgetsGallery/Demo/DataGrid/RealTimeUpdates/FluentBlueLight/": [
+      "Real-time Dashboard"
+    ],
+    "https://www.htmlelements.com/demos/chart/add-points-dynamically/": [
+      "Real-time Dashboard"
+    ],
+    "https://js.devexpress.com/React/Demos/WidgetsGallery/Demo/Form/UpdateItemsDynamically/FluentBlueLight/": [
+      "Conditional Rendering"
+    ]
+  }
+}

@@ -17,9 +17,9 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from instruction_augmentation.doc_api import DocApiClient
-from instruction_augmentation.dynamic_capability_retrieval import capability_embedding_text
-from instruction_augmentation.linear_edit_queries import append_jsonl, read_jsonl
+from inspiration_library.doc_api import DocApiClient
+from inspiration_library.dynamic_capability_retrieval import capability_embedding_text
+from inspiration_library.linear_edit_queries import append_jsonl, read_jsonl
 
 
 def load_saved_vectors(path: Path) -> list[list[float]]:

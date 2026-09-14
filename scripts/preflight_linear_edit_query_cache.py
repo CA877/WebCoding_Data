@@ -14,8 +14,8 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from instruction_augmentation.doc_api import DocApiClient, usage_cache_counts
-from instruction_augmentation.linear_edit_queries import GENERATION_SYSTEM, generation_stable_prefix
+from inspiration_library.doc_api import DocApiClient, usage_cache_counts
+from inspiration_library.linear_edit_queries import GENERATION_SYSTEM, generation_stable_prefix
 
 
 UNRELATED_SOURCE = """<<<FILE:index.html>>>

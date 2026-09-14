@@ -9,7 +9,7 @@ from pathlib import Path
 import re
 import shutil
 
-from instruction_augmentation.one_shot_capability_retrieval import compact_planner_card
+from inspiration_library.one_shot_capability_retrieval import compact_planner_card
 
 
 def consolidate(inventories, output, published_root, supersessions=None):

@@ -51,7 +51,11 @@ def main() -> int:
     ap.add_argument("--projects", type=Path, required=True,
                     help="run projects dir, e.g. runs/complex_query_qwen37_full_20260801/projects")
     ap.add_argument("--output", type=Path, required=True)
-    ap.add_argument("--source", default="complex_query_qwen37_full_20260801")
+    ap.add_argument(
+        "--source",
+        default="artifactsbench_complex_query_qwen37_full_20260801",
+        help="top-level provenance label; preserve the ArtifactsBench seed lineage",
+    )
     args = ap.parse_args()
 
     projects = sorted(args.projects.glob("complex-*"))

@@ -1,0 +1,103 @@
+{
+  "pilot_id": "counterexample_history_causal_pilot_3_20260824_v1",
+  "model": "qwen3.8-max",
+  "seeds": [
+    {
+      "seed_id": "cgcc-seed-archive-relay",
+      "query": "Build a polished offline research-review queue called Archive Relay using index.html, styles.css, and script.js. Use an editorial ink, parchment, and vermilion visual system. Include a text search #recordSearch, a type filter #recordType, an exact visible count #visibleCount, a responsive record grid #recordGrid, and at least eight realistic local records. Include records AR-102 and AR-207, render every card with data-record-id, and give each card a checkbox with data-select-record. Show the current number of checked cards in #selectionSummary. Searching, filtering, checking, and unchecking must work locally. Keep the page visually complete, keyboard usable, responsive at desktop and mobile sizes, and free of external resources."
+    },
+    {
+      "seed_id": "rhcs-seed-atlas-works",
+      "query": "Build a polished offline design-archive catalog called Atlas Works using index.html, styles.css, and script.js. Use a gallery-like chalk, linen, and cobalt visual system. Include discipline controls in #disciplineFilters, a project grid #projectGrid, a detail region #projectDetail, and a status line #catalogStatus. Provide at least six realistic local projects, including projects AW-101 and AW-203 in architecture. Every card must have data-project-id and a working details action. Discipline filtering and opening project details must work without a page reload. Keep all resources local and make the page responsive, visually complete, and keyboard usable."
+    },
+    {
+      "seed_id": "cmtt-seed-cold-chain",
+      "query": "Build a polished offline cold-chain release console called Northline Release using index.html, styles.css, and script.js. Use a frost white, deep petrol, and safety orange operations aesthetic. Include summary metrics #releaseSummary, a status filter #batchFilter, a batch table #batchTable, a release button #releaseSelected, an activity list #activityLog, and a live status region #releaseStatus. Provide at least seven realistic local batches including ready batch CC-204. Every batch row must have data-batch-id and a checkbox with data-select-batch. Filtering and selecting must work, and releasing selected ready batches must update their visible status locally. Keep the console responsive, visually complete, keyboard usable, and free of external resources."
+    }
+  ],
+  "cases": [
+    {
+      "case_id": "cgcc-01-durable-review-set",
+      "strategy": "counterexample_guided_contract_closure",
+      "source_seed_id": "cgcc-seed-archive-relay",
+      "probe": "contract_closure",
+      "task_family_views": ["generate", "edit", "repair"],
+      "operator_request": "Evolve Archive Relay so the checked records form a durable working set independent of the current search and type filter. Add #showSelectedOnly and #clearSelection. Selecting AR-102, then applying a filter that hides it, must keep it selected and counted. Clearing that filter and enabling selected-only must show AR-102 still checked. #selectionSummary must truthfully distinguish the global selected count from the currently visible count using the form 'N selected · M visible'. Clearing the working set must reset every checkbox and the summary. The final training query should state the user-facing behavior without selectors or construction terminology.",
+      "operator_evidence_blueprint": {
+        "challenger_population": [
+          "selection cleared by rerender",
+          "summary counts only visible selections",
+          "selected-only view overwrites the active filter"
+        ],
+        "minimal_witnesses": [
+          "select then hide then reveal",
+          "global-selected versus visible count",
+          "clear selection round trip"
+        ],
+        "closure_rule": "retain only clauses whose browser witnesses reject at least one plausible near-miss"
+      },
+      "required_tokens": ["showSelectedOnly", "clearSelection", "selectedIds", "selected", "visible"],
+      "fault_request": "Introduce exactly one local contract-closure defect that leaves ordinary search and filtering visually intact but makes one plausible near-miss survive, preferably by losing a hidden selection or reporting a visible-only selected count. Preserve all other behavior and styling.",
+      "fault_evidence_blueprint": {
+        "surviving_challenger": "one named near-miss implementation",
+        "violated_witness": "one concrete select/filter/summary observation",
+        "preserved_behavior": "ordinary search, filtering, layout, and unrelated selections"
+      }
+    },
+    {
+      "case_id": "rhcs-01-addressable-catalog-state",
+      "strategy": "render_history_confluence_synthesis",
+      "source_seed_id": "rhcs-seed-atlas-works",
+      "probe": "history_confluence",
+      "task_family_views": ["generate", "edit", "repair"],
+      "operator_request": "Make Atlas Works state URL-addressable and history-confluent. Give every discipline control a data-discipline value and expose its active state with aria-pressed. Expose the open project card with aria-current=true. Filtering to architecture and opening AW-101 through the interface must update the URL with discipline=architecture and project=AW-101. Loading that URL directly in a fresh page must converge to the same active discipline, selected card, detail heading and detail copy as the click path. AW-203 is also an architecture project; opening it next must create one distinct history entry. Browser Back must restore the AW-101 state and Forward must restore AW-203 without duplicate entries or a reload. Unknown discipline or project values must fall back to an unfiltered catalog with a helpful status. The final training query should express deep linking, refresh safety, and Back/Forward behavior naturally.",
+      "operator_evidence_blueprint": {
+        "construction_paths": [
+          "fresh initial render from a deep URL",
+          "client-side discipline and project interactions"
+        ],
+        "convergence_signature": [
+          "URL parameters",
+          "active discipline",
+          "selected project",
+          "detail heading and copy"
+        ],
+        "history_cycle": "AW-101 to AW-203 to Back to Forward"
+      },
+      "required_tokens": ["URLSearchParams", "history.pushState", "popstate", "data-discipline", "aria-current", "AW-101", "AW-203"],
+      "fault_request": "Introduce exactly one history-confluence defect while preserving the ordinary click path and visual design. Break either direct deep-link restoration or the Back/Forward replay for one project, so the two legal construction histories end in observably different catalog states.",
+      "fault_evidence_blueprint": {
+        "broken_path": "direct URL or Back/Forward",
+        "divergent_observation": "one item in the convergence signature",
+        "preserved_path": "ordinary in-page filtering and detail opening"
+      }
+    },
+    {
+      "case_id": "cmtt-01-release-projection-atomicity",
+      "strategy": "causal_mutation_trace_transduction",
+      "source_seed_id": "cmtt-seed-cold-chain",
+      "probe": "causal_trace",
+      "task_family_views": ["generate", "edit", "repair"],
+      "operator_request": "Turn releasing a selected ready batch into one causally coherent visible transaction. Releasing CC-204 must change only that row from Ready to Released, uncheck it, recompute #releaseSummary so its ready and released totals match the table, prepend one receipt mentioning CC-204 to #activityLog, and announce completion in #releaseStatus. A MutationObserver installed before the action should witness changes at the row, summary, activity log, and status sinks. Repeated release clicks with no selected ready batch must not add duplicate receipts or change totals. Preserve filtering, the existing visual system, and all other batches. Write a natural training query about synchronized release projections rather than test instrumentation.",
+      "operator_evidence_blueprint": {
+        "causal_slice": [
+          "release action",
+          "batch state write",
+          "row projection",
+          "summary projection",
+          "activity receipt",
+          "live status"
+        ],
+        "intervention_policy": "sever one observable sink while keeping upstream action and sibling sinks alive",
+        "minimality_witness": "the target passes all sink checks and the one-edge mutant fails exactly the named consistency check"
+      },
+      "required_tokens": ["releaseSummary", "activityLog", "releaseStatus", "CC-204", "Released"],
+      "fault_request": "Introduce exactly one single-edge causal defect: keep the release action, batch row, and at least two sibling projections working while one projection becomes stale or missing. Preserve styling, filtering, and all unrelated batches so the observable inconsistency is local and repairable.",
+      "fault_evidence_blueprint": {
+        "severed_sink": "one of row, summary, receipt, or live status",
+        "preserved_sinks": "at least two sibling projections",
+        "upstream_action": "CC-204 still receives the release action"
+      }
+    }
+  ]
+}

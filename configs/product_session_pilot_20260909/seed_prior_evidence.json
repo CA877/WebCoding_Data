@@ -1,0 +1,13 @@
+{
+  "seed_id": "0805__webcode2m-natural-prompts_462",
+  "prior_quality_evidence": {
+    "kind": "generate_manual_review_20260813",
+    "hard_gate_pass": true,
+    "grade": "B",
+    "total_score": 85,
+    "issues": [
+      "external_dependency"
+    ]
+  },
+  "source_record": "WebCoding_Data/runs/linear_edit_query_augmentation_20260828/pilot_10_v3/sampled_seeds.jsonl"
+}

@@ -1,0 +1,278 @@
+{
+  "source_url": "http://ccsleep.net/",
+  "project_id": "27cc31d77f2d306c345e",
+  "status": "pass",
+  "quality_status": "online_mother_candidate",
+  "resource_policy": "saved_business_code__absolute_online_media_and_verified_libraries",
+  "project": "/data2/adminweihunj/webcoding/WebCoding_Data/runs/online_mothers_3000_20260908/batch/attempts/27cc31d77f2d306c345e/candidates/27cc31d77f2d306c345e/project",
+  "pages": [
+    {
+      "source_url": "http://ccsleep.net/",
+      "final_url": "https://ccsleep.net/",
+      "file": "index.html",
+      "sha256": "4171d8a681021bdb692f92d81c11ed0c7cc9c11a666d3cfad2e77692f3b12b9d",
+      "content_sha256": "170bb799881590e986977ed21dd7a94107c928d434a26bf9ed067fbca83a1a78",
+      "render_validation": {
+        "mode": "localhost_absolute_resources",
+        "http_status": 200,
+        "final_url": "https://ccsleep.net/",
+        "source_viewport_visible_text_chars": 380,
+        "source_screenshot_edge_density": 0.03514,
+        "viewport_visible_text_chars": 380,
+        "screenshot_edge_density": 0.03514,
+        "source_viewport_interactive_elements": 7,
+        "viewport_interactive_elements": 7,
+        "text_chars": 404,
+        "source_text_chars": 404,
+        "text_retention_ratio": 1.0,
+        "screenshot_similarity": 1.0,
+        "full_page_similarity": 1.0,
+        "source_critical_resource_failures": [],
+        "critical_resource_failures": [],
+        "page_errors": [],
+        "source_page_errors": [],
+        "source_sweep": {
+          "scroll_positions": [
+            0,
+            0
+          ],
+          "image_observations": 0,
+          "css_image_urls": [],
+          "broken_resources": []
+        },
+        "replay_sweep": {
+          "scroll_positions": [
+            0,
+            0
+          ],
+          "image_observations": 0,
+          "css_image_urls": [],
+          "broken_resources": []
+        },
+        "unsaved_remote_code": []
+      },
+      "transform": {
+        "document_url": "https://ccsleep.net/",
+        "effective_base": "https://ccsleep.net/",
+        "rewritten_url_attributes": 7
+      },
+      "evidence": {
+        "source": "render_evidence/27cc31d77f2d306c345e_source.png",
+        "replay": "render_evidence/27cc31d77f2d306c345e_replay.png"
+      }
+    },
+    {
+      "source_url": "https://ccsleep.net/blog",
+      "final_url": "https://ccsleep.net/blog",
+      "file": "page_6c61ab56c51ed7efb0e8.html",
+      "sha256": "fa5b82f034bbd98287bd999c74a5001d9932adf62312da87c904aacd186a7fa4",
+      "content_sha256": "1b88f8e0f5bbbcf4d7d2f64c7fb283e9aa0665c126c536ffb0c94d46f3b5dea2",
+      "render_validation": {
+        "mode": "localhost_absolute_resources",
+        "http_status": 200,
+        "final_url": "https://ccsleep.net/blog",
+        "source_viewport_visible_text_chars": 263,
+        "source_screenshot_edge_density": 0.028058,
+        "viewport_visible_text_chars": 263,
+        "screenshot_edge_density": 0.028058,
+        "source_viewport_interactive_elements": 10,
+        "viewport_interactive_elements": 10,
+        "text_chars": 279,
+        "source_text_chars": 279,
+        "text_retention_ratio": 1.0,
+        "screenshot_similarity": 1.0,
+        "full_page_similarity": 1.0,
+        "source_critical_resource_failures": [],
+        "critical_resource_failures": [],
+        "page_errors": [],
+        "source_page_errors": [],
+        "source_sweep": {
+          "scroll_positions": [
+            0,
+            0
+          ],
+          "image_observations": 0,
+          "css_image_urls": [],
+          "broken_resources": []
+        },
+        "replay_sweep": {
+          "scroll_positions": [
+            0,
+            0
+          ],
+          "image_observations": 0,
+          "css_image_urls": [],
+          "broken_resources": []
+        },
+        "unsaved_remote_code": []
+      },
+      "transform": {
+        "document_url": "https://ccsleep.net/blog",
+        "effective_base": "https://ccsleep.net/blog",
+        "rewritten_url_attributes": 11
+      },
+      "evidence": {
+        "source": "render_evidence/6c61ab56c51ed7efb0e8_source.png",
+        "replay": "render_evidence/6c61ab56c51ed7efb0e8_replay.png"
+      }
+    },
+    {
+      "source_url": "https://ccsleep.net/event",
+      "final_url": "https://ccsleep.net/event",
+      "file": "page_1a1088979fd0a65aaa73.html",
+      "sha256": "cc452dac83b2fd0b52d0965e0a4fd8451524c5e14fd7b394a2402589761e8dc6",
+      "content_sha256": "d3b0c3526f77015d3cbe66ed99e54de90ddc4cdf73dd03bc6687ab7f44c253c4",
+      "render_validation": {
+        "mode": "localhost_absolute_resources",
+        "http_status": 200,
+        "final_url": "https://ccsleep.net/event",
+        "source_viewport_visible_text_chars": 235,
+        "source_screenshot_edge_density": 0.023375,
+        "viewport_visible_text_chars": 235,
+        "screenshot_edge_density": 0.023375,
+        "source_viewport_interactive_elements": 7,
+        "viewport_interactive_elements": 7,
+        "text_chars": 252,
+        "source_text_chars": 252,
+        "text_retention_ratio": 1.0,
+        "screenshot_similarity": 1.0,
+        "full_page_similarity": 1.0,
+        "source_critical_resource_failures": [],
+        "critical_resource_failures": [],
+        "page_errors": [],
+        "source_page_errors": [],
+        "source_sweep": {
+          "scroll_positions": [
+            0,
+            0
+          ],
+          "image_observations": 0,
+          "css_image_urls": [],
+          "broken_resources": []
+        },
+        "replay_sweep": {
+          "scroll_positions": [
+            0,
+            0
+          ],
+          "image_observations": 0,
+          "css_image_urls": [],
+          "broken_resources": []
+        },
+        "unsaved_remote_code": []
+      },
+      "transform": {
+        "document_url": "https://ccsleep.net/event",
+        "effective_base": "https://ccsleep.net/event",
+        "rewritten_url_attributes": 8
+      },
+      "evidence": {
+        "source": "render_evidence/1a1088979fd0a65aaa73_source.png",
+        "replay": "render_evidence/1a1088979fd0a65aaa73_replay.png"
+      }
+    },
+    {
+      "source_url": "https://ccsleep.net/gallery",
+      "final_url": "https://ccsleep.net/gallery",
+      "file": "page_612186e69d8f7619cf3e.html",
+      "sha256": "0172bd5f80a06a11190243504e28ea3976d3f718656a31a0fc87fb356a1994b4",
+      "content_sha256": "c745331ffb5725d0b42d6d275b449440fb238044c77c0e53756bdb1a9d9a2b54",
+      "render_validation": {
+        "mode": "localhost_absolute_resources",
+        "http_status": 200,
+        "final_url": "https://ccsleep.net/gallery",
+        "source_viewport_visible_text_chars": 261,
+        "source_screenshot_edge_density": 0.029603,
+        "viewport_visible_text_chars": 261,
+        "screenshot_edge_density": 0.029603,
+        "source_viewport_interactive_elements": 8,
+        "viewport_interactive_elements": 8,
+        "text_chars": 288,
+        "source_text_chars": 288,
+        "text_retention_ratio": 1.0,
+        "screenshot_similarity": 1.0,
+        "full_page_similarity": 1.0,
+        "source_critical_resource_failures": [],
+        "critical_resource_failures": [],
+        "page_errors": [],
+        "source_page_errors": [],
+        "source_sweep": {
+          "scroll_positions": [
+            0,
+            0
+          ],
+          "image_observations": 0,
+          "css_image_urls": [],
+          "broken_resources": []
+        },
+        "replay_sweep": {
+          "scroll_positions": [
+            0,
+            0
+          ],
+          "image_observations": 0,
+          "css_image_urls": [],
+          "broken_resources": []
+        },
+        "unsaved_remote_code": []
+      },
+      "transform": {
+        "document_url": "https://ccsleep.net/gallery",
+        "effective_base": "https://ccsleep.net/gallery",
+        "rewritten_url_attributes": 8
+      },
+      "evidence": {
+        "source": "render_evidence/612186e69d8f7619cf3e_source.png",
+        "replay": "render_evidence/612186e69d8f7619cf3e_replay.png"
+      }
+    }
+  ],
+  "child_failures": [],
+  "url_to_file": {
+    "http://ccsleep.net/": "index.html",
+    "https://ccsleep.net/": "index.html",
+    "https://ccsleep.net/blog": "page_6c61ab56c51ed7efb0e8.html",
+    "https://ccsleep.net/event": "page_1a1088979fd0a65aaa73.html",
+    "https://ccsleep.net/gallery": "page_612186e69d8f7619cf3e.html"
+  },
+  "code_tokens": 3849,
+  "token_basis": "all saved HTML/CSS/JS, shared files once; only allowlisted external libraries excluded",
+  "code_assets": {
+    "saved": [
+      {
+        "url": "https://ccsleep.net/css/simple-form.css",
+        "final_url": "https://ccsleep.net/css/simple-form.css",
+        "file": "code/390cfe384eae708c97c6.css",
+        "source_sha256": "b9fb756c71c460f295bff7c0c7cd73ed62603205946de2d8665678609da9bebc",
+        "bytes": 3252,
+        "saved_sha256": "722824210e9f082332b7170e5d260ec09c1a23904aa5f263948d75d92d87e1cf"
+      },
+      {
+        "url": "https://ccsleep.net/css/rbd.min.css",
+        "final_url": "https://ccsleep.net/css/rbd.min.css",
+        "file": "code/000d1948277557590093.css",
+        "source_sha256": "5aec60813fc40becbedb721675885fdaf007c878cc9148b5a840003ee613a225",
+        "bytes": 3262,
+        "saved_sha256": "5aec60813fc40becbedb721675885fdaf007c878cc9148b5a840003ee613a225"
+      }
+    ],
+    "external_libraries": []
+  },
+  "navigation": {
+    "ok": true,
+    "links": [
+      {
+        "target": "http://127.0.0.1:34023/page_6c61ab56c51ed7efb0e8.html",
+        "ok": true
+      },
+      {
+        "target": "http://127.0.0.1:34023/page_1a1088979fd0a65aaa73.html",
+        "ok": true
+      },
+      {
+        "target": "http://127.0.0.1:34023/page_612186e69d8f7619cf3e.html",
+        "ok": true
+      }
+    ]
+  }
+}

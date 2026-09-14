@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from instruction_augmentation.one_shot_capability_retrieval import (
+from inspiration_library.one_shot_capability_retrieval import (
     build_seed_retrieval_query,
     compile_donor_snippets,
     compile_source_slices,

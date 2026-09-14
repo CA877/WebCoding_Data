@@ -1,0 +1,23 @@
+{
+  "crossaug-04-urban-pollinator-atlas": {
+    "issue": "At 390px the main flex item and form controls retain a 468px min-content width, causing 94px document overflow.",
+    "diagnostic_evidence": "mobile document scrollWidth=484, clientWidth=390; .panel width=468.1",
+    "append_files": {
+      "styles.css": "repair_overlays/cross_seed_component_fusion_20260821/crossaug-04-mobile.css"
+    }
+  },
+  "crossaug-08-community-energy-command": {
+    "issue": "At 390px the hero grid expands to 529px because its content column keeps its intrinsic width; landscape art and the operations table then bleed beyond the viewport.",
+    "diagnostic_evidence": "mobile document scrollWidth=529, clientWidth=390; .hero-content and .hero-visual width=529.2",
+    "append_files": {
+      "styles.css": "repair_overlays/cross_seed_component_fusion_20260821/crossaug-08-mobile.css"
+    }
+  },
+  "crossaug-09-venue-accessibility-kit": {
+    "issue": "The comparison handler adds .open to a modal that still has the initial .hidden class, so display:none continues to win and the populated modal remains invisible.",
+    "diagnostic_evidence": "comparison table is populated after selecting two cards, but #comparison-modal is_visible=false with class='modal-overlay hidden open'",
+    "append_files": {
+      "styles.css": "repair_overlays/cross_seed_component_fusion_20260821/crossaug-09-modal.css"
+    }
+  }
+}

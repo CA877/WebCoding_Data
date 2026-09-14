@@ -1,0 +1,265 @@
+{
+  "schema_version": "webcoding-donor-capability-bank-v1",
+  "capabilities": [
+    {
+      "id": "atomic_action_projection_history",
+      "family": "action_history",
+      "summary": "Turn one existing action into a durable event record while updating every visible projection exactly once",
+      "prerequisites": [
+        "an existing entity-changing user action",
+        "stable entity identifiers",
+        "visible status or summary projections"
+      ],
+      "outputs": [
+        "structured event history",
+        "refresh-consistent entity state"
+      ],
+      "user_actions": [
+        "perform the existing action on one eligible entity",
+        "refresh and inspect the affected entity and history"
+      ],
+      "verification": [
+        "the entity, summaries, history, and announcement change once",
+        "an ineligible repeat does not create a duplicate event"
+      ],
+      "donor_evidence": {
+        "source_project": "runs/counterexample_history_causal_pilot_3_20260824_v1/targets/cmtt-01-release-projection-atomicity",
+        "verification": "runs/counterexample_history_causal_pilot_3_20260824_v1/verification_v1/verification_results.jsonl",
+        "case_id": "cmtt-01-release-projection-atomicity"
+      }
+    },
+    {
+      "id": "derived_grouped_event_summary",
+      "family": "derived_summary",
+      "summary": "Derive a grouped count and latest-event summary from an existing structured event history",
+      "prerequisites": [
+        "structured events with stable entity fields",
+        "a grouping field already present in the host data"
+      ],
+      "outputs": [
+        "grouped event totals",
+        "latest event time per group"
+      ],
+      "user_actions": [
+        "create events for two different groups",
+        "inspect the grouped summary"
+      ],
+      "verification": [
+        "only the affected group changes after a new event",
+        "counts are derived from recorded events rather than unrelated entity state"
+      ],
+      "donor_evidence": {
+        "source_project": "runs/counterexample_history_causal_pilot_3_20260824_v1/targets/cmtt-01-release-projection-atomicity",
+        "verification": "runs/counterexample_history_causal_pilot_3_20260824_v1/verification_v1/verification_results.jsonl",
+        "case_id": "cmtt-01-release-projection-atomicity"
+      }
+    },
+    {
+      "id": "persistent_named_filter_views",
+      "family": "saved_view",
+      "summary": "Save a named view of an existing filter and restore the same visible results after refresh",
+      "prerequisites": [
+        "an existing filterable collection",
+        "a current filter value and derived visible results"
+      ],
+      "outputs": [
+        "persistent named views",
+        "active restored view"
+      ],
+      "user_actions": [
+        "set a filter and save it under a name",
+        "change the filter, reload, and apply the saved view"
+      ],
+      "verification": [
+        "applying the view restores both the control value and visible result set",
+        "saved views persist without mutating the underlying entities"
+      ],
+      "donor_evidence": {
+        "source_project": "runs/disjoint_instruction_augmentation_pilot_9_20260823_v1/repairs_v3/igrs-02-persistent-research-set",
+        "verification": "runs/disjoint_instruction_augmentation_pilot_9_20260823_v1/verification_v1/verification_results_v1.jsonl",
+        "case_id": "igrs-02-persistent-research-set"
+      }
+    },
+    {
+      "id": "synchronize_saved_view_and_derived_summary",
+      "family": "state_synchronization",
+      "summary": "Make two existing derived views consume the same active filter while preserving their shared source data",
+      "prerequisites": [
+        "one persistent active view or filter",
+        "one independent derived summary",
+        "a shared raw collection from which both views can be recomputed"
+      ],
+      "outputs": [
+        "synchronized filtered summary"
+      ],
+      "user_actions": [
+        "apply and clear a saved view",
+        "compare the visible collection with the derived summary"
+      ],
+      "verification": [
+        "both derived views change together from the same raw collection",
+        "the underlying entity state and unrelated totals do not change"
+      ],
+      "donor_evidence": {
+        "source_project": "output/critical_pair_state_refinement/20260825_stable_pipeline_resume_replay_v1/canonical/botanical_compare_archive_eligibility/project",
+        "verification": "output/critical_pair_state_refinement/20260825_stable_pipeline_resume_replay_v1/canonical/botanical_compare_archive_eligibility/task_view.json",
+        "case_id": "botanical_compare_archive_eligibility"
+      }
+    },
+    {
+      "id": "durable_hidden_selection",
+      "family": "selection",
+      "summary": "Keep a selected working set independent of search and filtering, including items currently hidden from view",
+      "prerequisites": [
+        "a filterable collection with stable entity identifiers",
+        "item selection controls"
+      ],
+      "outputs": [
+        "global selected-id set",
+        "selected-only view"
+      ],
+      "user_actions": [
+        "select an item, hide it with a filter, and reveal it again",
+        "clear the whole working set"
+      ],
+      "verification": [
+        "hidden selections remain counted and selected",
+        "global selected count is distinguished from visible selected count"
+      ],
+      "donor_evidence": {
+        "source_project": "runs/counterexample_history_causal_pilot_3_20260824_v1/targets/cgcc-01-durable-review-set",
+        "verification": "runs/counterexample_history_causal_pilot_3_20260824_v1/verification_v1/verification_results.jsonl",
+        "case_id": "cgcc-01-durable-review-set"
+      }
+    },
+    {
+      "id": "url_addressable_history_state",
+      "family": "navigation_state",
+      "summary": "Represent the active filter and selected detail in the URL and restore them through refresh, Back, and Forward",
+      "prerequisites": [
+        "an existing filterable collection",
+        "an item detail view with stable identifiers"
+      ],
+      "outputs": [
+        "URL-addressable page state",
+        "browser-history restoration"
+      ],
+      "user_actions": [
+        "filter and open two details",
+        "reload, use Back and Forward, and open a deep URL"
+      ],
+      "verification": [
+        "the click path and direct URL converge to the same visible state",
+        "Back and Forward restore distinct prior selections without reload"
+      ],
+      "donor_evidence": {
+        "source_project": "runs/counterexample_history_causal_pilot_3_20260824_v1/targets/rhcs-01-addressable-catalog-state",
+        "verification": "runs/counterexample_history_causal_pilot_3_20260824_v1/verification_v1/verification_results.jsonl",
+        "case_id": "rhcs-01-addressable-catalog-state"
+      }
+    },
+    {
+      "id": "context_preserving_detail_return",
+      "family": "detail_navigation",
+      "summary": "Open an item detail and return to exactly the previous search, filter, scroll, and focused item context",
+      "prerequisites": [
+        "a searchable or filterable item collection",
+        "an item detail surface"
+      ],
+      "outputs": [
+        "restorable collection context"
+      ],
+      "user_actions": [
+        "set collection context, open a detail, and return",
+        "repeat after changing the collection context"
+      ],
+      "verification": [
+        "the prior filter, query, scroll position, and focus are restored",
+        "detail content does not overwrite collection state"
+      ],
+      "donor_evidence": {
+        "source_project": "runs/disjoint_instruction_augmentation_pilot_9_20260823_v1/repairs_v2/igrs-01-context-preserving-detail",
+        "verification": "runs/disjoint_instruction_augmentation_pilot_9_20260823_v1/verification_v1/verification_results_v1.jsonl",
+        "case_id": "igrs-01-context-preserving-detail"
+      }
+    },
+    {
+      "id": "explicit_bulk_commit",
+      "family": "bulk_action",
+      "summary": "Stage changes to multiple selected records and apply them as one explicit bulk commit with a truthful result summary",
+      "prerequisites": [
+        "stable selected entity identifiers",
+        "an existing per-entity field that can be changed locally"
+      ],
+      "outputs": [
+        "staged bulk changes",
+        "bulk commit result"
+      ],
+      "user_actions": [
+        "select several records and stage one field change",
+        "commit once and inspect affected and skipped counts"
+      ],
+      "verification": [
+        "only eligible selected records change",
+        "the summary matches actual changed and skipped entities"
+      ],
+      "donor_evidence": {
+        "source_project": "runs/disjoint_instruction_augmentation_pilot_9_20260823_v1/repairs_v4/igrs-03-explicit-bulk-commit",
+        "verification": "runs/disjoint_instruction_augmentation_pilot_9_20260823_v1/verification_v1/verification_results_v1.jsonl",
+        "case_id": "igrs-03-explicit-bulk-commit"
+      }
+    },
+    {
+      "id": "dialog_focus_lifecycle",
+      "family": "accessibility",
+      "summary": "Give an existing modal or dialog a complete keyboard focus lifecycle, including escape and focus restoration",
+      "prerequisites": [
+        "an action that opens a modal surface",
+        "a stable trigger control"
+      ],
+      "outputs": [
+        "modal focus scope",
+        "restored trigger focus"
+      ],
+      "user_actions": [
+        "open the dialog, tab through controls, press Escape, and reopen",
+        "close through the visible control"
+      ],
+      "verification": [
+        "focus enters and remains within the open dialog",
+        "closing restores focus to the trigger and hides the dialog"
+      ],
+      "donor_evidence": {
+        "source_project": "runs/disjoint_instruction_augmentation_pilot_9_20260823_v1/repairs/past-03-dialog-focus-lifecycle",
+        "verification": "runs/disjoint_instruction_augmentation_pilot_9_20260823_v1/verification_v1/verification_results_v1.jsonl",
+        "case_id": "past-03-dialog-focus-lifecycle"
+      }
+    },
+    {
+      "id": "archive_selection_exclusion",
+      "family": "state_synchronization",
+      "summary": "Reconcile an archive set and a comparison selection so an archived entity is atomically removed from active selection",
+      "prerequisites": [
+        "an existing persistent archive",
+        "an existing stable-id comparison or selection workspace"
+      ],
+      "outputs": [
+        "archived-exclusion invariant",
+        "coordinated restore semantics"
+      ],
+      "user_actions": [
+        "select an entity and then archive it",
+        "restore the same entity"
+      ],
+      "verification": [
+        "archiving removes the entity from active selection in the same visible transition",
+        "restoring does not silently reselect it"
+      ],
+      "donor_evidence": {
+        "source_project": "output/critical_pair_state_refinement/20260825_stable_pipeline_resume_replay_v1/canonical/botanical_compare_archive_eligibility/project",
+        "verification": "output/critical_pair_state_refinement/20260825_stable_pipeline_resume_replay_v1/canonical/botanical_compare_archive_eligibility/task_view.json",
+        "case_id": "botanical_compare_archive_eligibility"
+      }
+    }
+  ]
+}

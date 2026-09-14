@@ -100,8 +100,8 @@ def main():
     env.update(PYTHONPATH=str(root), PYTHONUNBUFFERED='1')
     if args.extract_worker:
         from scripts.mine_live_url_capability_pool import load_sources
-        from instruction_augmentation.doc_api import DocApiClient
-        from instruction_augmentation.dynamic_capability_retrieval import extract_seed_capabilities
+        from inspiration_library.doc_api import DocApiClient
+        from inspiration_library.dynamic_capability_retrieval import extract_seed_capabilities
         source = next(r for r in load_sources(args.sources, args.mode) if r['seed_id']==args.seed_id)
         observation = json.loads(args.observation.read_text())
         args.run_dir.mkdir(parents=True, exist_ok=False)

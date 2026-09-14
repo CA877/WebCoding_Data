@@ -1,0 +1,4 @@
+interface:
+  display_name: "WebCompass 16类 Edit"
+  short_description: "解释、分类和审计 WebCompass 官方16类 Edit 操作"
+  default_prompt: "使用 $webcompass-edit-types 解释或审核这些 WebCompass Edit 指令属于哪些官方操作类型。"

@@ -51,9 +51,12 @@ transfer_package*/
 *.woff2
 *.cur
 *.css
+*.pdf
 
 # Crawled/downloaded resources (large, reproducible)
 **/resources/
+# URL candidate pools and archives: data, not code. The canonical copies live under datasets/.
+**/url_lists/
 local_trials/webcode2m_formal_7x10_ppapi_smoke/
 local_trials/webcode2m_official_multipage_10/
 local_trials/webrenderbench_30_filtered_out_samples/
@@ -96,23 +99,28 @@ build/
 # Nested repositories copied in for reference should not bring their Git object DB.
 **/.git/
 
-# Internal documentation remains local; module READMEs remain publishable.
-docs/
-/*.md
-!/README.md
-!/DATA_PRODUCERS.md
-/construct/数量安排.md
+# Local-only notes and scratch materials.
 GPTPro方案/
-paper_review/
 drafts/
 草稿/
 参考文档/
 参考数据集/
 WebGen-Agent/
-third_party/
+# Research notes: downloaded paper PDFs/fulltext and reading notes are not repo content.
+/paper_review/
 
-# Internal agent/project notes may contain machine paths or infrastructure details.
-AGENTS.md
+# Independently managed Git repositories: their commits and pushes stay separate.
+# These paths follow the current top-level layout; keep them in sync with it.
+/harness/
+/Webcoding-Model-Project/
+/evaluate/WebCompass_official/
+/evaluate/WebGen-Bench/
+
+# Credentials and sources that must not be published.
+/docs/项目用api.pdf
+/reverse/docs/reverse_case_candidates/
+
+# Local agent/project notes may contain machine paths or infrastructure details.
 CLAUDE.md
 STATUS.md
 TODO.md

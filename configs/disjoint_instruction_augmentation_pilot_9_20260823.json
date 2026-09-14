@@ -1,0 +1,280 @@
+{
+  "pilot_id": "disjoint_instruction_augmentation_pilot_9_20260823_v1",
+  "model": "qwen3.8-max",
+  "seeds": [
+    {
+      "seed_id": "igrs-seed-civic-records",
+      "query": "Build a polished civic records research workspace called Civic Ledger. Use a warm off-white editorial dashboard with a navy sidebar, compact status chips, a searchable two-column records area, and realistic permit and council records. The main page needs a text search input #searchInput, status filter #statusFilter, results container #recordList, selectable record rows with data-record-id attributes, a details region #detailPanel, a save-search button #saveSearch, checkboxes for selecting records, a bulk archive button #bulkArchive, and a live status region #workspaceStatus. Search and filtering, record selection, details, saving a search, and bulk archiving must all work locally. Make the page responsive, keyboard usable, and visually complete."
+    },
+    {
+      "seed_id": "past-seed-community-media",
+      "query": "Build a polished community media library called Common Frame. Use a charcoal-and-coral visual system with a slim header, a media grid, an action toolbar #mediaToolbar, and a registration card. Include icon-forward action buttons #uploadAction, #favoriteAction, and #shareAction; a live toolbar message #toolbarStatus; a registration form #registrationForm with #fullName, #email, #submitRegistration, and #errorSummary; and a preview button #previewTrigger that opens #previewDialog with #closePreview. Add realistic local media cards and implement favorite feedback, form validation, opening and closing the preview, and responsive layout. Keep all assets offline."
+    },
+    {
+      "seed_id": "csdi-seed-resource-directory",
+      "query": "Build a polished public resource directory called Field Notes. Use vanilla HTML, CSS, and JavaScript with a local JavaScript array of at least eight realistic resources. Create an airy sage-and-ink interface with a summary header, keyword input #resourceSearch, category select #categoryFilter, exact visible result count #resultCount, and cards in #resourceGrid. Every resource card must render its title, organization, description, category, region, availability, and reference code from the array. Search and category filtering must work, the no-results state #emptyState must be available, and the layout must be responsive with robust card wrapping."
+    }
+  ],
+  "cases": [
+    {
+      "case_id": "igrs-01-context-preserving-detail",
+      "strategy": "information_gain_requirement_speciation",
+      "source_seed_id": "igrs-seed-civic-records",
+      "operator_request": "The phrase 'open record details' leaves navigation context ambiguous. Candidate branches are inline replacement, separate page, side panel, and modal. Select the modal branch because researchers must retain the active search, filter, selected rows, and scroll context. Clicking record R-104 must open #recordDialog without clearing those values; #closeRecordDialog and Escape close it; initial focus goes to #closeRecordDialog and closing returns focus to the invoking record. Implement a dialog title and an explicit aria-modal contract.",
+      "operator_evidence_blueprint": {
+        "underspecified_clause": "open record details",
+        "candidate_branches": ["inline replacement", "separate page", "side panel", "modal"],
+        "selected_branch": "modal preserving research context",
+        "information_gain": "navigation, state retention, focus lifecycle"
+      },
+      "export_edit": true,
+      "verification_contract": {
+        "scenarios": [
+          {
+            "name": "detail_modal_preserves_context",
+            "steps": [
+              {"action": "fill", "selector": "#searchInput", "value": "permit"},
+              {"action": "select_option", "selector": "#statusFilter", "value": "open"},
+              {"action": "click", "selector": "[data-record-id='R-104']"},
+              {"assert": "visible", "selector": "#recordDialog"},
+              {"assert": "active", "selector": "#closeRecordDialog"},
+              {"assert": "value", "selector": "#searchInput", "value": "permit"},
+              {"action": "press", "key": "Escape"},
+              {"assert": "hidden", "selector": "#recordDialog"},
+              {"assert": "active", "selector": "[data-record-id='R-104']"}
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "igrs-02-persistent-research-set",
+      "strategy": "information_gain_requirement_speciation",
+      "source_seed_id": "igrs-seed-civic-records",
+      "operator_request": "The phrase 'save this search' leaves duration ambiguous. Candidate branches are session-only, URL sharing, local device persistence, and signed-in cloud persistence. Select local device persistence because this offline product has no account system. #saveSearch must store the current #searchInput and #statusFilter under localStorage key civicLedger.savedSearch, confirm with exact text 'Research view saved on this device' in #workspaceStatus, and restore both values plus the filtered results after reload.",
+      "operator_evidence_blueprint": {
+        "underspecified_clause": "save this search",
+        "candidate_branches": ["session-only", "URL sharing", "local persistence", "cloud persistence"],
+        "selected_branch": "local device persistence",
+        "information_gain": "lifetime, storage boundary, reload behavior"
+      },
+      "export_edit": false,
+      "verification_contract": {
+        "scenarios": [
+          {
+            "name": "saved_search_survives_reload",
+            "steps": [
+              {"action": "fill", "selector": "#searchInput", "value": "permit"},
+              {"action": "select_option", "selector": "#statusFilter", "value": "open"},
+              {"action": "click", "selector": "#saveSearch"},
+              {"assert": "text", "selector": "#workspaceStatus", "value": "Research view saved on this device"},
+              {"assert": "storage", "key": "civicLedger.savedSearch", "contains": "permit"},
+              {"action": "reload"},
+              {"assert": "value", "selector": "#searchInput", "value": "permit"},
+              {"assert": "value", "selector": "#statusFilter", "value": "open"}
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "igrs-03-explicit-bulk-commit",
+      "strategy": "information_gain_requirement_speciation",
+      "source_seed_id": "igrs-seed-civic-records",
+      "operator_request": "The phrase 'bulk archive selected records' leaves commit semantics ambiguous. Candidate branches are immediate destructive commit, confirmation-only, delayed undo, and reversible staging. Select confirmation followed by a 10-second undo affordance. Selecting the checkbox for R-104 and pressing #bulkArchive opens #bulkConfirmDialog; #confirmBulkArchive commits, shows exact text '1 record archived — Undo available' in #workspaceStatus, and reveals #undoArchive; pressing undo restores the row and announces 'Archive undone'. Add a cancel path and keyboard-safe dialog focus.",
+      "operator_evidence_blueprint": {
+        "underspecified_clause": "bulk archive selected records",
+        "candidate_branches": ["immediate commit", "confirmation", "delayed undo", "reversible staging"],
+        "selected_branch": "confirmation plus bounded undo",
+        "information_gain": "commit boundary, reversibility, failure prevention"
+      },
+      "export_edit": false,
+      "verification_contract": {
+        "scenarios": [
+          {
+            "name": "confirmed_archive_can_be_undone",
+            "steps": [
+              {"action": "check", "selector": "[data-select-record='R-104']"},
+              {"action": "click", "selector": "#bulkArchive"},
+              {"assert": "visible", "selector": "#bulkConfirmDialog"},
+              {"action": "click", "selector": "#confirmBulkArchive"},
+              {"assert": "text", "selector": "#workspaceStatus", "value": "1 record archived — Undo available"},
+              {"assert": "visible", "selector": "#undoArchive"},
+              {"action": "click", "selector": "#undoArchive"},
+              {"assert": "text", "selector": "#workspaceStatus", "value": "Archive undone"},
+              {"assert": "visible", "selector": "[data-record-id='R-104']"}
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "past-01-semantic-icon-toolbar",
+      "strategy": "perceptual_accessibility_semantic_twins",
+      "source_seed_id": "past-seed-community-media",
+      "operator_request": "Preserve the default pixels and CSS while making the icon-forward toolbar semantically complete. Give #uploadAction, #favoriteAction, and #shareAction exact accessible names 'Upload media', 'Add featured item to favorites', and 'Share featured item'. Make #favoriteAction expose aria-pressed and toggle it on activation. Give #toolbarStatus role=status and aria-live=polite. The visible icons and layout must remain unchanged; keyboard activation must produce the same favorite feedback as clicking.",
+      "operator_evidence_blueprint": {
+        "visual_invariants": ["same CSS", "same visible icon glyphs", "same default layout"],
+        "semantic_deltas": ["accessible names", "pressed state", "live status"],
+        "observation_channels": ["screenshot", "accessibility tree", "keyboard interaction"]
+      },
+      "export_edit": true,
+      "verification_contract": {
+        "minimum_pixel_similarity": 0.995,
+        "scenarios": [
+          {
+            "name": "toolbar_has_semantic_contract",
+            "steps": [
+              {"assert": "attr", "selector": "#uploadAction", "name": "aria-label", "value": "Upload media"},
+              {"assert": "attr", "selector": "#favoriteAction", "name": "aria-pressed", "value": "false"},
+              {"assert": "attr", "selector": "#toolbarStatus", "name": "role", "value": "status"},
+              {"action": "focus", "selector": "#favoriteAction"},
+              {"action": "press", "key": "Enter"},
+              {"assert": "attr", "selector": "#favoriteAction", "name": "aria-pressed", "value": "true"},
+              {"assert": "not_empty", "selector": "#toolbarStatus"}
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "past-02-announced-form-errors",
+      "strategy": "perceptual_accessibility_semantic_twins",
+      "source_seed_id": "past-seed-community-media",
+      "operator_request": "Preserve default pixels and CSS while creating an accessibility-semantic twin of the registration form. Associate visible labels with #fullName and #email; when the empty form is submitted, show #errorSummary, give it role=alert and tabindex=-1, move focus to it, mark both inputs aria-invalid=true, and connect each input to its visible inline error via aria-describedby. Valid resubmission must clear invalid state. No CSS changes are allowed.",
+      "operator_evidence_blueprint": {
+        "visual_invariants": ["same CSS", "same default form pixels"],
+        "semantic_deltas": ["label association", "error relationships", "focus announcement"],
+        "observation_channels": ["screenshot", "accessibility tree", "focus sequence"]
+      },
+      "export_edit": false,
+      "verification_contract": {
+        "minimum_pixel_similarity": 0.995,
+        "scenarios": [
+          {
+            "name": "invalid_form_is_announced",
+            "steps": [
+              {"action": "click", "selector": "#submitRegistration"},
+              {"assert": "visible", "selector": "#errorSummary"},
+              {"assert": "active", "selector": "#errorSummary"},
+              {"assert": "attr", "selector": "#errorSummary", "name": "role", "value": "alert"},
+              {"assert": "attr", "selector": "#fullName", "name": "aria-invalid", "value": "true"},
+              {"assert": "attr_nonempty", "selector": "#email", "name": "aria-describedby"}
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "past-03-dialog-focus-lifecycle",
+      "strategy": "perceptual_accessibility_semantic_twins",
+      "source_seed_id": "past-seed-community-media",
+      "operator_request": "Preserve default pixels and CSS while completing the preview dialog's accessibility semantics. #previewDialog must have role=dialog, aria-modal=true, and an accessible name from its visible heading. Opening from #previewTrigger moves focus to #closePreview; Tab and Shift+Tab remain inside the open dialog; Escape closes it; closing restores focus to #previewTrigger. Make background content inert while open. No CSS changes are allowed.",
+      "operator_evidence_blueprint": {
+        "visual_invariants": ["same CSS", "same closed-state pixels", "same open-state styling"],
+        "semantic_deltas": ["dialog role and name", "focus trap", "focus restoration", "background inertness"],
+        "observation_channels": ["screenshot", "accessibility tree", "keyboard focus lifecycle"]
+      },
+      "export_edit": false,
+      "verification_contract": {
+        "minimum_pixel_similarity": 0.995,
+        "scenarios": [
+          {
+            "name": "dialog_focus_is_contained_and_restored",
+            "steps": [
+              {"action": "click", "selector": "#previewTrigger"},
+              {"assert": "visible", "selector": "#previewDialog"},
+              {"assert": "attr", "selector": "#previewDialog", "name": "role", "value": "dialog"},
+              {"assert": "attr", "selector": "#previewDialog", "name": "aria-modal", "value": "true"},
+              {"assert": "active", "selector": "#closePreview"},
+              {"action": "press", "key": "Escape"},
+              {"assert": "hidden", "selector": "#previewDialog"},
+              {"assert": "active", "selector": "#previewTrigger"}
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "csdi-01-cardinality-envelope",
+      "strategy": "content_shape_distribution_inversion",
+      "source_seed_id": "csdi-seed-resource-directory",
+      "operator_request": "Expand the directory from its normal fixed list into a cardinality envelope users can inspect with #datasetSize values empty, one, and many. Empty must render #emptyState with exact text 'No resources are available in this collection' and #resultCount '0 resources'. One must render exactly one card and '1 resource'. Many must render at least eight cards with the exact matching plural count. Switching profiles must reuse the real renderer and keep search and category filters coherent.",
+      "operator_evidence_blueprint": {
+        "mutated_distribution": ["zero records", "one record", "many records"],
+        "failure_risks": ["blank container", "wrong pluralization", "stale filter state"],
+        "rendering_invariants": ["truthful count", "explicit empty state", "same renderer"]
+      },
+      "export_edit": true,
+      "verification_contract": {
+        "scenarios": [
+          {
+            "name": "zero_one_many_share_renderer",
+            "steps": [
+              {"action": "select_option", "selector": "#datasetSize", "value": "empty"},
+              {"assert": "text", "selector": "#resultCount", "value": "0 resources"},
+              {"assert": "text", "selector": "#emptyState", "value": "No resources are available in this collection"},
+              {"action": "select_option", "selector": "#datasetSize", "value": "one"},
+              {"assert": "count", "selector": "#resourceGrid > *", "value": 1},
+              {"assert": "text", "selector": "#resultCount", "value": "1 resource"},
+              {"action": "select_option", "selector": "#datasetSize", "value": "many"},
+              {"assert": "count_at_least", "selector": "#resourceGrid > *", "value": 8}
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "csdi-02-optional-field-envelope",
+      "strategy": "content_shape_distribution_inversion",
+      "source_seed_id": "csdi-seed-resource-directory",
+      "operator_request": "Add a realistic resource with reference code OPT-NULL-07 whose organization, region, and availability fields are absent in the data rather than empty strings. The renderer must keep the card, use exact visible fallbacks 'Independent contributor', 'Region not specified', and 'Availability to be confirmed', and add data-optional-fallback='true' to that card. Search for OPT-NULL-07 must find it. No page text may expose undefined, null, NaN, or [object Object].",
+      "operator_evidence_blueprint": {
+        "mutated_distribution": ["missing organization", "missing region", "missing availability"],
+        "failure_risks": ["record dropped", "runtime exception", "sentinel leakage"],
+        "rendering_invariants": ["record remains searchable", "human fallback copy", "no raw sentinels"]
+      },
+      "export_edit": false,
+      "verification_contract": {
+        "scenarios": [
+          {
+            "name": "missing_fields_have_human_fallbacks",
+            "steps": [
+              {"action": "fill", "selector": "#resourceSearch", "value": "OPT-NULL-07"},
+              {"assert": "count", "selector": "[data-optional-fallback='true']", "value": 1},
+              {"assert": "text_contains", "selector": "[data-optional-fallback='true']", "value": "Independent contributor"},
+              {"assert": "body_excludes", "values": ["undefined", "null", "NaN", "[object Object]"]}
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "csdi-03-multiscript-range-envelope",
+      "strategy": "content_shape_distribution_inversion",
+      "source_seed_id": "csdi-seed-resource-directory",
+      "operator_request": "Add one resource identified by LONG-MIXED-00000000000000000042 whose title contains both '社区气候适应资料库' and 'مكتبة التكيف المناخي', whose description exceeds 260 characters, and whose availability is zero. Render the reference code and mixed-script title without clipping, display exact text '0 places currently available', add data-range-envelope='true' to the card, and make long unbroken identifiers wrap inside the card at both desktop and 390px mobile. Search by the Arabic title and the full identifier must both find the resource.",
+      "operator_evidence_blueprint": {
+        "mutated_distribution": ["mixed CJK and Arabic", "long prose", "unbroken identifier", "zero numeric boundary"],
+        "failure_risks": ["text clipping", "horizontal overflow", "zero treated as missing", "search normalization failure"],
+        "rendering_invariants": ["full content remains visible", "zero is explicit", "multiscript search", "identifier wraps"]
+      },
+      "export_edit": false,
+      "verification_contract": {
+        "scenarios": [
+          {
+            "name": "mixed_script_and_extremes_render_safely",
+            "steps": [
+              {"action": "fill", "selector": "#resourceSearch", "value": "مكتبة التكيف المناخي"},
+              {"assert": "count", "selector": "[data-range-envelope='true']", "value": 1},
+              {"assert": "text_contains", "selector": "[data-range-envelope='true']", "value": "0 places currently available"},
+              {"assert": "no_element_overflow", "selector": "[data-range-envelope='true']"},
+              {"action": "fill", "selector": "#resourceSearch", "value": "LONG-MIXED-00000000000000000042"},
+              {"assert": "count", "selector": "[data-range-envelope='true']", "value": 1}
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

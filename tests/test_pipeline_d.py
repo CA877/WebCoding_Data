@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from preprocess.pipeline_d.main import completed_pass_count, completed_source_urls, project_id
+from crawl.pipeline_d.main import completed_pass_count, completed_source_urls, project_id
 
 
 class PipelineDTests(unittest.TestCase):

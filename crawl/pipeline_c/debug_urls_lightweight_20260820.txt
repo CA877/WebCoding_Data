@@ -1,0 +1,8 @@
+https://12factor.net/
+https://www.lua.org/
+https://ziglang.org/
+https://curl.se/
+https://ffmpeg.org/
+https://www.vim.org/
+https://www.postgresql.org/
+https://www.openssl.org/

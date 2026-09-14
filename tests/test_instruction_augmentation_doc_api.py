@@ -4,7 +4,7 @@ import unittest
 from types import SimpleNamespace
 import pytest
 
-from instruction_augmentation.doc_api import (
+from inspiration_library.doc_api import (
     build_chat_messages,
     chat_extra_body,
     usage_cache_counts,

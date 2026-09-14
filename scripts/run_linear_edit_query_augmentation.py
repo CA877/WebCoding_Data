@@ -20,9 +20,9 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from instruction_augmentation.doc_api import DEFAULT_BASE_URL, DocApiClient
-from instruction_augmentation.deep_browser_exploration import deep_explore_project
-from instruction_augmentation.linear_edit_queries import (
+from inspiration_library.doc_api import DEFAULT_BASE_URL, DocApiClient
+from inspiration_library.deep_browser_exploration import deep_explore_project
+from inspiration_library.linear_edit_queries import (
     DEFAULT_EDIT_COUNT,
     MAX_EDIT_COUNT,
     MIN_EDIT_COUNT,
@@ -36,8 +36,8 @@ from instruction_augmentation.linear_edit_queries import (
     validate_edit_sequence,
     validate_quality_audit,
 )
-from instruction_augmentation.dynamic_capability_retrieval import pool_snapshot_sha256
-from instruction_augmentation.one_shot_capability_retrieval import (
+from inspiration_library.dynamic_capability_retrieval import pool_snapshot_sha256
+from inspiration_library.one_shot_capability_retrieval import (
     build_seed_retrieval_query,
     generate_seed_retrieval_query,
     generate_seed_retrieval_plan,
@@ -549,8 +549,8 @@ def main() -> int:
         'candidate_response_sha256':sha256(args.candidate_response.read_bytes()).hexdigest() if args.candidate_response else None,
         'revision_feedback_sha256':sha256(args.revision_feedback.read_bytes()).hexdigest() if args.revision_feedback else None,
         'code_sha256':sha256(b''.join(path.read_bytes() for path in [Path(__file__),
-            PROJECT_ROOT/'instruction_augmentation/one_shot_capability_retrieval.py',
-            PROJECT_ROOT/'instruction_augmentation/linear_edit_queries.py'])).hexdigest(),
+            PROJECT_ROOT/'inspiration_library/one_shot_capability_retrieval.py',
+            PROJECT_ROOT/'inspiration_library/linear_edit_queries.py'])).hexdigest(),
     })
     if not 1 <= args.top_k <= 20:
         raise ValueError("top-k must be from 1 to 20")

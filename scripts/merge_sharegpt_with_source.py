@@ -2,8 +2,8 @@
 """Merge ShareGPT jsonl files and tag every row with a source attribute.
 
 Writes <backup> as an untouched copy of <base>, then writes <output> as
-base rows (tagged with --base-source) followed by <extra> rows (which must
-already carry a "source" field).
+base rows (tagged with --base-source, or kept as-is with --keep-base-source)
+followed by <extra> rows (which must already carry a "source" field).
 """
 from __future__ import annotations
 
@@ -34,6 +34,8 @@ def main() -> int:
     ap.add_argument("--output", type=Path, required=True)
     ap.add_argument("--backup", type=Path, required=True)
     ap.add_argument("--base-source", default="webcompass_step5")
+    ap.add_argument("--keep-base-source", action="store_true",
+                    help="preserve the existing source field on base rows instead of overwriting it")
     args = ap.parse_args()
 
     args.backup.parent.mkdir(parents=True, exist_ok=True)
@@ -51,7 +53,8 @@ def main() -> int:
     tmp_out = args.output.with_name(args.output.name + ".tmp")
     with tmp_out.open("w", encoding="utf-8") as out:
         for row in stream_rows(args.base):
-            row["source"] = args.base_source
+            if not args.keep_base_source or "source" not in row:
+                row["source"] = args.base_source
             out.write(json.dumps(row, ensure_ascii=False) + "\n")
             base_ids.add(row.get("id"))
             base_count += 1

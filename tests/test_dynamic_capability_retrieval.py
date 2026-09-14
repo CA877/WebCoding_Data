@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from instruction_augmentation.dynamic_capability_retrieval import (
+from inspiration_library.dynamic_capability_retrieval import (
     build_round_retrieval_query,
     capability_embedding_text,
     extract_seed_capabilities,
@@ -17,7 +17,7 @@ from instruction_augmentation.dynamic_capability_retrieval import (
     validate_dynamic_sequence,
     validate_round_selection,
 )
-from instruction_augmentation.linear_edit_queries import compact_browser_evidence
+from inspiration_library.linear_edit_queries import compact_browser_evidence
 
 
 def _extraction(seed_id: str = "seed-a") -> dict:
@@ -434,7 +434,7 @@ def test_live_source_rejects_targets_with_wrong_schema(tmp_path) -> None:
 
 
 def test_live_exploration_passes_targets_and_blocks_stale_cache(tmp_path, monkeypatch) -> None:
-    import instruction_augmentation.deep_browser_exploration as deep
+    import inspiration_library.deep_browser_exploration as deep
     captured = {}
     original = deep._deep_explore
     def capture(**kwargs):

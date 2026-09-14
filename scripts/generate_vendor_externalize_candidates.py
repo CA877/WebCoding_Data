@@ -15,7 +15,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from utils.webcoding_pipeline.release_resources import (  # noqa: E402
+from validate.release_resources import (  # noqa: E402
     audit_record_resources,
     load_jsonl,
     normalize_resource_ref,
@@ -137,7 +137,7 @@ def main() -> None:
 
 
 def _record_items(record: dict[str, Any]) -> list[dict[str, str]]:
-    from utils.webcoding_pipeline.release_resources import get_code_bearing_items
+    from validate.release_resources import get_code_bearing_items
 
     return get_code_bearing_items(record)
 

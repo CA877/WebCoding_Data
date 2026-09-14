@@ -1,0 +1,104 @@
+{
+  "schema_version": "webcoding-seed-state-profile-v1",
+  "id": "cmtt-seed-cold-chain",
+  "project_path": "runs/counterexample_history_causal_pilot_3_20260824_v1/seeds/cmtt-seed-cold-chain",
+  "domain": "cold_chain_operations",
+  "available_states": [
+    "batch_catalog",
+    "batch_status",
+    "active_batch_filter",
+    "selected_ready_batch_ids",
+    "release_summary_counts",
+    "activity_messages",
+    "live_status_message"
+  ],
+  "state_specs": {
+    "batch_catalog": {
+      "kind": "entity_collection",
+      "value_shape": "list<batch{id,product,destination,temperature,status,updated_at}>",
+      "scope": "application",
+      "persistence": "bundled_static",
+      "observables": ["dom", "internal_state"]
+    },
+    "batch_status": {
+      "kind": "entity_field",
+      "value_shape": "map<batch_id,status>",
+      "scope": "application",
+      "persistence": "memory",
+      "observables": ["dom", "internal_state"]
+    },
+    "active_batch_filter": {
+      "kind": "filter",
+      "value_shape": "status | all",
+      "scope": "page",
+      "persistence": "memory",
+      "observables": ["dom", "ax_tree", "internal_state"]
+    },
+    "selected_ready_batch_ids": {
+      "kind": "selection",
+      "value_shape": "set<batch_id>",
+      "scope": "page",
+      "persistence": "memory",
+      "observables": ["dom", "ax_tree", "internal_state"]
+    },
+    "release_summary_counts": {
+      "kind": "derived_summary",
+      "value_shape": "{total,ready,released,hold}",
+      "scope": "page",
+      "persistence": "derived",
+      "observables": ["dom"]
+    },
+    "activity_messages": {
+      "kind": "message_list",
+      "value_shape": "list<html_message>",
+      "scope": "page",
+      "persistence": "memory",
+      "observables": ["dom"]
+    },
+    "live_status_message": {
+      "kind": "announcement",
+      "value_shape": "string",
+      "scope": "page",
+      "persistence": "transient",
+      "observables": ["dom", "ax_tree"]
+    }
+  },
+  "current_features": [
+    "filter the batch table by status",
+    "select one or more ready batches",
+    "release selected ready batches locally",
+    "recompute ready and released counts",
+    "prepend a visible activity message",
+    "announce the release result"
+  ],
+  "preserve": [
+    "status filtering",
+    "ready-only selection",
+    "the existing batch table and summary metrics",
+    "keyboard usability",
+    "the current responsive visual design",
+    "the fully offline runtime"
+  ],
+  "bindings": {
+    "product_name": "Northline Release",
+    "entity_singular": "batch",
+    "entity_plural": "batches",
+    "primary_action": "release"
+  },
+  "grounding_facts": [
+    "The bundled catalog contains eight batches with stable IDs, destinations, temperatures, and statuses.",
+    "Only ready batches can be selected for release.",
+    "Releasing CC-204 changes its visible status and updates the ready and released counts.",
+    "The current activity list is visible but its entries are rendered as transient HTML messages rather than a filterable release-history state.",
+    "The page has no saved release views or destination-level release report."
+  ],
+  "preferred_targets": [
+    "connect_saved_views_to_destination_summary"
+  ],
+  "profile_evidence": {
+    "seed_metadata": "runs/counterexample_history_causal_pilot_3_20260824_v1/seeds/cmtt-seed-cold-chain/.seed.json",
+    "seed_browser_verification": "runs/counterexample_history_causal_pilot_3_20260824_v1/verification_v1/seed_verification_results.jsonl",
+    "source_inspection": "index.html, styles.css, and script.js inspected on 2026-08-28",
+    "model_calls_for_this_profile": 0
+  }
+}

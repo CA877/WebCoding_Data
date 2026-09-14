@@ -17,18 +17,18 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from instruction_augmentation.deep_browser_exploration import deep_explore_url, deep_explore_project
-from instruction_augmentation.doc_api import DocApiClient
-from instruction_augmentation.dynamic_capability_retrieval import (
+from inspiration_library.deep_browser_exploration import deep_explore_url, deep_explore_project
+from inspiration_library.doc_api import DocApiClient
+from inspiration_library.dynamic_capability_retrieval import (
     extract_seed_capabilities,
     merge_capability_pool,
     pool_snapshot_sha256,
     validate_capability_extraction,
     validate_live_card_evidence,
 )
-from instruction_augmentation.linear_edit_queries import load_json_response, read_jsonl
-from instruction_augmentation.one_shot_capability_retrieval import compact_planner_card
-from instruction_augmentation.production_browser import observe_url
+from inspiration_library.linear_edit_queries import load_json_response, read_jsonl
+from inspiration_library.one_shot_capability_retrieval import compact_planner_card
+from inspiration_library.production_browser import observe_url
 
 
 def safe_id(value: str) -> str:
@@ -186,7 +186,7 @@ def main() -> int:
                 if args.mode == "url":
                     observation = observe_url(source["entry_url"], destination, ready_selector=source.get("ready_selector"))
                 else:
-                    from instruction_augmentation.production_browser import observe_project
+                    from inspiration_library.production_browser import observe_project
                     observation = observe_project(Path(source["project_path"]), destination)
                 baseline = observation["baseline"]
                 row = {
@@ -280,7 +280,7 @@ def main() -> int:
                 )
                 write_json(extraction_path, extraction)
             if args.mode == "url" and args.source_mode != "none":
-                from instruction_augmentation.live_component_sources import capture_component_sources
+                from inspiration_library.live_component_sources import capture_component_sources
                 reference_path = args.run_dir / "reference_extractions" / f"{seed_key}.json"
                 if reference_path.exists():
                     extraction = json.loads(reference_path.read_text(encoding="utf-8"))
@@ -306,7 +306,7 @@ def main() -> int:
     if args.mode == "url":
         pool = [compact_live_card(card) for card in raw_pool]
     else:
-        from instruction_augmentation.one_shot_capability_retrieval import compile_source_slices
+        from inspiration_library.one_shot_capability_retrieval import compile_source_slices
         pool = [{**compact_planner_card(card, source_slices=compile_source_slices(card)),
                  "mode":"local_project",
                  "source_kind":"local_project", "source_seed_id":card["source_seed_id"],

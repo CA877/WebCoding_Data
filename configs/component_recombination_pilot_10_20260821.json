@@ -1,0 +1,57 @@
+{
+  "name": "component_recombination_generate_pilot_10",
+  "source_run": "/data1/xieqianqian/webcoding/WebCoding_Data/runs/ground_truth/fourteen_benchmark_qwen38_21109_20260820/projects",
+  "description": "Two ComUIBench-style Vue seeds per component capability profile. Each seed produces one new complete Generate GT by adding a semantically coherent route composed from existing components.",
+  "seeds": [
+    {
+      "project_id": "gen14-comuibench-cui-g1-00001-43e41328ce",
+      "composition_axis": "cross_page_aggregation",
+      "target_hint": "Add a comparison or curation page that combines the existing repeated product family, shared shell, and member-side state."
+    },
+    {
+      "project_id": "gen14-comuibench-cui-g1-00002-69685c02f4",
+      "composition_axis": "state_aware_dashboard",
+      "target_hint": "Add a decision-support page that recomposes existing schedule, athlete, or readiness components and preserves the shared navigation/state model."
+    },
+    {
+      "project_id": "gen14-comuibench-cui-g2-00001-aefdd34b16",
+      "composition_axis": "component_family_fusion",
+      "target_hint": "Add a curated showcase page that combines two existing reusable card families in one new editorial composition."
+    },
+    {
+      "project_id": "gen14-comuibench-cui-g2-00003-45539f1c23",
+      "composition_axis": "group_variant_recomposition",
+      "target_hint": "Add a visit-planning page that reuses the botanical card family in a new density/layout variant and connects to existing itinerary state."
+    },
+    {
+      "project_id": "gen14-comuibench-cui-g3-00001-7e1a285910",
+      "composition_axis": "form_card_bridge",
+      "target_hint": "Add an accommodation-planning page assembled from existing accessible cards, form primitives, status components, and global preference state."
+    },
+    {
+      "project_id": "gen14-comuibench-cui-g3-00007-e0136e04b5",
+      "composition_axis": "workflow_recomposition",
+      "target_hint": "Add an observing-plan page that recomposes existing forms, information cards, and schedule/state modules into a coherent offline workflow."
+    },
+    {
+      "project_id": "gen14-comuibench-cui-g4-00002-15457f6999",
+      "composition_axis": "design_system_recomposition",
+      "target_hint": "Add a connection-planning page that reuses the existing badge, card, modal, button, and navigation design-system primitives."
+    },
+    {
+      "project_id": "gen14-comuibench-cui-g4-00005-193adceae4",
+      "composition_axis": "cross_page_itinerary",
+      "target_hint": "Add a family itinerary page built from existing event, schedule, saved-item, and shared shell components without introducing a second visual language."
+    },
+    {
+      "project_id": "gen14-comuibench-cui-g5-00004-dfbca0eaa2",
+      "composition_axis": "role_conditioned_recomposition",
+      "target_hint": "Add a maintenance queue page that reuses equipment cards, accordion/status patterns, shared role state, and the existing shell."
+    },
+    {
+      "project_id": "gen14-comuibench-cui-g5-00005-f108dbc69e",
+      "composition_axis": "dense_to_comparative_layout",
+      "target_hint": "Add a collection comparison page by recomposing existing instrument, metadata, filter, and saved-collection components."
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "run_name": "visual_benchmark_text_proxy_supplement_236_20260820",
+  "model": "qwen3.8-max",
+  "target_total": 236,
+  "jobs": [
+    {
+      "benchmark": "Vision2Web",
+      "seed_file": "vision2web.jsonl",
+      "profile": "V2W-1 L1 responsive-content",
+      "count": 111,
+      "output_index_offset": 1500
+    },
+    {
+      "benchmark": "Flame-VLM-Code",
+      "seed_file": "flame_vlm_code.jsonl",
+      "profile": "FL-G3 commerce-cards",
+      "count": 77,
+      "output_index_offset": 80
+    },
+    {
+      "benchmark": "Flame-VLM-Code",
+      "seed_file": "flame_vlm_code.jsonl",
+      "profile": "FL-G4 data-visualization",
+      "count": 43,
+      "output_index_offset": 80
+    },
+    {
+      "benchmark": "Flame-VLM-Code",
+      "seed_file": "flame_vlm_code.jsonl",
+      "profile": "FL-G5 interactive-component",
+      "count": 5,
+      "output_index_offset": 80
+    }
+  ]
+}

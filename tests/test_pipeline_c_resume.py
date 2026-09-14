@@ -2,7 +2,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from preprocess.pipeline_c.main import completed_source_urls
+from crawl.pipeline_c.main import completed_source_urls
 
 
 class PipelineCResumeTests(unittest.TestCase):

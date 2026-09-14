@@ -1,0 +1,15 @@
+{
+    "tasks_file": "/Users/apple/Documents/code/web-coding/data_text_1.jsonl",
+    "agent_dir": "/Users/apple/Documents/code/web-coding/generation/evaluation/agents/claude_code_web_coding",
+    "output_dir": "/Users/apple/Documents/code/web-coding/eval_output/claude_sonnet4_5/",
+    "existing_site_root": "/Users/apple/Documents/code/web-coding/output_text/claude_sonnet4_5/",
+    "start_index": 0,
+    "end_index": 1,
+    "num_tasks": 1,
+    "num_processes": 1,
+    "retry_count": 1,
+    "anthropic_base_url": "https://idealab.alibaba-inc.com/api/anthropic",
+    "anthropic_auth_token": "YOUR_ANTHROPIC_API_KEY",
+    "network_mode": "bridge",
+    "model": "claude_sonnet4_5"
+}

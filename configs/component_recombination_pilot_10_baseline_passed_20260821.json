@@ -1,0 +1,58 @@
+{
+  "name": "component_recombination_generate_pilot_10_baseline_passed",
+  "source_run": "/data1/xieqianqian/webcoding/WebCoding_Data/runs/ground_truth/fourteen_benchmark_qwen38_21109_20260820/projects",
+  "seed_gate": "/data1/xieqianqian/webcoding/WebCoding_Data/runs/component_recombination_seed_preflight_20_20260821/baseline_results.jsonl",
+  "description": "Two browser-verified component-rich Vue seeds per ComUIBench capability profile. Each produces one new full-site Generate target by adding a useful route composed from existing component units.",
+  "seeds": [
+    {
+      "project_id": "gen14-comuibench-cui-g1-00141-afe91dfb71",
+      "composition_axis": "cross_page_collection_triage",
+      "target_hint": "Add a collector decision page that recomposes ArtifactCard, MarkBadge, ArtifactModal, and shared navigation into a condition-and-provenance triage workspace."
+    },
+    {
+      "project_id": "gen14-comuibench-cui-g1-00158-438e4dfdd5",
+      "composition_axis": "guided_service_recomposition",
+      "target_hint": "Add a repair readiness page that combines ContentCard, StepIndicator, FormInput, and BaseButton into a diagnostic preparation flow using the existing shell."
+    },
+    {
+      "project_id": "gen14-comuibench-cui-g2-00049-8aad5c4e2c",
+      "composition_axis": "component_family_fusion",
+      "target_hint": "Add a field campaign planner that composes ProjectCard, PersonCard, EquipmentItem, and DatasetCard into one cross-resource planning view."
+    },
+    {
+      "project_id": "gen14-comuibench-cui-g2-00022-d30608c5bb",
+      "composition_axis": "learning_path_recomposition",
+      "target_hint": "Add a learner pathway page that combines CourseCard, MentorCard, ProjectShowcase, and TestimonialItem into a coherent personalized journey."
+    },
+    {
+      "project_id": "gen14-comuibench-cui-g3-00032-3d2d665543",
+      "composition_axis": "form_to_readiness_dashboard",
+      "target_hint": "Add a booth readiness review page that recomposes existing input, checkbox, radio, info-card, status-badge, and toast components around local application state."
+    },
+    {
+      "project_id": "gen14-comuibench-cui-g3-00069-cc5f5d34a1",
+      "composition_axis": "state_aware_loadout_builder",
+      "target_hint": "Add an event loadout builder that combines EquipmentCard, BaseSelect, BaseInput, StatusBadge, and NotificationToast with reservation data."
+    },
+    {
+      "project_id": "gen14-comuibench-cui-g4-00028-23417876b6",
+      "composition_axis": "design_system_meal_planner",
+      "target_hint": "Add a communal meal planner by recomposing FilterableGallery, MediaCard, PricingTable, ExpandableSection, and StickyActionBar within the established design system."
+    },
+    {
+      "project_id": "gen14-comuibench-cui-g4-00016-1ca69c7b11",
+      "composition_axis": "editorial_briefing_recomposition",
+      "target_hint": "Add a civic briefing page that composes NewsCard, EventCard, FactCheckBadge, PullQuote, and AccordionItem into an evidence-led reading workflow."
+    },
+    {
+      "project_id": "gen14-comuibench-cui-g5-00153-fb5640d7cf",
+      "composition_axis": "role_conditioned_learning_plan",
+      "target_hint": "Add a mentorship learning-plan page that combines ProfileSummary, FilterBar, ListItem, AccordionItem, and Stepper for a selected student-mentor pairing."
+    },
+    {
+      "project_id": "gen14-comuibench-cui-g5-00066-0f26c66424",
+      "composition_axis": "cross_page_visit_itinerary",
+      "target_hint": "Add a museum visit itinerary that recomposes ArtifactVisual, ContentCard, TimelineEvent, FloorMap, and WayfindingBadge across gallery, schedule, and visitor contexts."
+    }
+  ]
+}

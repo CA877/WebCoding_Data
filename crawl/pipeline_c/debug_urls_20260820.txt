@@ -1,0 +1,8 @@
+https://12factor.net/
+https://www.sqlite.org/index.html
+https://www.python.org/
+https://git-scm.com/
+https://www.rust-lang.org/
+https://www.gnu.org/
+https://www.djangoproject.com/
+https://www.kernel.org/

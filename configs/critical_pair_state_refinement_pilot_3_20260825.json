@@ -1,0 +1,626 @@
+{
+  "schema_version": "webcoding-critical-pair-state-refinement-config-v1",
+  "method": "critical-pair-guided-state-refinement",
+  "model": "qwen3.8-max",
+  "cases": [
+    {
+      "case_id": "botanical_compare_saved_views",
+      "seed_project": "/Users/woyaochengweikeyandashen/Documents/codes_vsc/web_coding_sft/output/0805_supplement_visual_candidates/projects/gen14-artifactsbench-ab-2-00613-84941cef4a",
+      "seed_provenance": {
+        "source": "ArtifactsBench ground-truth candidate generated with the real qwen3-coder-plus route",
+        "project_id": "gen14-artifactsbench-ab-2-00613-84941cef4a",
+        "asset_scope": "local static HTML, CSS, and JavaScript"
+      },
+      "original_instruction": "Build an offline botanical laboratory portal with Home, Specimen Gallery, and Visit Summary routes. The gallery contains eight bundled specimens, opens a research station for a selected specimen, and records view history locally. Preserve the existing scientific visual language, responsive layout, keyboard accessibility, and local-only runtime.",
+      "grounding_facts": [
+        "The bundled specimen ids are sp_001 through sp_008.",
+        "sp_001 and sp_005 are Aroid specimens; sp_003 and sp_007 are Succulent specimens.",
+        "The existing routes are #home, #gallery, and #summary.",
+        "The existing visit history uses localStorage key phytolab_history.",
+        "All functionality must run from the local static project without a backend or remote resources."
+      ],
+      "group_a": {
+        "name": "Specimen Comparison Workspace",
+        "instruction": "Add a complete specimen-comparison workspace to the gallery. Every specimen card has a keyboard-usable compare toggle carrying data-compare-id with its bundled stable id. A sticky #compare-tray lists the selected specimens as elements carrying data-selected-id, supports removal, shows #compare-status, limits selection to three, and exposes #open-comparison once at least two specimens are selected. Opening it reveals #comparison-panel with one data-comparison-item row per selected specimen so names, categories, origins, and care metrics can be compared side by side. Selection is a stable-id product state and must survive ordinary gallery re-renders and route navigation. Do not add category filtering or saved views as part of this group.",
+        "required_selectors": [
+          "[data-compare-id]",
+          "#compare-tray",
+          "#compare-status",
+          "#open-comparison",
+          "#comparison-panel",
+          "[data-comparison-item]"
+        ],
+        "checks": [
+          {
+            "name": "select two specimens and open the comparison workspace",
+            "path": "/#gallery",
+            "actions": [
+              {"action": "click", "selector": "[data-compare-id=\"sp_001\"]"},
+              {"action": "click", "selector": "[data-compare-id=\"sp_003\"]"},
+              {"action": "goto", "value": "/#summary"},
+              {"action": "goto", "value": "/#gallery"},
+              {"action": "click", "selector": "#open-comparison"}
+            ],
+            "assertions": [
+              {"kind": "count", "selector": "#compare-tray [data-selected-id]", "equals": 2},
+              {"kind": "text_contains", "selector": "#compare-status", "value": "2 selected"},
+              {"kind": "visible", "selector": "#comparison-panel"},
+              {"kind": "count", "selector": "#comparison-panel [data-comparison-item]", "equals": 2}
+            ]
+          }
+        ]
+      },
+      "group_b": {
+        "name": "Saved Research Views",
+        "instruction": "Add a complete saved research-view group to the gallery. #category-filter filters cards by the bundled category values while #active-filter and the specimen count explain the current result. #saved-view-name, #save-view, #saved-view-select, and #apply-saved-view let a visitor save and restore the active category locally. Saving the name `Aroid study` creates or replaces a stable option with value `aroid-study`; applying that option restores Aroid and leaves exactly the two bundled Aroid cards visible. Provide accessible success/error feedback and keep saved views across reloads. Do not add specimen comparison behavior as part of this group.",
+        "required_selectors": [
+          "#category-filter",
+          "#active-filter",
+          "#saved-view-name",
+          "#save-view",
+          "#saved-view-select",
+          "#apply-saved-view"
+        ],
+        "checks": [
+          {
+            "name": "save and restore an Aroid research view",
+            "path": "/#gallery",
+            "actions": [
+              {"action": "select", "selector": "#category-filter", "value": "Aroid"},
+              {"action": "fill", "selector": "#saved-view-name", "value": "Aroid study"},
+              {"action": "click", "selector": "#save-view"},
+              {"action": "reload"},
+              {"action": "select", "selector": "#category-filter", "value": "Succulent"},
+              {"action": "select", "selector": "#saved-view-select", "value": "aroid-study"},
+              {"action": "click", "selector": "#apply-saved-view"}
+            ],
+            "assertions": [
+              {"kind": "value_equals", "selector": "#category-filter", "value": "Aroid"},
+              {"kind": "text_contains", "selector": "#active-filter", "value": "Aroid"},
+              {"kind": "count", "selector": "#grid-container .specimen-card", "equals": 2}
+            ]
+          }
+        ]
+      },
+      "witness": {
+        "name": "restore a view after selecting specimens across categories",
+        "path": "/#gallery",
+        "actions": [
+          {"action": "click", "selector": "[data-compare-id=\"sp_001\"]"},
+          {"action": "click", "selector": "[data-compare-id=\"sp_003\"]"},
+          {"action": "select", "selector": "#category-filter", "value": "Aroid"},
+          {"action": "fill", "selector": "#saved-view-name", "value": "Aroid study"},
+          {"action": "click", "selector": "#save-view"},
+          {"action": "select", "selector": "#category-filter", "value": "Succulent"},
+          {"action": "select", "selector": "#saved-view-select", "value": "aroid-study"},
+          {"action": "click", "selector": "#apply-saved-view"},
+          {"action": "click", "selector": "#open-comparison"}
+        ],
+        "observations": [
+          {"id": "selected_count", "kind": "count", "selector": "#compare-tray [data-selected-id]"},
+          {"id": "hidden_status", "kind": "text", "selector": "#compare-status"},
+          {"id": "comparison_count", "kind": "count", "selector": "#comparison-panel [data-comparison-item]"},
+          {"id": "visible_specimens", "kind": "count", "selector": "#grid-container .specimen-card"},
+          {"id": "active_filter", "kind": "text", "selector": "#active-filter"}
+        ],
+        "required_delta_ids": ["selected_count", "hidden_status", "comparison_count"]
+      },
+      "interaction_spec": {
+        "interaction_class": "visibility_reconciliation",
+        "shared_entity": "botanical specimen",
+        "shared_entity_id": "sp_003",
+        "state_a": "comparison membership",
+        "state_b": "visibility under the restored category",
+        "transition": "restore a category view after selecting specimens across categories",
+        "stable_identity": true,
+        "lifecycle_change": false,
+        "invalidates_other_membership": false,
+        "witness_transition_after_membership": true,
+        "visibility_only": true,
+        "derived_recalculation_only": false,
+        "plausible_policies": [
+          "retain hidden comparison members",
+          "drop comparison members hidden by the restored view"
+        ]
+      },
+      "coordination_policy": {
+        "summary": "A saved view changes gallery visibility without changing stable-id comparison membership; hidden selections remain explicit and comparable.",
+        "state_owner": "one gallery workspace state containing filter, saved views, and stable selected specimen ids",
+        "transition_order": [
+          "restore the saved category",
+          "derive visible specimen ids from the restored category",
+          "retain valid selected ids independently of visibility",
+          "derive the hidden-selection count",
+          "render the grid, tray, status, and comparison panel once"
+        ],
+        "checks": [
+          {
+            "name": "restoring a filter preserves and explains hidden comparison membership",
+            "path": "/#gallery",
+            "actions": [
+              {"action": "click", "selector": "[data-compare-id=\"sp_001\"]"},
+              {"action": "click", "selector": "[data-compare-id=\"sp_003\"]"},
+              {"action": "select", "selector": "#category-filter", "value": "Aroid"},
+              {"action": "fill", "selector": "#saved-view-name", "value": "Aroid study"},
+              {"action": "click", "selector": "#save-view"},
+              {"action": "select", "selector": "#category-filter", "value": "Succulent"},
+              {"action": "select", "selector": "#saved-view-select", "value": "aroid-study"},
+              {"action": "click", "selector": "#apply-saved-view"},
+              {"action": "click", "selector": "#open-comparison"}
+            ],
+            "assertions": [
+              {"kind": "count", "selector": "#compare-tray [data-selected-id]", "equals": 2},
+              {"kind": "text_contains", "selector": "#compare-status", "value": "1 hidden"},
+              {"kind": "count", "selector": "#comparison-panel [data-comparison-item]", "equals": 2},
+              {"kind": "count", "selector": "#grid-container .specimen-card", "equals": 2},
+              {"kind": "value_equals", "selector": "#category-filter", "value": "Aroid"}
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "civic_cart_promotion",
+      "seed_project": "/Users/woyaochengweikeyandashen/Documents/codes_vsc/web_coding_sft/output/0805_supplement_visual_candidates/projects/gen14-frontalk-ft-g2-00020-e9b04acccb",
+      "seed_provenance": {
+        "source": "Frontalk ground-truth candidate generated with the real qwen3-coder-plus route",
+        "project_id": "gen14-frontalk-ft-g2-00020-e9b04acccb",
+        "asset_scope": "local static HTML, CSS, and JavaScript"
+      },
+      "original_instruction": "Build a local Civic Pulse newsroom site with Home, Coverage Marketplace, and Checkout routes. Visitors browse eight bundled coverage products, add products to a session-persistent cart, remove items, see a total, and complete the existing checkout form. Preserve the editorial visual language, responsiveness, accessibility, and local-only runtime.",
+      "grounding_facts": [
+        "The existing routes are #/, #/marketplace, and #/checkout.",
+        "Bundled product 1 is City Hall Insider Bundle and costs $15.00.",
+        "The current cart uses sessionStorage key civic_pulse_cart.",
+        "The marketplace and checkout use bundled product data from data.js.",
+        "All functionality must run locally without payment APIs, a backend, or remote resources."
+      ],
+      "group_a": {
+        "name": "Quantity-aware Cart Editor",
+        "instruction": "Upgrade the cart into a quantity-aware editor. Marketplace add buttons carry data-add-product with the bundled product id. Checkout aggregates equal product ids into one line carrying data-cart-line, shows data-cart-quantity, data-line-total, and keyboard-usable data-quantity-increase/data-quantity-decrease controls, and exposes #cart-subtotal. Quantity changes update the navigation count, line total, and subtotal immediately and survive reload through the existing session cart. Quantity zero removes the line. Do not add promotions or discount behavior as part of this group.",
+        "required_selectors": [
+          "[data-add-product]",
+          "[data-cart-line]",
+          "[data-cart-quantity]",
+          "[data-quantity-increase]",
+          "[data-quantity-decrease]",
+          "#cart-subtotal"
+        ],
+        "checks": [
+          {
+            "name": "edit a bundled product quantity and recompute cart amounts",
+            "path": "/#/marketplace",
+            "actions": [
+              {"action": "click", "selector": "[data-add-product=\"1\"]"},
+              {"action": "goto", "value": "/#/checkout"},
+              {"action": "click", "selector": "[data-cart-line=\"1\"] [data-quantity-increase]"}
+            ],
+            "assertions": [
+              {"kind": "count", "selector": "[data-cart-line=\"1\"]", "equals": 1},
+              {"kind": "text_equals", "selector": "[data-cart-line=\"1\"] [data-cart-quantity]", "value": "2"},
+              {"kind": "text_equals", "selector": "[data-cart-line=\"1\"] [data-line-total]", "value": "$30.00"},
+              {"kind": "text_equals", "selector": "#cart-subtotal", "value": "$30.00"}
+            ]
+          }
+        ]
+      },
+      "group_b": {
+        "name": "Local Promotion Summary",
+        "instruction": "Add a complete local promotion group to Checkout. #promo-code and #apply-promo accept the single bundled code LOCAL10, #active-promo reports the active code, #discount-amount shows a ten-percent discount, and #order-total shows subtotal minus discount. Invalid or empty codes provide accessible inline feedback without changing totals. The active valid code and displayed summary survive reload within the cart session. For the existing one-line $15 City Hall cart, applying LOCAL10 displays a $1.50 discount and $13.50 order total. Do not add quantity controls as part of this group.",
+        "required_selectors": [
+          "#promo-code",
+          "#apply-promo",
+          "#active-promo",
+          "#discount-amount",
+          "#order-total"
+        ],
+        "checks": [
+          {
+            "name": "apply the bundled LOCAL10 promotion",
+            "path": "/#/marketplace",
+            "actions": [
+              {"action": "click", "selector": "[data-add-product=\"1\"]"},
+              {"action": "goto", "value": "/#/checkout"},
+              {"action": "fill", "selector": "#promo-code", "value": "LOCAL10"},
+              {"action": "click", "selector": "#apply-promo"}
+            ],
+            "assertions": [
+              {"kind": "text_contains", "selector": "#active-promo", "value": "LOCAL10"},
+              {"kind": "text_contains", "selector": "#discount-amount", "value": "$1.50"},
+              {"kind": "text_equals", "selector": "#order-total", "value": "$13.50"}
+            ]
+          }
+        ]
+      },
+      "witness": {
+        "name": "change quantity after applying a session promotion",
+        "path": "/#/marketplace",
+        "actions": [
+          {"action": "click", "selector": "[data-add-product=\"1\"]"},
+          {"action": "goto", "value": "/#/checkout"},
+          {"action": "fill", "selector": "#promo-code", "value": "LOCAL10"},
+          {"action": "click", "selector": "#apply-promo"},
+          {"action": "click", "selector": "[data-cart-line=\"1\"] [data-quantity-increase]"},
+          {"action": "reload"}
+        ],
+        "observations": [
+          {"id": "quantity", "kind": "text", "selector": "[data-cart-line=\"1\"] [data-cart-quantity]"},
+          {"id": "subtotal", "kind": "money", "selector": "#cart-subtotal"},
+          {"id": "discount", "kind": "money_abs", "selector": "#discount-amount"},
+          {"id": "order_total", "kind": "money", "selector": "#order-total"},
+          {"id": "active_promo", "kind": "text", "selector": "#active-promo"}
+        ],
+        "required_delta_ids": ["discount", "order_total", "active_promo"]
+      },
+      "interaction_spec": {
+        "interaction_class": "derived_state_invalidation",
+        "shared_entity": "checkout order line",
+        "shared_entity_id": "product-1",
+        "state_a": "cart quantity and subtotal",
+        "state_b": "promotion discount and order total",
+        "transition": "increase quantity after applying a promotion",
+        "stable_identity": true,
+        "lifecycle_change": false,
+        "invalidates_other_membership": false,
+        "witness_transition_after_membership": true,
+        "visibility_only": false,
+        "derived_recalculation_only": true,
+        "plausible_policies": [
+          "recompute the discount from the new subtotal",
+          "keep the discount amount captured when the code was applied"
+        ]
+      },
+      "coordination_policy": {
+        "summary": "Promotion is a derived pricing rule over the current quantity-aware subtotal and is applied exactly once after every cart transition.",
+        "state_owner": "one session order state containing cart lines, quantities, and active promotion code",
+        "transition_order": [
+          "commit the quantity transition",
+          "derive line totals and current subtotal",
+          "validate the active promotion against the current order",
+          "derive discount once from the current subtotal",
+          "derive and render the final order total",
+          "persist the coherent order snapshot"
+        ],
+        "checks": [
+          {
+            "name": "promotion follows quantity changes and survives reload without double application",
+            "path": "/#/marketplace",
+            "actions": [
+              {"action": "click", "selector": "[data-add-product=\"1\"]"},
+              {"action": "goto", "value": "/#/checkout"},
+              {"action": "fill", "selector": "#promo-code", "value": "LOCAL10"},
+              {"action": "click", "selector": "#apply-promo"},
+              {"action": "click", "selector": "[data-cart-line=\"1\"] [data-quantity-increase]"},
+              {"action": "reload"}
+            ],
+            "assertions": [
+              {"kind": "text_equals", "selector": "[data-cart-line=\"1\"] [data-cart-quantity]", "value": "2"},
+              {"kind": "text_equals", "selector": "#cart-subtotal", "value": "$30.00"},
+              {"kind": "text_contains", "selector": "#active-promo", "value": "LOCAL10"},
+              {"kind": "text_contains", "selector": "#discount-amount", "value": "$3.00"},
+              {"kind": "text_equals", "selector": "#order-total", "value": "$27.00"}
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "gridbalance_comparison_scenarios",
+      "seed_project": "/Users/woyaochengweikeyandashen/Documents/codes_vsc/web_coding_sft/output/0805_supplement_visual_candidates/projects/gen14-webcompass-wc-5-00862-ee563cfeeb",
+      "seed_provenance": {
+        "source": "WebCompass ground-truth candidate generated with the real qwen3-coder-plus route",
+        "project_id": "gen14-webcompass-wc-5-00862-ee563cfeeb",
+        "asset_scope": "local static HTML, CSS, and JavaScript"
+      },
+      "original_instruction": "Build a local GridBalance energy analytics platform with Dashboard, Station Detail, Comparative Report, and Settings routes. It visualizes six bundled stations, global date range, telemetry, comparison state, accessibility preferences, and local persistence. Preserve the existing analytics visual language, responsive behavior, keyboard accessibility, and local-only runtime.",
+      "grounding_facts": [
+        "The bundled station ids are ST001 through ST006.",
+        "ST001 is Northridge Solar Farm and ST002 is Westwind Turbine Array.",
+        "The existing routes are #dashboard, #station-detail, #comparative-report, and #settings.",
+        "The existing global date inputs are #global-date-start and #global-date-end.",
+        "The existing application state uses localStorage key gridbalance_state.",
+        "All data and functionality must remain local; no live grid service may be invented."
+      ],
+      "group_a": {
+        "name": "Station Comparison Workspace",
+        "instruction": "Turn the existing comparison capability into a visible workspace available from Dashboard. Each bundled station has a keyboard-usable toggle carrying data-compare-station with its stable id. A persistent #comparison-tray lists selected stations as data-selected-station elements, #comparison-status reports membership, and #open-comparison-report navigates to the Comparative Report. The report exposes #comparison-report, one data-report-station row per selected station, and #report-range-label. Selection survives route navigation and reload. Preserve existing map selection, station detail, charts, tables, and settings. Do not add saved scenarios as part of this group.",
+        "required_selectors": [
+          "[data-compare-station]",
+          "#comparison-tray",
+          "#comparison-status",
+          "#open-comparison-report",
+          "#comparison-report",
+          "[data-report-station]",
+          "#report-range-label"
+        ],
+        "checks": [
+          {
+            "name": "build a two-station comparison from Dashboard",
+            "path": "/#dashboard",
+            "actions": [
+              {"action": "click", "selector": "[data-compare-station=\"ST001\"]"},
+              {"action": "click", "selector": "[data-compare-station=\"ST002\"]"},
+              {"action": "click", "selector": "#open-comparison-report"}
+            ],
+            "assertions": [
+              {"kind": "url_contains", "value": "#comparative-report"},
+              {"kind": "count", "selector": "#comparison-tray [data-selected-station]", "equals": 2},
+              {"kind": "count", "selector": "#comparison-report [data-report-station]", "equals": 2},
+              {"kind": "visible", "selector": "#report-range-label"}
+            ]
+          }
+        ]
+      },
+      "group_b": {
+        "name": "Saved Analysis Scenarios",
+        "instruction": "Add a complete saved-scenario group beside the global date controls. #scenario-name, #save-scenario, #scenario-select, and #apply-scenario save and restore the global start/end dates locally; #scenario-status provides accessible feedback. Saving the name `Peak week` creates or replaces a stable option with value `peak-week`. Applying it restores exactly 2024-02-01 through 2024-02-07 to #global-date-start and #global-date-end and refreshes the active route. Scenarios survive reload. Preserve all current date-change feedback and analytics behavior. Do not add or redefine station-comparison selection as part of this group.",
+        "required_selectors": [
+          "#scenario-name",
+          "#save-scenario",
+          "#scenario-select",
+          "#apply-scenario",
+          "#scenario-status"
+        ],
+        "checks": [
+          {
+            "name": "save and restore a Peak week analysis scenario",
+            "path": "/#dashboard",
+            "actions": [
+              {"action": "fill", "selector": "#global-date-start", "value": "2024-02-01"},
+              {"action": "fill", "selector": "#global-date-end", "value": "2024-02-07"},
+              {"action": "fill", "selector": "#scenario-name", "value": "Peak week"},
+              {"action": "click", "selector": "#save-scenario"},
+              {"action": "fill", "selector": "#global-date-start", "value": "2024-03-01"},
+              {"action": "fill", "selector": "#global-date-end", "value": "2024-03-07"},
+              {"action": "select", "selector": "#scenario-select", "value": "peak-week"},
+              {"action": "click", "selector": "#apply-scenario"}
+            ],
+            "assertions": [
+              {"kind": "value_equals", "selector": "#global-date-start", "value": "2024-02-01"},
+              {"kind": "value_equals", "selector": "#global-date-end", "value": "2024-02-07"},
+              {"kind": "text_contains", "selector": "#scenario-status", "value": "Peak week"}
+            ]
+          }
+        ]
+      },
+      "witness": {
+        "name": "restore a date scenario after constructing a station comparison",
+        "path": "/#dashboard",
+        "actions": [
+          {"action": "click", "selector": "[data-compare-station=\"ST001\"]"},
+          {"action": "click", "selector": "[data-compare-station=\"ST002\"]"},
+          {"action": "fill", "selector": "#global-date-start", "value": "2024-02-01"},
+          {"action": "fill", "selector": "#global-date-end", "value": "2024-02-07"},
+          {"action": "fill", "selector": "#scenario-name", "value": "Peak week"},
+          {"action": "click", "selector": "#save-scenario"},
+          {"action": "fill", "selector": "#global-date-start", "value": "2024-03-01"},
+          {"action": "fill", "selector": "#global-date-end", "value": "2024-03-07"},
+          {"action": "select", "selector": "#scenario-select", "value": "peak-week"},
+          {"action": "click", "selector": "#apply-scenario"},
+          {"action": "click", "selector": "#open-comparison-report"}
+        ],
+        "observations": [
+          {"id": "selected_stations", "kind": "count", "selector": "#comparison-tray [data-selected-station]"},
+          {"id": "report_rows", "kind": "count", "selector": "#comparison-report [data-report-station]"},
+          {"id": "report_range", "kind": "date_range", "selector": "#report-range-label"},
+          {"id": "scenario_status", "kind": "text", "selector": "#scenario-status"},
+          {"id": "date_start", "kind": "value", "selector": "#global-date-start"},
+          {"id": "date_end", "kind": "value", "selector": "#global-date-end"}
+        ],
+        "required_delta_ids": ["selected_stations", "report_rows", "report_range"]
+      },
+      "interaction_spec": {
+        "interaction_class": "restore_reconciliation",
+        "shared_entity": "monitoring station",
+        "shared_entity_id": "ST001",
+        "state_a": "station comparison membership",
+        "state_b": "saved analysis date range",
+        "transition": "restore a saved date scenario after selecting stations",
+        "stable_identity": true,
+        "lifecycle_change": false,
+        "invalidates_other_membership": false,
+        "witness_transition_after_membership": true,
+        "visibility_only": false,
+        "derived_recalculation_only": true,
+        "plausible_policies": [
+          "preserve membership and recompute the report",
+          "reset comparison membership with the restored scenario"
+        ]
+      },
+      "coordination_policy": {
+        "summary": "Applying a saved date scenario preserves comparison membership and refreshes the comparative report for the restored range as one coherent analysis snapshot.",
+        "state_owner": "one analysis workspace state containing stable station ids, active date range, and saved scenarios",
+        "transition_order": [
+          "restore the saved start and end dates",
+          "retain valid comparison station ids",
+          "commit one analysis-state revision",
+          "recompute the active report from that revision",
+          "render the date controls, tray, report rows, range label, and feedback once"
+        ],
+        "checks": [
+          {
+            "name": "scenario restore preserves selection and refreshes one coherent report",
+            "path": "/#dashboard",
+            "actions": [
+              {"action": "click", "selector": "[data-compare-station=\"ST001\"]"},
+              {"action": "click", "selector": "[data-compare-station=\"ST002\"]"},
+              {"action": "fill", "selector": "#global-date-start", "value": "2024-02-01"},
+              {"action": "fill", "selector": "#global-date-end", "value": "2024-02-07"},
+              {"action": "fill", "selector": "#scenario-name", "value": "Peak week"},
+              {"action": "click", "selector": "#save-scenario"},
+              {"action": "fill", "selector": "#global-date-start", "value": "2024-03-01"},
+              {"action": "fill", "selector": "#global-date-end", "value": "2024-03-07"},
+              {"action": "select", "selector": "#scenario-select", "value": "peak-week"},
+              {"action": "click", "selector": "#apply-scenario"},
+              {"action": "click", "selector": "#open-comparison-report"}
+            ],
+            "assertions": [
+              {"kind": "count", "selector": "#comparison-tray [data-selected-station]", "equals": 2},
+              {"kind": "count", "selector": "#comparison-report [data-report-station]", "equals": 2},
+              {"kind": "text_contains", "selector": "#report-range-label", "value": "2024-02-01"},
+              {"kind": "text_contains", "selector": "#report-range-label", "value": "2024-02-07"},
+              {"kind": "value_equals", "selector": "#global-date-start", "value": "2024-02-01"},
+              {"kind": "value_equals", "selector": "#global-date-end", "value": "2024-02-07"}
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "botanical_compare_archive_eligibility",
+      "seed_project": "/Users/woyaochengweikeyandashen/Documents/codes_vsc/web_coding_sft/output/0805_supplement_visual_candidates/projects/gen14-artifactsbench-ab-2-00613-84941cef4a",
+      "seed_provenance": {
+        "source": "ArtifactsBench ground-truth candidate generated with the real qwen3-coder-plus route",
+        "project_id": "gen14-artifactsbench-ab-2-00613-84941cef4a",
+        "asset_scope": "local static HTML, CSS, and JavaScript"
+      },
+      "original_instruction": "Build an offline botanical laboratory portal with Home, Specimen Gallery, and Visit Summary routes. The gallery contains eight bundled specimens, opens a research station for a selected specimen, and records view history locally. Preserve the existing scientific visual language, responsive layout, keyboard accessibility, and local-only runtime.",
+      "grounding_facts": [
+        "The bundled specimen ids are sp_001 through sp_008.",
+        "The existing gallery renders cards with stable data-id values.",
+        "The existing routes are #home, #gallery, and #summary.",
+        "The existing visit history uses localStorage key phytolab_history.",
+        "All functionality must run from the local static project without a backend or remote resources."
+      ],
+      "group_a": {
+        "name": "Specimen Comparison Workspace",
+        "instruction": "Add a complete specimen-comparison workspace to the gallery. Every active specimen card has a keyboard-usable compare toggle carrying data-compare-id with its bundled stable id. A sticky #compare-tray lists selected specimens as elements carrying data-selected-id, supports removal, shows #compare-status, limits selection to three, and exposes #open-comparison once at least two specimens are selected. Opening it reveals #comparison-panel with one data-comparison-item row per selected specimen so names, categories, origins, and care metrics can be compared side by side. Selection is stable-id product state and survives ordinary gallery re-renders and route navigation. Do not add specimen archiving as part of this group.",
+        "required_selectors": [
+          "[data-compare-id]",
+          "#compare-tray",
+          "#compare-status",
+          "#open-comparison",
+          "#comparison-panel",
+          "[data-comparison-item]"
+        ],
+        "checks": [
+          {
+            "name": "select two active specimens and open the comparison workspace",
+            "path": "/#gallery",
+            "actions": [
+              {"action": "click", "selector": "[data-compare-id=\"sp_001\"]"},
+              {"action": "click", "selector": "[data-compare-id=\"sp_003\"]"},
+              {"action": "goto", "value": "/#summary"},
+              {"action": "goto", "value": "/#gallery"},
+              {"action": "click", "selector": "#open-comparison"}
+            ],
+            "assertions": [
+              {"kind": "count", "selector": "#compare-tray [data-selected-id]", "equals": 2},
+              {"kind": "text_contains", "selector": "#compare-status", "value": "2 selected"},
+              {"kind": "visible", "selector": "#comparison-panel"},
+              {"kind": "count", "selector": "#comparison-panel [data-comparison-item]", "equals": 2}
+            ]
+          }
+        ]
+      },
+      "group_b": {
+        "name": "Persistent Specimen Archive",
+        "instruction": "Add a complete local specimen-archive group to the gallery. Every active specimen card has a keyboard-usable archive control carrying data-archive-id with its bundled stable id. Archiving immediately removes that specimen from the active gallery. #show-archive opens #archive-panel, #archive-count reports the number archived, each archived entry carries data-archived-id, and its restore control carries data-restore-id. Archived ids survive reload; restoring returns the specimen to its original gallery position. Provide accessible archive/restore feedback. Do not add comparison selection or decide how archiving should affect another feature's selected ids as part of this group.",
+        "required_selectors": [
+          "[data-archive-id]",
+          "#show-archive",
+          "#archive-panel",
+          "#archive-count",
+          "[data-archived-id]",
+          "[data-restore-id]"
+        ],
+        "checks": [
+          {
+            "name": "archive, reload, and restore one bundled specimen",
+            "path": "/#gallery",
+            "actions": [
+              {"action": "click", "selector": "[data-archive-id=\"sp_003\"]"},
+              {"action": "reload"},
+              {"action": "click", "selector": "#show-archive"}
+            ],
+            "assertions": [
+              {"kind": "count", "selector": "#grid-container [data-id=\"sp_003\"]", "equals": 0},
+              {"kind": "count", "selector": "#archive-panel [data-archived-id=\"sp_003\"]", "equals": 1},
+              {"kind": "text_contains", "selector": "#archive-count", "value": "1"}
+            ]
+          },
+          {
+            "name": "restore returns an archived specimen to the active gallery",
+            "path": "/#gallery",
+            "actions": [
+              {"action": "click", "selector": "[data-archive-id=\"sp_003\"]"},
+              {"action": "click", "selector": "#show-archive"},
+              {"action": "click", "selector": "[data-restore-id=\"sp_003\"]"}
+            ],
+            "assertions": [
+              {"kind": "count", "selector": "#grid-container [data-id=\"sp_003\"]", "equals": 1},
+              {"kind": "text_contains", "selector": "#archive-count", "value": "0"}
+            ]
+          }
+        ]
+      },
+      "witness": {
+        "name": "archive one member of an active two-specimen comparison",
+        "path": "/#gallery",
+        "actions": [
+          {"action": "click", "selector": "[data-compare-id=\"sp_001\"]"},
+          {"action": "click", "selector": "[data-compare-id=\"sp_003\"]"},
+          {"action": "click", "selector": "[data-archive-id=\"sp_003\"]"}
+        ],
+        "observations": [
+          {"id": "selected_count", "kind": "count", "selector": "#compare-tray [data-selected-id]"},
+          {"id": "archived_selected_count", "kind": "count", "selector": "#compare-tray [data-selected-id=\"sp_003\"]"},
+          {"id": "compare_status", "kind": "text", "selector": "#compare-status"},
+          {"id": "archived_active_toggle", "kind": "count", "selector": "[data-compare-id=\"sp_003\"]"},
+          {"id": "archive_count", "kind": "text", "selector": "#archive-count"}
+        ],
+        "required_delta_ids": ["selected_count", "archived_selected_count", "compare_status"]
+      },
+      "interaction_spec": {
+        "interaction_class": "eligibility_invalidation",
+        "shared_entity": "botanical specimen",
+        "shared_entity_id": "sp_003",
+        "state_a": "active comparison membership",
+        "state_b": "archive eligibility",
+        "transition": "archive a specimen that is currently selected for comparison",
+        "stable_identity": true,
+        "lifecycle_change": true,
+        "invalidates_other_membership": true,
+        "witness_transition_after_membership": true,
+        "visibility_only": false,
+        "derived_recalculation_only": false,
+        "plausible_policies": [
+          "atomically remove the archived specimen from comparison",
+          "retain an unavailable archived member in comparison until explicit removal"
+        ]
+      },
+      "coordination_policy": {
+        "summary": "Archiving makes a specimen ineligible for active comparison, so the archive transition atomically removes its stable id from comparison membership; restoring it does not silently reselect it.",
+        "state_owner": "one specimen workspace state containing archived ids and active comparison ids with an archived-exclusion invariant",
+        "transition_order": [
+          "commit the specimen id to the archived-id set",
+          "remove the same id from active comparison membership",
+          "clear any detail view that still targets the archived specimen",
+          "derive the active gallery and comparison tray from the reconciled state",
+          "persist once and render archive count, gallery, tray, and status once"
+        ],
+        "checks": [
+          {
+            "name": "archiving prunes comparison membership and restoring stays unselected",
+            "path": "/#gallery",
+            "actions": [
+              {"action": "click", "selector": "[data-compare-id=\"sp_001\"]"},
+              {"action": "click", "selector": "[data-compare-id=\"sp_003\"]"},
+              {"action": "click", "selector": "[data-archive-id=\"sp_003\"]"},
+              {"action": "click", "selector": "#show-archive"},
+              {"action": "click", "selector": "[data-restore-id=\"sp_003\"]"}
+            ],
+            "assertions": [
+              {"kind": "count", "selector": "#compare-tray [data-selected-id]", "equals": 1},
+              {"kind": "count", "selector": "#compare-tray [data-selected-id=\"sp_003\"]", "equals": 0},
+              {"kind": "text_contains", "selector": "#compare-status", "value": "1 selected"},
+              {"kind": "count", "selector": "#grid-container [data-id=\"sp_003\"]", "equals": 1},
+              {"kind": "count", "selector": "[data-compare-id=\"sp_003\"]", "equals": 1},
+              {"kind": "text_contains", "selector": "#archive-count", "value": "0"}
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

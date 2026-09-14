@@ -1,0 +1,39 @@
+{
+  "run_name": "route2_visual_8k_multiviewport_3k_20260820",
+  "model": "qwen3.8-max",
+  "final_task": "text-generation",
+  "construction_contract": {
+    "route": "real visual sample -> benchmark-specific caption -> independent pure-text query expansion",
+    "taxonomy_source": "official paper task taxonomy plus official seed metadata",
+    "visual_seed_policy": "representative visual samples only; do not download or caption the full image corpus",
+    "final_query_must_not_reference_visual_input": true,
+    "caption_llm_calls_per_seed": 1,
+    "query_llm_calls_per_job": 1,
+    "llm_retries": 0,
+    "post_generation_validation": false,
+    "superseded_asset_bound_rows_excluded": 6883
+  },
+  "visual_route": {
+    "target": 8000,
+    "benchmarks": {
+      "DesignBench": {"target": 800, "representative_caption_seeds": 5},
+      "Interaction2Code": {"target": 1200, "representative_caption_seeds": 100},
+      "Design2Code": {"target": 800, "representative_caption_seeds": 20},
+      "Flame-VLM-Code": {"target": 900, "representative_caption_seeds": 80},
+      "FullFront": {"target": 800, "representative_caption_seeds": 20},
+      "ComUIBench": {"target": 1800, "representative_caption_seeds": 40},
+      "WebUIBench": {"target": 800, "representative_caption_seeds": 20},
+      "Web2Code": {"target": 900, "representative_caption_seeds": 200}
+    }
+  },
+  "multi_viewport_route": {
+    "target": 3000,
+    "source_benchmark": "Vision2Web",
+    "source_level": "L1",
+    "representative_caption_seed_sites": 20,
+    "profiles": {
+      "Vision2Web L1 multi-viewport webpage generation": 3000
+    },
+    "required_viewports": ["desktop", "tablet", "mobile"]
+  }
+}

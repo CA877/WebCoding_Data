@@ -1,0 +1,120 @@
+{
+  "run_name": "visual_benchmark_text_proxy_7k_20260820",
+  "model": "qwen3.8-max",
+  "target_total": 7000,
+  "expected_usable_total_with_existing_8088": 15088,
+  "construction_contract": {
+    "purpose": "replace image-bound paraphrases with independent benchmark-aware text website briefs",
+    "taxonomy_source": "official papers, official task labels, and representative official seed metadata",
+    "final_query_form": "pure_text_prd",
+    "final_query_must_not_reference_visual_input": true,
+    "download_full_image_corpora": false,
+    "caption_each_image": false,
+    "llm_calls_per_query": 1,
+    "llm_retries": 0,
+    "post_generation_validation": false,
+    "task": "generation_only",
+    "backend_ceiling": "no harder than WebCompass"
+  },
+  "benchmarks": [
+    {
+      "benchmark": "DesignBench",
+      "target": 300,
+      "profiles": {
+        "DB-G1 vanilla-generation": 60,
+        "DB-G2 react-generation": 60,
+        "DB-G3 vue-generation": 60,
+        "DB-G4 angular-generation": 60,
+        "DB-G5 dense-framework-ui": 60
+      }
+    },
+    {
+      "benchmark": "Interaction2Code",
+      "target": 600,
+      "profiles": {
+        "I2C-G1 reveal-feedback": 120,
+        "I2C-G2 form-selection": 120,
+        "I2C-G3 position-motion": 120,
+        "I2C-G4 switch-color-media": 120,
+        "I2C-G5 navigation-new-page": 120
+      }
+    },
+    {
+      "benchmark": "Vision2Web",
+      "target": 3600,
+      "profiles": {
+        "V2W-1 L1 responsive-content": 1500,
+        "V2W-2 L1 responsive-dashboard": 1500,
+        "V2W-3 L2 content-navigation": 200,
+        "V2W-4 L2 transaction": 200,
+        "V2W-5 L2 saas-public-service": 200
+      }
+    },
+    {
+      "benchmark": "Design2Code",
+      "target": 300,
+      "profiles": {
+        "D2C-G1 editorial": 60,
+        "D2C-G2 commerce": 60,
+        "D2C-G3 dashboard": 60,
+        "D2C-G4 marketing": 60,
+        "D2C-G5 long-page": 60
+      }
+    },
+    {
+      "benchmark": "Flame-VLM-Code",
+      "target": 400,
+      "profiles": {
+        "FL-G1 dashboard": 80,
+        "FL-G2 form-workflow": 80,
+        "FL-G3 commerce-cards": 80,
+        "FL-G4 data-visualization": 80,
+        "FL-G5 interactive-component": 80
+      }
+    },
+    {
+      "benchmark": "FullFront",
+      "target": 300,
+      "profiles": {
+        "FF-G1 layout-heavy": 60,
+        "FF-G2 text-image-composition": 60,
+        "FF-G3 long-page": 60,
+        "FF-G4 dashboard": 60,
+        "FF-G5 interactive-page": 60
+      }
+    },
+    {
+      "benchmark": "ComUIBench",
+      "target": 800,
+      "profiles": {
+        "CUI-G1 shared-navigation": 160,
+        "CUI-G2 repeated-cards": 160,
+        "CUI-G3 shared-forms": 160,
+        "CUI-G4 design-system": 160,
+        "CUI-G5 complex-site": 160
+      }
+    },
+    {
+      "benchmark": "WebUIBench",
+      "target": 300,
+      "profiles": {
+        "WUI-G1 content-page": 60,
+        "WUI-G2 form-page": 60,
+        "WUI-G3 commerce-page": 60,
+        "WUI-G4 dashboard-page": 60,
+        "WUI-G5 long-page": 60
+      }
+    },
+    {
+      "benchmark": "Web2Code",
+      "target": 400,
+      "profiles": {
+        "W2C-G1 article": 80,
+        "W2C-G2 product": 80,
+        "W2C-G3 landing": 80,
+        "W2C-G4 dashboard": 80,
+        "W2C-G5 complex-page": 80
+      }
+    }
+  ]
+}

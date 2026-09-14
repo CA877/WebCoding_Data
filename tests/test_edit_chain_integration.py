@@ -7,10 +7,10 @@ import pytest
 
 from scripts import run_linear_edit_query_augmentation as runner
 from scripts.embed_capability_pool import embed_pool
-from instruction_augmentation.one_shot_capability_retrieval import generate_seed_retrieval_plan
+from inspiration_library.one_shot_capability_retrieval import generate_seed_retrieval_plan
 from test_one_shot_capability_retrieval import _retrieval_plan_payload
 from test_linear_edit_query_augmentation import _accepted_quality_audit
-from instruction_augmentation.linear_edit_queries import validate_quality_audit
+from inspiration_library.linear_edit_queries import validate_quality_audit
 
 
 def test_case_wrapper_passes_protected_settings_without_logging_secrets(tmp_path, monkeypatch, capsys):
@@ -181,7 +181,7 @@ def test_audit_uses_semantic_decision_without_requiring_category_labels():
 
 def test_depth_guidance_reaches_planning_and_audit_requests():
     """Request wiring only; real-model depth discrimination is a separate remote experiment."""
-    from instruction_augmentation import linear_edit_queries as queries
+    from inspiration_library import linear_edit_queries as queries
     calls = []
     def planning(**kwargs):
         calls.append(kwargs)
@@ -220,7 +220,7 @@ def test_named_depth_evidence_preserves_verdict_and_canonical_list():
 
 
 def test_diagnosed_revision_reuses_candidate_in_one_generation_call(monkeypatch):
-    from instruction_augmentation import linear_edit_queries as queries
+    from inspiration_library import linear_edit_queries as queries
     captured = []
     candidate = {'edits': [{'edit_id': 'q1', 'instruction': 'Existing complete capability'}]}
     client = SimpleNamespace(chat_json=lambda **kw: (captured.append(kw) or candidate, {}))

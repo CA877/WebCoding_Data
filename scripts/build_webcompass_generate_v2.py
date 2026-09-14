@@ -13,7 +13,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from construct.construct_common import (
+from reverse.construct_common import (
     TRAIN_CODE_EXTS,
     build_file_manifest,
     collect_resources,

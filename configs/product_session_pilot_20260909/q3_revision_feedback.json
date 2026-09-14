@@ -1,0 +1,325 @@
+{
+  "edit_id": "q3",
+  "diagnostics": [
+    "Validation failed: required state must name its actual planned producer. Recheck EVERY remaining step. Every non-seed requires.state must copy exactly a produces.state of that declared source. q3/q11 references to completed q2 and q10/q11 references to planned q8 are paraphrased and invalid; copy the actual strings, never change completed q1/q2 to fit.",
+    "q11 Responsive operations workspace is a prohibited quality-only increment. Replace it with a distinct useful operational capability serving the same product goal, while folding responsive/accessibility work into functional steps. Keep exactly 11 steps overall. Follow the existing official-type preference where naturally applicable.",
+    "q3 must be a complete useful detail-view increment now. The current source has no logistics editor or event workflow entry point. Remove the requirement for a working Edit operations action to an imaginary or future entry point from both q3 criteria and instruction. Implement that real editor with q4. Preserve current board filters and the visitor-facing page. Clearly distinguish any newly initialized internal data from existing source facts."
+  ],
+  "rejected_result": {
+    "remaining_steps": [
+      {
+        "edit_id": "q3",
+        "capability": "Event operations detail view",
+        "contribution_to_goal": "Provides a focused review surface where staff can compare the public announcement with internal preparation status before making operational decisions.",
+        "depends_on": [
+          "q2"
+        ],
+        "requires": [
+          {
+            "source": "q2",
+            "state": "The operations workspace filters events by category, date range, location, responsible team member, and readiness stage, shows active filter indicators, and provides a Reset filters action."
+          }
+        ],
+        "produces": [
+          {
+            "state": "Selecting a visible operations event opens a focused detail view that separates Visitor-facing information from Internal operations and shows the event announcement, owner, readiness stage, checklist progress, logistics notes, and risk indicators."
+          }
+        ],
+        "completion_criteria": [
+          "A staff member can open the detail view from any visible operations card.",
+          "Visitor-facing title, category, date, time, location, thumbnail, and description are visibly separated from internal operations information.",
+          "The detail view includes owner, readiness stage, checklist progress, logistics notes, and any current risk indicators.",
+          "Closing the detail view returns to the board without clearing its active filters.",
+          "The detail view provides a working path to edit the selected operations record."
+        ],
+        "inspiration_refs": [
+          "product_pilot_01_demo__open_task_editor_dialog",
+          "product_pilot_01_demo__semantic_board_and_editor_structure"
+        ]
+      },
+      {
+        "edit_id": "q4",
+        "capability": "Event logistics editor",
+        "contribution_to_goal": "Allows staff to maintain the operational information needed to prepare an event without leaving the operations workspace.",
+        "depends_on": [
+          "q3"
+        ],
+        "requires": [
+          {
+            "source": "q3",
+            "state": "Selecting a visible operations event opens a focused detail view that separates Visitor-facing information from Internal operations and shows the event announcement, owner, readiness stage, checklist progress, logistics notes, and risk indicators."
+          }
+        ],
+        "produces": [
+          {
+            "state": "An event operations editor opens from the board card and detail view, lets staff update staffing notes, equipment needs, registration requirements, weather plan, responsible team member, and internal operations notes, and saves the record back to the workspace."
+          }
+        ],
+        "completion_criteria": [
+          "The editor opens from both an operations card and its detail view.",
+          "Staffing notes, equipment needs, registration requirements, weather plan, responsible team member, and internal operations notes can all be entered or changed in the same editor.",
+          "Saving updates the selected card and detail view immediately.",
+          "Closing without saving discards the current draft and leaves the saved record unchanged.",
+          "The editor keeps the event's public-facing announcement available for reference while staff enter internal logistics."
+        ],
+        "inspiration_refs": [
+          "product_pilot_01_demo__open_task_editor_dialog",
+          "product_pilot_01_demo__edit_unsubmitted_task_description",
+          "product_pilot_01_demo__discard_task_editor_draft_on_close_reload"
+        ]
+      },
+      {
+        "edit_id": "q5",
+        "capability": "Preparation checklist management",
+        "contribution_to_goal": "Turns broad logistics work into concrete preparation tasks that staff can assign, complete, and review.",
+        "depends_on": [
+          "q4"
+        ],
+        "requires": [
+          {
+            "source": "q4",
+            "state": "An event operations editor opens from the board card and detail view, lets staff update staffing notes, equipment needs, registration requirements, weather plan, responsible team member, and internal operations notes, and saves the record back to the workspace."
+          }
+        ],
+        "produces": [
+          {
+            "state": "Each event operations record has an editable preparation checklist with initial items such as confirming the venue, arranging accessibility support, contacting performers, and publishing visitor instructions; staff can add, rename, remove, and complete items, and progress counts update on cards and detail views."
+          }
+        ],
+        "completion_criteria": [
+          "Existing event records receive visible initial preparation items when staff open their operations workflow.",
+          "Checklist items can be added, renamed, removed, completed, and reopened.",
+          "Completing or reopening an item updates the completion count immediately.",
+          "Checklist progress is visible on the board card and in the focused detail view.",
+          "Checklist changes remain associated with the correct event while staff move between the editor, detail view, and board."
+        ],
+        "inspiration_refs": [
+          "product_pilot_01_demo__open_task_editor_dialog",
+          "product_pilot_01_demo__semantic_board_and_editor_structure"
+        ]
+      },
+      {
+        "edit_id": "q6",
+        "capability": "Readiness-gated stage movement",
+        "contribution_to_goal": "Keeps readiness stages trustworthy by preventing staff from marking an event Ready before required preparation is complete.",
+        "depends_on": [
+          "q5"
+        ],
+        "requires": [
+          {
+            "source": "q5",
+            "state": "Each event operations record has an editable preparation checklist with initial items such as confirming the venue, arranging accessibility support, contacting performers, and publishing visitor instructions; staff can add, rename, remove, and complete items, and progress counts update on cards and detail views."
+          }
+        ],
+        "produces": [
+          {
+            "state": "Staff can change an event between Intake, Planning, Ready, and Completed using a working status control, while attempts to enter Ready are blocked until all required checklist items are complete and the interface explains what remains."
+          }
+        ],
+        "completion_criteria": [
+          "A working status control is available from the event workflow and allowed status changes update the event's column and readiness badge immediately.",
+          "An event with incomplete required preparation cannot enter Ready.",
+          "A blocked Ready action identifies the incomplete required checklist items.",
+          "An event with all required items complete can enter Ready and later Completed.",
+          "Every event remains in exactly one readiness column after each allowed status change."
+        ],
+        "inspiration_refs": [
+          "product_pilot_01_demo__kanban_board_task_status_overview",
+          "product_pilot_01_demo__semantic_board_and_editor_structure"
+        ]
+      },
+      {
+        "edit_id": "q7",
+        "capability": "Browser-local operations persistence",
+        "contribution_to_goal": "Lets park staff resume event preparation after closing or reloading the page without losing saved operational work.",
+        "depends_on": [
+          "q6"
+        ],
+        "requires": [
+          {
+            "source": "q6",
+            "state": "Staff can change an event between Intake, Planning, Ready, and Completed using a working status control, while attempts to enter Ready are blocked until all required checklist items are complete and the interface explains what remains."
+          }
+        ],
+        "produces": [
+          {
+            "state": "Saved event operations records, checklist edits and completion, responsible owners, logistics changes, and readiness stages are stored in browser-local storage and restored after reload without an account or external backend."
+          }
+        ],
+        "completion_criteria": [
+          "A saved logistics edit remains visible after reload.",
+          "A completed or reopened checklist item remains in its saved state after reload.",
+          "A saved readiness stage remains in the same board column after reload.",
+          "Unsubmitted editor drafts are not restored after closing or reloading.",
+          "The visitor-facing event page and internal operations workspace continue to work using browser-local data only."
+        ],
+        "inspiration_refs": [
+          "product_pilot_02_demo__framework_selection_persistence",
+          "product_pilot_01_demo__discard_task_editor_draft_on_close_reload"
+        ]
+      },
+      {
+        "edit_id": "q8",
+        "capability": "Operational risk detection",
+        "contribution_to_goal": "Helps staff identify incomplete, overdue, and location-conflicted events before visitors arrive.",
+        "depends_on": [
+          "q7"
+        ],
+        "requires": [
+          {
+            "source": "q7",
+            "state": "Saved event operations records, checklist edits and completion, responsible owners, logistics changes, and readiness stages are stored in browser-local storage and restored after reload without an account or external backend."
+          }
+        ],
+        "produces": [
+          {
+            "state": "The operations board and event detail view flag incomplete upcoming events, overdue events that have not reached Completed, and overlapping events at the same park location, with explanations that update when event data changes."
+          }
+        ],
+        "completion_criteria": [
+          "An upcoming event with incomplete required work receives a visible incomplete-preparation warning.",
+          "An event whose date has passed without Completed status is marked overdue.",
+          "Overlapping events at the same location are identified as location conflicts.",
+          "Risk indicators appear on both relevant board cards and the focused detail view.",
+          "Warnings update when dates, locations, readiness stages, or checklist items change."
+        ],
+        "inspiration_refs": [
+          "product_pilot_01_demo__kanban_board_task_status_overview",
+          "product_pilot_01_demo__semantic_board_and_editor_structure"
+        ]
+      },
+      {
+        "edit_id": "q9",
+        "capability": "Create a new park event operations record",
+        "contribution_to_goal": "Allows staff to coordinate newly announced events that are not yet represented in the existing public event collection.",
+        "depends_on": [
+          "q4",
+          "q7"
+        ],
+        "requires": [
+          {
+            "source": "q4",
+            "state": "An event operations editor opens from the board card and detail view, lets staff update staffing notes, equipment needs, registration requirements, weather plan, responsible team member, and internal operations notes, and saves the record back to the workspace."
+          },
+          {
+            "source": "q7",
+            "state": "Saved event operations records, checklist edits and completion, responsible owners, logistics changes, and readiness stages are stored in browser-local storage and restored after reload without an account or external backend."
+          }
+        ],
+        "produces": [
+          {
+            "state": "An Add event workflow creates a new operations record with required title, category, date, time, location, description, owner, initial Intake status, logistics fields, and preparation checklist items; the new record appears once on the board and persists locally."
+          }
+        ],
+        "completion_criteria": [
+          "A clearly labeled Add event action opens a usable editor without leaving the operations workspace.",
+          "The new record requires the core event identity fields before saving.",
+          "A saved new event appears exactly once in Intake with its owner and checklist progress.",
+          "The new event can be edited, filtered, opened in detail, and restored after reload.",
+          "A new event cannot be saved directly into Ready while required preparation is incomplete."
+        ],
+        "inspiration_refs": [
+          "product_pilot_01_demo__open_task_editor_dialog",
+          "product_pilot_01_demo__edit_unsubmitted_task_description",
+          "product_pilot_02_demo__framework_selection_persistence"
+        ]
+      },
+      {
+        "edit_id": "q10",
+        "capability": "Related park news and operational update context",
+        "contribution_to_goal": "Surfaces park updates that may change event preparation, including trail closures, accessibility changes, weather advisories, and facility notices.",
+        "depends_on": [
+          "q3",
+          "q8"
+        ],
+        "requires": [
+          {
+            "source": "q3",
+            "state": "Selecting a visible operations event opens a focused detail view that separates Visitor-facing information from Internal operations and shows the event announcement, owner, readiness stage, checklist progress, logistics notes, and risk indicators."
+          },
+          {
+            "source": "q8",
+            "state": "The operations board and event detail view flag incomplete, overdue, and location-conflicted events, with explanations that update when event data changes."
+          }
+        ],
+        "produces": [
+          {
+            "state": "The operations workspace shows recent park news and operational updates, and each event detail view includes a Related park updates section that prioritizes items relevant to the event location, date, or preparation plan."
+          }
+        ],
+        "completion_criteria": [
+          "Existing park news and operational updates remain visible without replacing the operations board.",
+          "The selected event detail view includes a Related park updates section.",
+          "Location- or date-related updates are prioritized when relevant matches exist.",
+          "News context is visibly separate from internal staff notes.",
+          "A useful general park updates list remains available when no item is specifically related."
+        ],
+        "inspiration_refs": [
+          "product_pilot_01_demo__kanban_board_task_status_overview",
+          "product_pilot_01_demo__semantic_board_and_editor_structure"
+        ]
+      },
+      {
+        "edit_id": "q11",
+        "capability": "Responsive operations workspace",
+        "contribution_to_goal": "Keeps event preparation usable for staff working from a tablet or phone in the park.",
+        "depends_on": [
+          "q2",
+          "q5",
+          "q8",
+          "q10"
+        ],
+        "requires": [
+          {
+            "source": "q2",
+            "state": "The operations workspace filters events by category, date range, location, responsible team member, and readiness stage, shows active filter indicators, and provides a Reset filters action."
+          },
+          {
+            "source": "q5",
+            "state": "Each event operations record has an editable preparation checklist with initial items such as confirming the venue, arranging accessibility support, contacting performers, and publishing visitor instructions; staff can add, rename, remove, and complete items, and progress counts update on cards and detail views."
+          },
+          {
+            "source": "q8",
+            "state": "The operations board and event detail view flag incomplete, overdue, and location-conflicted events, with explanations that update when event data changes."
+          },
+          {
+            "source": "q10",
+            "state": "The operations workspace shows recent park news and operational updates, and each event detail view includes a Related park updates section that prioritizes items relevant to the event location, date, or preparation plan."
+          }
+        ],
+        "produces": [
+          {
+            "state": "At narrow viewport sizes, staff can navigate all readiness stages, use filters and Reset filters, inspect complete event cards, open event details, edit logistics, update checklists, and read risk or news context without page-level horizontal overflow."
+          }
+        ],
+        "completion_criteria": [
+          "The narrow layout preserves access to Intake, Planning, Ready, and Completed through a readable board arrangement or stage navigation.",
+          "Cards retain readable title, date, location, owner, readiness, and checklist progress information.",
+          "The editor and detail view remain usable without clipped required controls.",
+          "Filters, empty states, risk flags, checklist controls, and park updates remain accessible on small screens.",
+          "The internal workspace has no unintended horizontal page overflow."
+        ],
+        "inspiration_refs": [
+          "product_pilot_01_demo__responsive_kanban_column_layout",
+          "product_pilot_03_demo__adapt_workspace_to_mobile_viewport",
+          "product_pilot_01_demo__semantic_board_and_editor_structure"
+        ]
+      }
+    ],
+    "revision_reason": "The completed source now exposes a separate Staff operations workspace with seeded events grouped into four readiness columns and a working combined filter area with reset and empty-state behavior. The next useful increment is a focused event detail view so staff can inspect one filtered event without losing board context, clearly compare visitor-facing information with internal preparation information, and reach the future logistics workflow. The remaining eleven-step progression is retained and continues from review into editing, checklist management, readiness control, persistence, risk detection, event creation, park-update context, and responsive use.",
+    "edit": {
+      "instruction": "Extend the existing Staff operations workspace without removing or replacing the visitor-facing Willowbrook page, public event cards, public event detail dialog, park news, newsletter form, about section, footer, four readiness columns, or the existing operations filters. Make each visible operations event card selectable and open a focused in-page event detail view or dialog for that event. The detail view must retain the active board filters when it is closed and must clearly separate a Visitor-facing announcement section from an Internal operations section. In the Visitor-facing section, show the selected event's existing thumbnail, title, category, date, time, location, and full description. In the Internal operations section, show its assigned responsible team member, current readiness stage, preparation progress, a logistics summary area, and any currently known preparation concerns based on the seeded event data. Include a clear Close or Back to board action that returns to the filtered operations board, and include a working Edit operations action that opens the existing event workflow entry point even if the full logistics fields are introduced in the next increment. Use the existing frontend event records and current filter state only; do not require accounts, navigation to another page, or a backend.",
+      "classification": {
+        "primary": {
+          "taxonomy": "extension",
+          "type": "Event operations detail view"
+        },
+        "secondary": [],
+        "reason": "The increment adds a focused review surface that separates visitor-facing event content from internal preparation metadata and preserves the surrounding filtered board state. It is not a data table, rich text editor, wizard, or notification center."
+      },
+      "target_routes": [
+        "/index.html"
+      ]
+    }
+  }
+}

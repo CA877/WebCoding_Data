@@ -1,4 +1,4 @@
-from instruction_augmentation.live_component_sources import card_regions, _write_slice
+from inspiration_library.live_component_sources import card_regions, _write_slice
 from scripts.mine_live_url_capability_pool import compact_live_card
 import os
 import pytest
@@ -10,8 +10,8 @@ def test_public_ant_code_expansion(tmp_path):
     """Actual demo source links and a complete three-click sorter cycle."""
     import json
     from playwright.sync_api import sync_playwright
-    from instruction_augmentation.production_browser import _launch_browser, _new_page, _snapshot
-    from instruction_augmentation.live_component_sources import public_example_sources
+    from inspiration_library.production_browser import _launch_browser, _new_page, _snapshot
+    from inspiration_library.live_component_sources import public_example_sources
     with sync_playwright() as pw:
         browser = _launch_browser(pw)
         errors = []
@@ -114,7 +114,7 @@ def test_final_pool_retains_reference_sources_and_limitations():
 def test_source_reload_failure_keeps_cited_dom(tmp_path, monkeypatch):
     import json
     from playwright.sync_api import Page
-    from instruction_augmentation.live_component_sources import capture_component_sources
+    from inspiration_library.live_component_sources import capture_component_sources
     def fail_navigation(*args, **kwargs):
         raise TimeoutError('controlled reload failure')
     monkeypatch.setattr(Page, 'goto', fail_navigation)
@@ -129,7 +129,7 @@ def test_source_reload_failure_keeps_cited_dom(tmp_path, monkeypatch):
 
 
 def test_public_sources_reject_non_source_links():
-    from instruction_augmentation.live_component_sources import public_example_sources
+    from inspiration_library.live_component_sources import public_example_sources
     class Locator:
         def locator(self, *args): return self
         def evaluate_all(self, *args): return [
@@ -141,7 +141,7 @@ def test_public_sources_reject_non_source_links():
 
 def test_embedded_demo_urls_are_recorded_not_implicitly_explored(tmp_path):
     from playwright.sync_api import sync_playwright
-    from instruction_augmentation.production_browser import serve_project, _launch_browser, _snapshot
+    from inspiration_library.production_browser import serve_project, _launch_browser, _snapshot
     (tmp_path/'index.html').write_text('<iframe id="demo" src="demo.html"></iframe>'
         '<iframe hidden src="tracking.html"></iframe>')
     (tmp_path/'demo.html').write_text('<input placeholder="Inside demo">')
@@ -160,7 +160,7 @@ def test_embedded_demo_urls_are_recorded_not_implicitly_explored(tmp_path):
 
 def test_readonly_browser_blocks_get_form_submission(tmp_path):
     from playwright.sync_api import sync_playwright
-    from instruction_augmentation.production_browser import _launch_browser, _new_page, serve_project
+    from inspiration_library.production_browser import _launch_browser, _new_page, serve_project
     (tmp_path / "index.html").write_text('<form action="/submitted"><button>Send</button></form>')
     with serve_project(tmp_path) as url, sync_playwright() as pw:
         browser = _launch_browser(pw)
@@ -183,8 +183,8 @@ def test_readonly_browser_blocks_get_form_submission(tmp_path):
 def test_real_browser_reference_capture(tmp_path):
     """Isolated fixture only: no public URL or LLM; exercises the real CDP and output path."""
     from playwright.sync_api import sync_playwright
-    from instruction_augmentation.production_browser import _launch_browser, serve_project
-    from instruction_augmentation.live_component_sources import capture_component_sources
+    from inspiration_library.production_browser import _launch_browser, serve_project
+    from inspiration_library.live_component_sources import capture_component_sources
     from pathlib import Path
     import json
 
@@ -254,8 +254,8 @@ def test_public_business_page_reference(tmp_path):
     """Technical source-mapping probe, not an LLM-mined or accepted capability card."""
     import json
     from playwright.sync_api import sync_playwright
-    from instruction_augmentation.production_browser import _launch_browser, _new_page
-    from instruction_augmentation.live_component_sources import capture_component_sources
+    from inspiration_library.production_browser import _launch_browser, _new_page
+    from inspiration_library.live_component_sources import capture_component_sources
 
     url = "https://www.calculator.net/bmi-calculator.html"
     with sync_playwright() as pw:

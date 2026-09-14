@@ -1,0 +1,138 @@
+{
+  "run_name": "benchmark_generation_gap_8k_20260820",
+  "target_total": 8000,
+  "expected_new_total_with_previous_7000": 15000,
+  "model": "qwen3.8-max",
+  "llm_calls_per_query": 1,
+  "llm_retries": 0,
+  "post_generation_validation": false,
+  "benchmarks": [
+    {
+      "benchmark": "WebCompass", "target": 800, "seed_file": "webcompass.jsonl", "text_proxy_for_visual": false,
+      "profiles": [
+        {"name":"WC-C01 education-learning","target":100,"source_classes":["WC-3 interactive-exploration"],"capability_granularity":"compact","page_scope":"single_page","primary_capability":"an education or learning experience with one observable browser interaction and no backend"},
+        {"name":"WC-C02 entertainment-streaming","target":100,"source_classes":["WC-3 interactive-exploration"],"capability_granularity":"compact","page_scope":"single_page","primary_capability":"an entertainment or streaming-style browser interface with local media state"},
+        {"name":"WC-C03 content-multimedia","target":100,"source_classes":["WC-3 interactive-exploration"],"capability_granularity":"compact","page_scope":"single_page","primary_capability":"a content-creation or multimedia tool with direct manipulation and visible feedback"},
+        {"name":"WC-C04 system-management","target":100,"source_classes":["WC-2 enterprise-systems"],"capability_granularity":"comprehensive","page_scope":"multi_page","primary_capability":"a frontend-only system-management product with connected overview, resource, detail, and settings pages"},
+        {"name":"WC-C05 devtools-engineering","target":100,"source_classes":["WC-2 enterprise-systems"],"capability_granularity":"comprehensive","page_scope":"multi_page","primary_capability":"a developer or engineering tool with connected workspace, inspection, detail, and report pages"},
+        {"name":"WC-C06 logic-workflow","target":100,"source_classes":["WC-5 data-workflows"],"capability_granularity":"comprehensive","page_scope":"multi_page","primary_capability":"a visual logic or workflow product with an observable cross-page creation and review flow"},
+        {"name":"WC-C07 lifestyle-utilities","target":100,"source_classes":["WC-1 commerce-social-transit"],"capability_granularity":"compact","page_scope":"single_page","primary_capability":"a focused lifestyle utility with one coherent stateful interaction"},
+        {"name":"WC-C08 information-display","target":100,"source_classes":["WC-5 data-workflows"],"capability_granularity":"comprehensive","page_scope":"multi_page","primary_capability":"an information-display website with overview, exploration, detail, and saved-view continuity"}
+      ]
+    },
+    {
+      "benchmark": "DesignBench", "target": 400, "seed_file": "designbench.jsonl", "text_proxy_for_visual": true,
+      "profiles": [
+        {"name":"DB-C01 vanilla-content","target":50,"source_classes":["DB-G1 vanilla-generation"],"capability_granularity":"compact","page_scope":"single_page_responsive","primary_capability":"a content-led responsive Vanilla HTML and CSS page with clear hierarchy"},
+        {"name":"DB-C02 vanilla-dense","target":50,"source_classes":["DB-G1 vanilla-generation","DB-G5 dense-framework-ui"],"capability_granularity":"comprehensive","page_scope":"single_page_responsive","primary_capability":"a dense responsive Vanilla HTML and CSS operational interface"},
+        {"name":"DB-C03 react-content","target":50,"source_classes":["DB-G2 react-generation"],"capability_granularity":"compact","page_scope":"single_page_responsive","primary_capability":"a responsive React content page with explicit component hierarchy"},
+        {"name":"DB-C04 react-dense","target":50,"source_classes":["DB-G2 react-generation","DB-G5 dense-framework-ui"],"capability_granularity":"comprehensive","page_scope":"single_page_responsive","primary_capability":"a dense responsive React application page with reusable components"},
+        {"name":"DB-C05 vue-content","target":50,"source_classes":["DB-G3 vue-generation"],"capability_granularity":"compact","page_scope":"single_page_responsive","primary_capability":"a responsive Vue content page with one visible interaction"},
+        {"name":"DB-C06 vue-dense","target":50,"source_classes":["DB-G3 vue-generation","DB-G5 dense-framework-ui"],"capability_granularity":"comprehensive","page_scope":"single_page_responsive","primary_capability":"a dense responsive Vue application interface"},
+        {"name":"DB-C07 angular-content","target":50,"source_classes":["DB-G4 angular-generation"],"capability_granularity":"compact","page_scope":"single_page_responsive","primary_capability":"a responsive Angular content page with structured components"},
+        {"name":"DB-C08 angular-dense","target":50,"source_classes":["DB-G4 angular-generation","DB-G5 dense-framework-ui"],"capability_granularity":"comprehensive","page_scope":"single_page_responsive","primary_capability":"a dense responsive Angular operational interface"}
+      ]
+    },
+    {
+      "benchmark": "Interaction2Code", "target": 1000, "seed_file": "interaction2code.jsonl", "text_proxy_for_visual": true,
+      "profiles": [
+        {"name":"I2C-C01 reveal-hide","target":100,"source_classes":["I2C-G1 reveal-feedback"],"capability_granularity":"atomic","page_scope":"single_page","primary_capability":"one trigger that reveals or hides content with clear unchanged surroundings"},
+        {"name":"I2C-C02 text-content-change","target":100,"source_classes":["I2C-G1 reveal-feedback","I2C-G4 switch-color-media"],"capability_granularity":"atomic","page_scope":"single_page","primary_capability":"one user action that changes visible text or content while preserving layout"},
+        {"name":"I2C-C03 component-insert-remove","target":100,"source_classes":["I2C-G1 reveal-feedback"],"capability_granularity":"atomic","page_scope":"single_page","primary_capability":"one action that inserts or removes a visible component with immediate feedback"},
+        {"name":"I2C-C04 modal-overlay-window","target":100,"source_classes":["I2C-G1 reveal-feedback","I2C-G5 navigation-new-page"],"capability_granularity":"compact","page_scope":"single_page","primary_capability":"one modal, overlay, or secondary-window transition including open and dismiss states"},
+        {"name":"I2C-C05 size-expand-collapse","target":100,"source_classes":["I2C-G1 reveal-feedback","I2C-G3 position-motion"],"capability_granularity":"atomic","page_scope":"single_page","primary_capability":"one expansion, collapse, or size-changing transition"},
+        {"name":"I2C-C06 position-motion","target":100,"source_classes":["I2C-G3 position-motion"],"capability_granularity":"atomic","page_scope":"single_page","primary_capability":"one position or motion transition shown through clear before and after states"},
+        {"name":"I2C-C07 color-theme","target":100,"source_classes":["I2C-G4 switch-color-media"],"capability_granularity":"atomic","page_scope":"single_page","primary_capability":"one color, emphasis, or theme-state transition"},
+        {"name":"I2C-C08 media-progress","target":100,"source_classes":["I2C-G4 switch-color-media"],"capability_granularity":"compact","page_scope":"single_page","primary_capability":"one media or progress-state interaction with play, pause, advance, or completion feedback"},
+        {"name":"I2C-C09 form-selection-validation","target":100,"source_classes":["I2C-G2 form-selection"],"capability_granularity":"compact","page_scope":"single_page","primary_capability":"one form or selection interaction including valid, invalid, or selected feedback"},
+        {"name":"I2C-C10 navigation-multistep","target":100,"source_classes":["I2C-G5 navigation-new-page"],"capability_granularity":"comprehensive","page_scope":"multi_page","primary_capability":"a multi-step navigation sequence across connected frontend pages with visible continuity"}
+      ]
+    },
+    {
+      "benchmark": "Vision2Web", "target": 400, "seed_file": "vision2web.jsonl", "text_proxy_for_visual": true,
+      "profiles": [
+        {"name":"V2W-C01 L2 branching-page-graph","target":100,"source_classes":["V2W-3 L2 content-navigation"],"capability_granularity":"comprehensive","page_scope":"multi_page","primary_capability":"a branching page graph with list, detail, related-content, and return paths","target_level":"L2"},
+        {"name":"V2W-C02 L2 shared-selection-state","target":100,"source_classes":["V2W-5 L2 saas-public-service"],"capability_granularity":"comprehensive","page_scope":"multi_page","primary_capability":"shared visible selection or preference state carried across several frontend pages","target_level":"L2"},
+        {"name":"V2W-C03 L2 transaction-workflow","target":100,"source_classes":["V2W-4 L2 transaction"],"capability_granularity":"comprehensive","page_scope":"multi_page","primary_capability":"a frontend-only multi-step service or transaction workflow with confirmation and recovery","target_level":"L2"},
+        {"name":"V2W-C04 L2 content-detail-backtrack","target":100,"source_classes":["V2W-3 L2 content-navigation","V2W-5 L2 saas-public-service"],"capability_granularity":"compact","page_scope":"multi_page","primary_capability":"content exploration from overview to detail and back while preserving filters or position","target_level":"L2"}
+      ]
+    },
+    {
+      "benchmark": "ArtifactsBench", "target": 1800, "seed_file": "artifacts_bench.jsonl", "text_proxy_for_visual": false,
+      "profiles": [
+        {"name":"AB-C01 game-development","target":200,"source_classes":["AB-1 games"],"capability_granularity":"atomic","page_scope":"single_page","primary_capability":"a distinctive browser game mechanic with scoring, progression, failure, and reset feedback"},
+        {"name":"AB-C02 svg-generation","target":200,"source_classes":["AB-4 visual-simulation"],"capability_granularity":"atomic","page_scope":"single_page","primary_capability":"an interactive SVG illustration, diagram, icon system, or vector manipulation artifact"},
+        {"name":"AB-C03 web-application","target":200,"source_classes":["AB-2 web-applications"],"capability_granularity":"comprehensive","page_scope":"multi_page","primary_capability":"a coherent multi-page web application with observable frontend workflows"},
+        {"name":"AB-C04 simulation-modeling","target":200,"source_classes":["AB-4 visual-simulation"],"capability_granularity":"atomic","page_scope":"single_page","primary_capability":"a visual simulation with controllable parameters, time progression, pause, and reset"},
+        {"name":"AB-C05 data-science","target":200,"source_classes":["AB-3 management-data","AB-4 visual-simulation"],"capability_granularity":"compact","page_scope":"single_page","primary_capability":"a data-science or statistical exploration artifact with linked controls and visual results"},
+        {"name":"AB-C06 management-system","target":200,"source_classes":["AB-3 management-data"],"capability_granularity":"comprehensive","page_scope":"multi_page","primary_capability":"a frontend-only management system with overview, records, detail, and configuration pages"},
+        {"name":"AB-C07 multimedia-editing","target":200,"source_classes":["AB-5 multimedia-utility-other"],"capability_granularity":"compact","page_scope":"single_page","primary_capability":"an image, audio, or video editing artifact with direct manipulation, preview, undo, and reset"},
+        {"name":"AB-C08 quick-tools","target":200,"source_classes":["AB-5 multimedia-utility-other"],"capability_granularity":"atomic","page_scope":"single_page","primary_capability":"a focused calculation, conversion, automation, batch, or daily-office browser utility"},
+        {"name":"AB-C09 other-diagram-creative","target":200,"source_classes":["AB-5 multimedia-utility-other","AB-4 visual-simulation"],"capability_granularity":"compact","page_scope":"single_page","primary_capability":"an unusual creative, diagramming, mobile-style, or niche interactive artifact outside ordinary websites"}
+      ]
+    },
+    {
+      "benchmark": "Design2Code", "target": 300, "seed_file": "design2code.jsonl", "text_proxy_for_visual": true,
+      "profiles": [
+        {"name":"D2C-C01 long-scroll","target":50,"source_classes":["D2C-G5 long-page"],"capability_granularity":"comprehensive","page_scope":"single_page_responsive","primary_capability":"a long scrolling static page with varied section rhythm and stable responsive hierarchy"},
+        {"name":"D2C-C02 dense-block-structure","target":50,"source_classes":["D2C-G3 dashboard"],"capability_granularity":"comprehensive","page_scope":"single_page_responsive","primary_capability":"a dense static page with many aligned blocks, summaries, tables, and grouped regions"},
+        {"name":"D2C-C03 image-heavy","target":50,"source_classes":["D2C-G2 commerce","D2C-G4 marketing"],"capability_granularity":"compact","page_scope":"single_page_responsive","primary_capability":"an image-heavy static page with deliberate cropping, galleries, captions, and responsive media treatment"},
+        {"name":"D2C-C04 text-heavy","target":50,"source_classes":["D2C-G1 editorial"],"capability_granularity":"compact","page_scope":"single_page_responsive","primary_capability":"a text-heavy editorial page with complex typographic hierarchy and readable responsive columns"},
+        {"name":"D2C-C05 multi-column","target":50,"source_classes":["D2C-G1 editorial","D2C-G3 dashboard"],"capability_granularity":"comprehensive","page_scope":"single_page_responsive","primary_capability":"a multi-column static layout whose regions reflow cleanly across viewports"},
+        {"name":"D2C-C06 layered-positioned","target":50,"source_classes":["D2C-G4 marketing","D2C-G5 long-page"],"capability_granularity":"comprehensive","page_scope":"single_page_responsive","primary_capability":"a layered static composition with overlapping media, backgrounds, badges, and carefully anchored regions"}
+      ]
+    },
+    {
+      "benchmark": "Flame-VLM-Code", "target": 600, "seed_file": "flame_vlm_code.jsonl", "text_proxy_for_visual": true,
+      "profiles": [
+        {"name":"FL-C01 waterfall-system-brief","target":100,"source_classes":["FL-G1 dashboard","FL-G2 form-workflow"],"capability_granularity":"comprehensive","page_scope":"single_page_responsive","primary_capability":"a React page derived from a complete system-style brief with clear component decomposition"},
+        {"name":"FL-C02 additive-simple","target":100,"source_classes":["FL-G3 commerce-cards","FL-G5 interactive-component"],"capability_granularity":"atomic","page_scope":"single_page_responsive","primary_capability":"a simple React composition built from a few coherent reusable components"},
+        {"name":"FL-C03 additive-complex","target":100,"source_classes":["FL-G1 dashboard","FL-G4 data-visualization"],"capability_granularity":"comprehensive","page_scope":"single_page_responsive","primary_capability":"a complex React composition with nested repeated regions and coordinated visible state"},
+        {"name":"FL-C04 evolution-variant","target":100,"source_classes":["FL-G3 commerce-cards","FL-G5 interactive-component"],"capability_granularity":"compact","page_scope":"single_page_responsive","primary_capability":"a distinctive React page variant that recombines familiar component patterns into a new scenario"},
+        {"name":"FL-C05 reusable-component-composition","target":100,"source_classes":["FL-G1 dashboard","FL-G3 commerce-cards"],"capability_granularity":"comprehensive","page_scope":"single_page_responsive","primary_capability":"a React interface centered on reusable component families and data-driven repeated content"},
+        {"name":"FL-C06 conditional-data-state","target":100,"source_classes":["FL-G2 form-workflow","FL-G4 data-visualization","FL-G5 interactive-component"],"capability_granularity":"compact","page_scope":"single_page_responsive","primary_capability":"a React page with loading, empty, selected, and populated conditional states driven by bundled data"}
+      ]
+    },
+    {
+      "benchmark": "WebGen-Bench", "target": 1800, "seed_file": "webgen_bench.jsonl", "text_proxy_for_visual": false,
+      "profiles": [
+        {"name":"WG-C01 static-content","target":139,"source_classes":["WG-4 content-community"],"capability_granularity":"compact","page_scope":"multi_page","primary_capability":"static content presentation across connected pages with clear navigation"},
+        {"name":"WG-C02 dynamic-content","target":139,"source_classes":["WG-4 content-community"],"capability_granularity":"compact","page_scope":"multi_page","primary_capability":"dynamic content browsing with filters, selection, and visible frontend state"},
+        {"name":"WG-C03 visualization","target":139,"source_classes":["WG-3 analytics-productivity"],"capability_granularity":"compact","page_scope":"single_page","primary_capability":"interactive data visualization with linked controls and observable updates"},
+        {"name":"WG-C04 multimedia","target":139,"source_classes":["WG-5 learning-games-media"],"capability_granularity":"compact","page_scope":"single_page","primary_capability":"browser-visible multimedia presentation and playback using bundled content"},
+        {"name":"WG-C05 forms","target":139,"source_classes":["WG-2 internal-enterprise"],"capability_granularity":"compact","page_scope":"multi_page","primary_capability":"a connected form workflow with validation, review, submission feedback, and correction"},
+        {"name":"WG-C06 frontend-demo-access","target":139,"source_classes":["WG-2 internal-enterprise"],"capability_granularity":"compact","page_scope":"multi_page","primary_capability":"an account-like access and personalized-workspace flow implemented only with bundled demo identities and local visible state"},
+        {"name":"WG-C07 simulated-realtime","target":138,"source_classes":["WG-4 content-community","WG-2 internal-enterprise"],"capability_granularity":"compact","page_scope":"single_page","primary_capability":"a simulated realtime feed, collaboration, or status experience using bundled events"},
+        {"name":"WG-C08 ecommerce","target":138,"source_classes":["WG-1 commerce-marketplace"],"capability_granularity":"comprehensive","page_scope":"multi_page","primary_capability":"a catalog, detail, cart, and local confirmation commerce journey without real payment processing"},
+        {"name":"WG-C09 deterministic-ai","target":138,"source_classes":["WG-3 analytics-productivity"],"capability_granularity":"compact","page_scope":"single_page","primary_capability":"an AI-style suggestion or transformation interface whose results come from bundled deterministic examples"},
+        {"name":"WG-C10 local-crud","target":138,"source_classes":["WG-2 internal-enterprise"],"capability_granularity":"comprehensive","page_scope":"multi_page","primary_capability":"create, inspect, update, and remove local records with browser-visible confirmation and recovery"},
+        {"name":"WG-C11 bundled-data-contract","target":138,"source_classes":["WG-3 analytics-productivity","WG-2 internal-enterprise"],"capability_granularity":"compact","page_scope":"single_page","primary_capability":"an external-data-style experience represented by bundled fixtures, loading states, and failure recovery"},
+        {"name":"WG-C12 large-local-dataset","target":138,"source_classes":["WG-3 analytics-productivity"],"capability_granularity":"comprehensive","page_scope":"single_page","primary_capability":"a large local dataset browser with search, filters, pagination or virtualization, and detail inspection"},
+        {"name":"WG-C13 browser-file-processing","target":138,"source_classes":["WG-2 internal-enterprise","WG-3 analytics-productivity"],"capability_granularity":"compact","page_scope":"single_page","primary_capability":"browser-side file selection, preview, validation, transformation, progress, and downloadable result"}
+      ]
+    },
+    {
+      "benchmark": "FullFront", "target": 500, "seed_file": "fullfront.jsonl", "text_proxy_for_visual": true,
+      "profiles": [
+        {"name":"FF-C01 text-to-code","target":100,"source_classes":["FF-G1 layout-heavy","FF-G2 text-image-composition"],"capability_granularity":"compact","page_scope":"single_page_responsive","primary_capability":"a complete text-to-code page specification with explicit hierarchy and layout"},
+        {"name":"FF-C02 webpage-design","target":100,"source_classes":["FF-G2 text-image-composition","FF-G3 long-page"],"capability_granularity":"comprehensive","page_scope":"single_page_responsive","primary_capability":"a webpage-design task requiring a coherent information architecture and visual composition"},
+        {"name":"FF-C03 interaction-authoring","target":100,"source_classes":["FF-G5 interactive-page"],"capability_granularity":"compact","page_scope":"single_page","primary_capability":"from-scratch authoring of one frontend interaction with explicit trigger, state change, feedback, and reset"},
+        {"name":"FF-C04 image-text-composition","target":100,"source_classes":["FF-G2 text-image-composition"],"capability_granularity":"compact","page_scope":"single_page_responsive","primary_capability":"a polished page whose main challenge is the relationship between imagery and text hierarchy"},
+        {"name":"FF-C05 complex-layout-implementation","target":100,"source_classes":["FF-G1 layout-heavy","FF-G3 long-page","FF-G4 dashboard"],"capability_granularity":"comprehensive","page_scope":"single_page_responsive","primary_capability":"a complex frontend layout with dense regions, long-page rhythm, and responsive restructuring"}
+      ]
+    },
+    {
+      "benchmark": "ComUIBench", "target": 400, "seed_file": "comuibench.jsonl", "text_proxy_for_visual": true,
+      "profiles": [
+        {"name":"CUI-C01 table-filter-reuse","target":50,"source_classes":["CUI-G2 repeated-cards","CUI-G5 complex-site"],"capability_granularity":"comprehensive","page_scope":"multi_page","primary_capability":"reusable tables, filters, sort controls, and result summaries across pages"},
+        {"name":"CUI-C02 sidebar-shell","target":50,"source_classes":["CUI-G1 shared-navigation","CUI-G4 design-system"],"capability_granularity":"comprehensive","page_scope":"multi_page","primary_capability":"one reusable sidebar, header, breadcrumb, and responsive shell shared across pages"},
+        {"name":"CUI-C03 gallery-media","target":50,"source_classes":["CUI-G2 repeated-cards","CUI-G5 complex-site"],"capability_granularity":"compact","page_scope":"multi_page","primary_capability":"reusable media gallery, thumbnail, preview, and metadata components across pages"},
+        {"name":"CUI-C04 modal-overlay-variants","target":50,"source_classes":["CUI-G3 shared-forms","CUI-G5 complex-site"],"capability_granularity":"compact","page_scope":"multi_page","primary_capability":"shared modal, drawer, overlay, and confirmation component variants used consistently"},
+        {"name":"CUI-C05 same-component-different-state","target":50,"source_classes":["CUI-G2 repeated-cards","CUI-G4 design-system"],"capability_granularity":"comprehensive","page_scope":"multi_page","primary_capability":"the same reusable components rendered with different data, selection, status, empty, and error states"},
+        {"name":"CUI-C06 repeated-list-card","target":50,"source_classes":["CUI-G2 repeated-cards"],"capability_granularity":"compact","page_scope":"multi_page","primary_capability":"shared list and card families reused across overview and detail-oriented pages"},
+        {"name":"CUI-C07 shared-form-primitives","target":50,"source_classes":["CUI-G3 shared-forms"],"capability_granularity":"comprehensive","page_scope":"multi_page","primary_capability":"shared form fields, validation messages, steppers, summaries, and action bars"},
+        {"name":"CUI-C08 token-layout-system","target":50,"source_classes":["CUI-G4 design-system","CUI-G5 complex-site"],"capability_granularity":"comprehensive","page_scope":"multi_page","primary_capability":"a reusable token, typography, spacing, grid, and layout-primitives system across a complex site"}
+      ]
+    }
+  ]
+}

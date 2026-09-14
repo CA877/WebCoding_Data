@@ -130,7 +130,16 @@ def changed_ratio(left: Path, right: Path, channel_threshold: int = 8) -> float:
     with Image.open(left) as raw_left, Image.open(right) as raw_right:
         a, b = raw_left.convert("RGB"), raw_right.convert("RGB")
         if a.size != b.size:
-            raise ValueError(f"paired screenshot sizes differ: {a.size} vs {b.size}")
+            # Geometry defects may legitimately change full-page width/height.
+            # Compare on a common white canvas, matching construction-time
+            # gating, rather than treating a changed document extent as an
+            # invalid pair.
+            width, height = max(a.width, b.width), max(a.height, b.height)
+            a_canvas = Image.new("RGB", (width, height), "white")
+            b_canvas = Image.new("RGB", (width, height), "white")
+            a_canvas.paste(a, (0, 0))
+            b_canvas.paste(b, (0, 0))
+            a, b = a_canvas, b_canvas
         channels = ImageChops.difference(a, b).split()
         masks = [channel.point(lambda value: 255 if value >= channel_threshold else 0)
                  for channel in channels]
@@ -165,9 +174,16 @@ def main() -> None:
     parser.add_argument("--jsonl-dir", type=Path, required=True)
     parser.add_argument("--summary", type=Path, required=True)
     parser.add_argument("--expected-generate", type=int, default=6502)
+    parser.add_argument("--expected-text-generate", type=int)
+    parser.add_argument("--expected-image-generate", type=int)
     parser.add_argument("--expected-source", type=int, default=6503)
+    parser.add_argument("--expected-eligible", type=int, default=6502)
     parser.add_argument("--expected-edit", type=int, default=3000)
     parser.add_argument("--expected-image-repair", type=int, default=3000)
+    parser.add_argument(
+        "--skip-image-content-checks", action="store_true",
+        help="Check image path/pair metadata but skip decoding and pixel recomputation.",
+    )
     args = parser.parse_args()
 
     ids: dict[str, set[str]] = {}
@@ -212,7 +228,7 @@ def main() -> None:
                         if not images or any(not image.is_file() for image in resolved_images):
                             raise ValueError("missing input image")
                         for image in resolved_images:
-                            if image not in checked_images:
+                            if image not in checked_images and not args.skip_image_content_checks:
                                 validate_image(image)
                                 checked_images.add(image)
                     code = input_code(record)
@@ -247,20 +263,23 @@ def main() -> None:
                         dst = record.get("dst_screenshot", [])
                         if not src or len(src) != len(dst):
                             raise ValueError("image-repair screenshot pairing is incomplete")
-                        actual_ratio = max(
-                            changed_ratio(
-                                (Path(left) if Path(left).is_absolute() else release_root / left).resolve(),
-                                (Path(right) if Path(right).is_absolute() else release_root / right).resolve(),
+                        if reported_ratio < 0.01:
+                            raise ValueError("image-repair reports less than 1% paired-image gate")
+                        if not args.skip_image_content_checks:
+                            actual_ratio = max(
+                                changed_ratio(
+                                    (Path(left) if Path(left).is_absolute() else release_root / left).resolve(),
+                                    (Path(right) if Path(right).is_absolute() else release_root / right).resolve(),
+                                )
+                                for left, right in zip(src, dst, strict=True)
                             )
-                            for left, right in zip(src, dst, strict=True)
-                        )
-                        if actual_ratio < 0.01:
-                            raise ValueError("image-repair fails 1% paired-image gate")
-                        if abs(actual_ratio - reported_ratio) > 0.0000015:
-                            raise ValueError(
-                                f"image-repair pixel ratio metadata mismatch: actual={actual_ratio:.6f}, "
-                                f"reported={reported_ratio:.6f}"
-                            )
+                            if actual_ratio < 0.01:
+                                raise ValueError("image-repair fails 1% paired-image gate")
+                            if abs(actual_ratio - reported_ratio) > 0.0000015:
+                                raise ValueError(
+                                    f"image-repair pixel ratio metadata mismatch: actual={actual_ratio:.6f}, "
+                                    f"reported={reported_ratio:.6f}"
+                                )
                 except Exception as exc:  # noqa: BLE001
                     errors.append(f"{name}:{line_number}: {type(exc).__name__}: {exc}")
         ids[task] = seen
@@ -273,9 +292,11 @@ def main() -> None:
             elif max(distribution.values()) - min(distribution.values()) > 1:
                 errors.append(f"{name}: task-count distribution is not even: {dict(distribution)}")
 
+    expected_text_generate = args.expected_text_generate or args.expected_generate
+    expected_image_generate = args.expected_image_generate or args.expected_generate
     expected = {
-        "text-generation": args.expected_generate,
-        "image-generation": args.expected_generate,
+        "text-generation": expected_text_generate,
+        "image-generation": expected_image_generate,
         "text-editing": args.expected_edit,
         "image-editing": args.expected_edit,
         "image-repair": args.expected_image_repair,
@@ -283,14 +304,22 @@ def main() -> None:
     for task, count in expected.items():
         if counts.get(task) != count:
             errors.append(f"{task}: count={counts.get(task)}, expected={count}")
-    for left, right in (("text-generation", "image-generation"), ("text-editing", "image-editing")):
-        if ids[left] != ids[right]:
-            errors.append(f"paired ids differ: {left} vs {right}")
-        else:
-            mismatched = [instance_id for instance_id in ids[left]
-                          if pair_fingerprints[left].get(instance_id) != pair_fingerprints[right].get(instance_id)]
-            if mismatched:
-                errors.append(f"paired payloads differ: {left} vs {right}: {mismatched[:5]}")
+    if not ids["image-generation"].issubset(ids["text-generation"]):
+        errors.append("image-generation ids are not a subset of text-generation ids")
+    else:
+        mismatched = [instance_id for instance_id in ids["image-generation"]
+                      if pair_fingerprints["text-generation"].get(instance_id)
+                      != pair_fingerprints["image-generation"].get(instance_id)]
+        if mismatched:
+            errors.append(f"paired payloads differ: text-generation vs image-generation: {mismatched[:5]}")
+    if ids["text-editing"] != ids["image-editing"]:
+        errors.append("paired ids differ: text-editing vs image-editing")
+    else:
+        mismatched = [instance_id for instance_id in ids["text-editing"]
+                      if pair_fingerprints["text-editing"].get(instance_id)
+                      != pair_fingerprints["image-editing"].get(instance_id)]
+        if mismatched:
+            errors.append(f"paired payloads differ: text-editing vs image-editing: {mismatched[:5]}")
     if not ids["image-repair"].issubset(ids["text-repair"]):
         errors.append("image-repair ids are not a subset of text-repair ids")
     else:
@@ -326,8 +355,16 @@ def main() -> None:
         eligible_ids = read_unique_ids(provenance_root / "eligible_40k.ids.txt")
         edit_ids = read_unique_ids(provenance_root / "edit_3000.ids.txt")
         repair_candidate_ids = read_unique_ids(provenance_root / "repair_candidates.ids.txt")
-        if eligible_ids != ids["text-generation"]:
-            raise ValueError("eligible token-gate IDs differ from generation release IDs")
+        released_original_ids = {
+            instance_id for instance_id in eligible_ids
+            if not instance_id.startswith("artifacts")
+        }
+        if released_original_ids != ids["image-generation"]:
+            raise ValueError("filtered original IDs differ from image-generation release IDs")
+        extra_ids = read_unique_ids(provenance_root / "extra_text_generate.ids.txt")
+        if ((released_original_ids & extra_ids)
+                or ((released_original_ids | extra_ids) != ids["text-generation"])):
+            raise ValueError("filtered original plus extra provenance does not equal text-generation release IDs")
         if edit_ids != ids["text-editing"]:
             raise ValueError("selected edit IDs differ from edit release IDs")
         if not ids["text-repair"].issubset(repair_candidate_ids):
@@ -355,7 +392,7 @@ def main() -> None:
             (provenance_root / "selection_manifest.json").read_text(encoding="utf-8")
         )
         if (int(selection["source_input_count"]) != args.expected_source
-                or int(selection["eligible_count"]) != args.expected_generate
+                or int(selection["eligible_count"]) != args.expected_eligible
                 or int(selection["edit_count"]) != args.expected_edit
                 or int(selection["repair_candidate_count"]) != len(repair_candidate_ids)
                 or int(selection["maximum_qwen_tokens"]) != 40000):
@@ -365,6 +402,7 @@ def main() -> None:
 
     summary = {
         "status": "pass" if not errors else "fail",
+        "image_content_checks": not args.skip_image_content_checks,
         "counts": counts,
         "task_count_distributions": task_count_distributions,
         "errors": errors[:1000],

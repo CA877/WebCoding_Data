@@ -1,0 +1,122 @@
+{
+  "crossaug-01-nightsky-field-lab": {
+    "reason": "The accepted response named a non-existent option ID; the real implementation uses select#experience with option value novice.",
+    "interaction_probe": {
+      "action": "select_option",
+      "trigger_selector": "#experience",
+      "value": "novice",
+      "result_selector": "#safety-protocol-section",
+      "result_text": "Safety Supervision Requirements"
+    }
+  },
+  "crossaug-02-neighborhood-food-rescue": {
+    "reason": "The registration success state requires the two validated identity fields to be completed before submission.",
+    "interaction_probe": {
+      "action": "click",
+      "trigger_selector": "#submitBtn",
+      "setup_actions": [
+        {"action": "fill", "selector": "#fullName", "value": "Avery Chen"},
+        {"action": "fill", "selector": "#email", "value": "avery.chen@example.org"}
+      ],
+      "wait_after_ms": 1200,
+      "result_selector": "#successMessage",
+      "result_text": "Registration Received: Check your email for next steps."
+    }
+  },
+  "crossaug-03-community-repair-commons": {
+    "reason": "The loan action is intentionally nested inside a tool detail modal, so the modal must be opened first.",
+    "interaction_probe": {
+      "action": "click",
+      "trigger_selector": "#btn-request-loan",
+      "setup_actions": [
+        {"action": "click", "selector": ".tool-card", "index": 0}
+      ],
+      "wait_after_ms": 900,
+      "result_selector": "#loan-success-msg",
+      "result_text": "Loan request submitted successfully."
+    }
+  },
+  "crossaug-04-urban-pollinator-atlas": {
+    "reason": "Logging a sighting requires a species name and comma-separated coordinates.",
+    "interaction_probe": {
+      "action": "click",
+      "trigger_selector": "#submit-sighting-btn",
+      "setup_actions": [
+        {"action": "fill", "selector": "#species-name", "value": "Bombus terrestris"},
+        {"action": "fill", "selector": "#gps-coords", "value": "51.5074, -0.1278"}
+      ],
+      "wait_after_ms": 350,
+      "result_selector": "#toast-notification",
+      "result_text": "Sighting logged successfully"
+    }
+  },
+  "crossaug-05-accessible-mentor-match": {
+    "reason": "Comparison is enabled only after two mentor cards are selected; use the stable modal element rather than a post-state selector.",
+    "interaction_probe": {
+      "action": "click",
+      "trigger_selector": "#compare-trigger",
+      "setup_actions": [
+        {"action": "check", "selector": ".compare-checkbox", "index": 0},
+        {"action": "check", "selector": ".compare-checkbox", "index": 1}
+      ],
+      "wait_after_ms": 350,
+      "result_selector": "#comparison-modal",
+      "result_text": "Compare Candidates"
+    }
+  },
+  "crossaug-07-artisan-commission-market": {
+    "reason": "The commission brief validates the client name and craft category before submission.",
+    "interaction_probe": {
+      "action": "click",
+      "trigger_selector": "#submit-brief-btn",
+      "setup_actions": [
+        {"action": "fill", "selector": "#client-name", "value": "Avery Chen"},
+        {"action": "select_option", "selector": "#project-type", "value": "wood"}
+      ],
+      "wait_after_ms": 1500,
+      "result_selector": "#brief-success-msg",
+      "result_text": "Brief Received! We'll review your requirements shortly."
+    }
+  },
+  "crossaug-08-community-energy-command": {
+    "reason": "The assessment form requires a site address of at least five characters.",
+    "interaction_probe": {
+      "action": "click",
+      "trigger_selector": "#submit-assessment-btn",
+      "setup_actions": [
+        {"action": "fill", "selector": "#address", "value": "42 Oak Lane"}
+      ],
+      "wait_after_ms": 1100,
+      "result_selector": "[data-test='submission-success']",
+      "result_text": "Assessment Logged: Site queued for technical review."
+    }
+  },
+  "crossaug-09-venue-accessibility-kit": {
+    "reason": "Equipment comparison is enabled only after two cards are selected.",
+    "interaction_probe": {
+      "action": "click",
+      "trigger_selector": "#compare-trigger-btn",
+      "setup_actions": [
+        {"action": "check", "selector": ".card-checkbox", "index": 0},
+        {"action": "check", "selector": ".card-checkbox", "index": 1}
+      ],
+      "wait_after_ms": 350,
+      "result_selector": "#comparison-modal",
+      "result_text": "Compare Equipment Specifications"
+    }
+  },
+  "crossaug-10-conservation-loan-lab": {
+    "reason": "The requisition validates both research purpose and loan duration.",
+    "interaction_probe": {
+      "action": "click",
+      "trigger_selector": "#submit-request-btn",
+      "setup_actions": [
+        {"action": "select_option", "selector": "#purpose", "value": "analysis"},
+        {"action": "fill", "selector": "#duration", "value": "30"}
+      ],
+      "wait_after_ms": 1300,
+      "result_selector": "#request-success-msg",
+      "result_text": "Requisition Submitted Successfully"
+    }
+  }
+}

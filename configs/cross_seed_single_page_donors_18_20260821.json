@@ -1,0 +1,23 @@
+{
+  "name": "cross_seed_single_page_donors_18",
+  "seeds": [
+    {"project_id": "gen14-frontalk-ft-g1-00096-f3be5ca7eb", "role_pool": "hero_navigation"},
+    {"project_id": "gen14-frontalk-ft-g1-00057-4bf6893d42", "role_pool": "hero_navigation"},
+    {"project_id": "gen14-frontalk-ft-g1-00029-7c1012ece6", "role_pool": "hero_navigation"},
+    {"project_id": "gen14-design2code-d2c-g1-00047-265c2a4d8c", "role_pool": "editorial_content"},
+    {"project_id": "gen14-design2code-d2c-g1-00032-8d57d34cf8", "role_pool": "editorial_content"},
+    {"project_id": "gen14-design2code-d2c-g1-00020-7fe396526e", "role_pool": "editorial_content"},
+    {"project_id": "gen14-design2code-d2c-g2-00033-ff3e4452d2", "role_pool": "cards_commerce"},
+    {"project_id": "gen14-design2code-d2c-g2-00042-8985ee3a77", "role_pool": "cards_commerce"},
+    {"project_id": "gen14-design2code-d2c-g2-00036-62fe63710e", "role_pool": "cards_commerce"},
+    {"project_id": "gen14-design2code-d2c-g3-00008-16c89fb97c", "role_pool": "dashboard_metrics"},
+    {"project_id": "gen14-design2code-d2c-g3-00004-0d578fe398", "role_pool": "dashboard_metrics"},
+    {"project_id": "gen14-design2code-d2c-g3-00039-bf542f01c8", "role_pool": "dashboard_metrics"},
+    {"project_id": "gen14-webuibench-wui-g2-00049-2cb4b048bd", "role_pool": "form_workflow"},
+    {"project_id": "gen14-webuibench-wui-g2-00025-993759b442", "role_pool": "form_workflow"},
+    {"project_id": "gen14-webuibench-wui-g2-00043-cca320fe1b", "role_pool": "form_workflow"},
+    {"project_id": "gen14-fullfront-ff-g5-00036-2767f8f2dc", "role_pool": "interactive_exploration"},
+    {"project_id": "gen14-fullfront-ff-g5-00026-1d5a58f571", "role_pool": "interactive_exploration"},
+    {"project_id": "gen14-fullfront-ff-g5-00046-d534f25748", "role_pool": "interactive_exploration"}
+  ]
+}

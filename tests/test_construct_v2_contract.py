@@ -6,21 +6,21 @@ import sys
 import pytest
 from PIL import Image
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from WebCoding_Data.construct.construct_common import (
+from reverse.construct_common import (
     LocalSearchReplaceSynthesizer,
     apply_search_replace_exact,
     balanced_task_count,
     build_forward_edit_synthesizer,
     validate_patch_round_trip,
 )
-from WebCoding_Data.construct.v2_records import repair_records
-from WebCoding_Data.scripts.pack_construct_v2_release import (
+from reverse.v2_records import repair_records
+from scripts.pack_construct_v2_release import (
     select_balanced_text_repairs,
     write_provenance,
 )
-from WebCoding_Data.scripts.audit_construct_v2_release import (
+from scripts.audit_construct_v2_release import (
     apply_exact as audit_apply_exact,
     changed_ratio,
     validate_instruction_contract,

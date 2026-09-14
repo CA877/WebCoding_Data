@@ -1,0 +1,106 @@
+{
+  "name": "cross_seed_component_fusion_pilot_10",
+  "source_run": "/data1/xieqianqian/webcoding/WebCoding_Data/runs/ground_truth/fourteen_benchmark_qwen38_21109_20260820/projects",
+  "samples": [
+    {
+      "augmentation_id": "crossaug-01-nightsky-field-lab",
+      "target_concept": "NightSky Field Lab — a citizen astronomy discovery and observing-night registration hub",
+      "fusion_intent": "Combine an atmospheric entry experience, an explorable observation catalog, and a demanding but usable field-night application workflow.",
+      "donors": [
+        {"project_id": "gen14-frontalk-ft-g1-00096-f3be5ca7eb", "requested_component_groups": ["dark hero and primary navigation", "forgiving state controls"]},
+        {"project_id": "gen14-fullfront-ff-g5-00026-1d5a58f571", "requested_component_groups": ["filter rail plus responsive observation grid", "record detail overlay"]},
+        {"project_id": "gen14-webuibench-wui-g2-00025-993759b442", "requested_component_groups": ["multi-section registration workflow", "conditional readiness fields and validation"]}
+      ]
+    },
+    {
+      "augmentation_id": "crossaug-02-neighborhood-food-rescue",
+      "target_concept": "Neighborhood Food Rescue — a volunteer coordination and pickup-intake hub",
+      "fusion_intent": "Turn an editorial campaign entry, live operational summaries, and a structured intake workflow into one coherent local food-rescue page.",
+      "donors": [
+        {"project_id": "gen14-design2code-d2c-g1-00032-8d57d34cf8", "requested_component_groups": ["asymmetric campaign hero", "opportunity card rhythm"]},
+        {"project_id": "gen14-design2code-d2c-g3-00039-bf542f01c8", "requested_component_groups": ["compact operational metric panels", "timeline and resource status groups"]},
+        {"project_id": "gen14-webuibench-wui-g2-00049-2cb4b048bd", "requested_component_groups": ["three-stage intake form", "inline validation and recovery"]}
+      ]
+    },
+    {
+      "augmentation_id": "crossaug-03-community-repair-commons",
+      "target_concept": "Community Repair Commons — a neighborhood repair-session and tool-booking portal",
+      "fusion_intent": "Compose a welcoming service hero, a searchable tool catalog with detail interaction, and a scan-friendly workshop schedule.",
+      "donors": [
+        {"project_id": "gen14-frontalk-ft-g1-00029-7c1012ece6", "requested_component_groups": ["warm service hero and navigation", "capability portfolio"]},
+        {"project_id": "gen14-fullfront-ff-g5-00046-d534f25748", "requested_component_groups": ["category filter and equipment grid", "equipment detail modal"]},
+        {"project_id": "gen14-design2code-d2c-g3-00008-16c89fb97c", "requested_component_groups": ["session cards and status metadata", "compact schedule controls"]}
+      ]
+    },
+    {
+      "augmentation_id": "crossaug-04-urban-pollinator-atlas",
+      "target_concept": "Urban Pollinator Atlas — a specimen discovery and neighborhood sighting submission lab",
+      "fusion_intent": "Fuse a scientific catalog shell, interactive evidence exploration, and a metrics-form-table intake loop for community observations.",
+      "donors": [
+        {"project_id": "gen14-design2code-d2c-g2-00042-8985ee3a77", "requested_component_groups": ["scientific split-pane catalog", "structured specimen cards"]},
+        {"project_id": "gen14-fullfront-ff-g5-00026-1d5a58f571", "requested_component_groups": ["taxonomic filter rail", "masonry records and detail overlay"]},
+        {"project_id": "gen14-webuibench-wui-g2-00043-cca320fe1b", "requested_component_groups": ["summary metrics", "validated intake form and sortable status table"]}
+      ]
+    },
+    {
+      "augmentation_id": "crossaug-05-accessible-mentor-match",
+      "target_concept": "OpenMentor Match — an accessible peer-mentoring discovery and comparison page",
+      "fusion_intent": "Combine accessibility-first discovery, structurally consistent profile cards, and a narrow filter-to-results information architecture.",
+      "donors": [
+        {"project_id": "gen14-frontalk-ft-g1-00057-4bf6893d42", "requested_component_groups": ["accessible hero and discovery controls", "side-by-side comparison overlay"]},
+        {"project_id": "gen14-design2code-d2c-g1-00020-7fe396526e", "requested_component_groups": ["equal-hierarchy profile card group", "semantic landmark rhythm"]},
+        {"project_id": "gen14-design2code-d2c-g2-00036-62fe63710e", "requested_component_groups": ["narrow faceted sidebar", "dense but readable listing grid"]}
+      ]
+    },
+    {
+      "augmentation_id": "crossaug-06-family-museum-day",
+      "target_concept": "Family Museum Day Planner — an orientation, collection preview, and visit-preparation page",
+      "fusion_intent": "Adapt reassuring wayfinding groups, a tactile collection viewer, and conditional preparation fields into a family visit planner.",
+      "donors": [
+        {"project_id": "gen14-design2code-d2c-g1-00047-265c2a4d8c", "requested_component_groups": ["wayfinding information bands", "amenity and safety groups"]},
+        {"project_id": "gen14-fullfront-ff-g5-00036-2767f8f2dc", "requested_component_groups": ["thumbnail-to-primary specimen viewer", "provenance metadata cards"]},
+        {"project_id": "gen14-webuibench-wui-g2-00025-993759b442", "requested_component_groups": ["long-form preparation workflow", "conditional participant details"]}
+      ]
+    },
+    {
+      "augmentation_id": "crossaug-07-artisan-commission-market",
+      "target_concept": "Made-to-Order Market — an artisan discovery, material comparison, and commission brief page",
+      "fusion_intent": "Unify a creator-led entry and portfolio, decision-rich product specifications, and a professional commission intake sequence.",
+      "donors": [
+        {"project_id": "gen14-frontalk-ft-g1-00029-7c1012ece6", "requested_component_groups": ["creator-focused hero", "filterable capability portfolio"]},
+        {"project_id": "gen14-design2code-d2c-g2-00033-ff3e4452d2", "requested_component_groups": ["persistent decision sidebar", "technical specification and recommendation groups"]},
+        {"project_id": "gen14-webuibench-wui-g2-00049-2cb4b048bd", "requested_component_groups": ["commission intake sections", "asset drop zone and validation"]}
+      ]
+    },
+    {
+      "augmentation_id": "crossaug-08-community-energy-command",
+      "target_concept": "Community Energy Command — a local retrofit campaign and site-assessment workspace",
+      "fusion_intent": "Join a public-facing initiative narrative with field logistics data and an immediately actionable site-assessment intake loop.",
+      "donors": [
+        {"project_id": "gen14-design2code-d2c-g1-00032-8d57d34cf8", "requested_component_groups": ["asymmetric initiative hero", "opportunity cards"]},
+        {"project_id": "gen14-design2code-d2c-g3-00004-0d578fe398", "requested_component_groups": ["mission filters and deployment table", "telemetry detail panels"]},
+        {"project_id": "gen14-webuibench-wui-g2-00043-cca320fe1b", "requested_component_groups": ["summary cards", "validated record entry plus sortable submissions"]}
+      ]
+    },
+    {
+      "augmentation_id": "crossaug-09-venue-accessibility-kit",
+      "target_concept": "AccessKit Live — an accessibility equipment and event-readiness planner",
+      "fusion_intent": "Compose an inclusive entry, an explorable assistive-equipment library, and a dense live-event readiness overview.",
+      "donors": [
+        {"project_id": "gen14-frontalk-ft-g1-00057-4bf6893d42", "requested_component_groups": ["accessibility-first hero and focus system", "selection comparison pattern"]},
+        {"project_id": "gen14-fullfront-ff-g5-00046-d534f25748", "requested_component_groups": ["equipment filters and inventory cards", "specification-reservation modal"]},
+        {"project_id": "gen14-design2code-d2c-g3-00039-bf542f01c8", "requested_component_groups": ["event timeline and attendance summary", "resource allocation grid"]}
+      ]
+    },
+    {
+      "augmentation_id": "crossaug-10-conservation-loan-lab",
+      "target_concept": "Conservation Loan Lab — a collection membership, artifact study, and loan-request page",
+      "fusion_intent": "Blend a premium scientific member shell, an immersive artifact viewer, and a structured request workflow into a research-loan service.",
+      "donors": [
+        {"project_id": "gen14-design2code-d2c-g2-00042-8985ee3a77", "requested_component_groups": ["member context sidebar", "curated catalog sections"]},
+        {"project_id": "gen14-fullfront-ff-g5-00036-2767f8f2dc", "requested_component_groups": ["interactive artifact viewer", "scholarly metadata bands"]},
+        {"project_id": "gen14-webuibench-wui-g2-00049-2cb4b048bd", "requested_component_groups": ["structured request workflow", "supporting document upload and validation"]}
+      ]
+    }
+  ]
+}

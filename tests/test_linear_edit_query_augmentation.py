@@ -6,7 +6,7 @@ import re
 
 import pytest
 
-from instruction_augmentation.linear_edit_queries import (
+from inspiration_library.linear_edit_queries import (
     apply_exact_patches,
     build_seed_pool,
     browser_derived_host_facts,
@@ -20,7 +20,7 @@ from instruction_augmentation.linear_edit_queries import (
     validate_edit_sequence,
     validate_quality_audit,
 )
-from instruction_augmentation.transfer_evidence import RankedEffect
+from inspiration_library.transfer_evidence import RankedEffect
 from scripts.run_linear_edit_query_augmentation import export_queries
 
 

@@ -3,7 +3,7 @@ from unittest.mock import Mock, patch
 
 import httpx
 
-from preprocess.pipeline_c.main import sample_preflight
+from crawl.pipeline_c.main import sample_preflight
 
 
 class PipelineCPreflightTests(unittest.TestCase):

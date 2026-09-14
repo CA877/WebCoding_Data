@@ -1,0 +1,25 @@
+{
+  "name": "component_recombination_seed_preflight_20",
+  "seeds": [
+    {"project_id": "gen14-comuibench-cui-g1-00141-afe91dfb71"},
+    {"project_id": "gen14-comuibench-cui-g1-00131-c028d4f1e1"},
+    {"project_id": "gen14-comuibench-cui-g1-00158-438e4dfdd5"},
+    {"project_id": "gen14-comuibench-cui-g1-00151-d623853a2f"},
+    {"project_id": "gen14-comuibench-cui-g2-00049-8aad5c4e2c"},
+    {"project_id": "gen14-comuibench-cui-g2-00022-d30608c5bb"},
+    {"project_id": "gen14-comuibench-cui-g2-00014-2a0cad8bca"},
+    {"project_id": "gen14-comuibench-cui-g2-00007-57bb77c329"},
+    {"project_id": "gen14-comuibench-cui-g3-00069-cc5f5d34a1"},
+    {"project_id": "gen14-comuibench-cui-g3-00032-3d2d665543"},
+    {"project_id": "gen14-comuibench-cui-g3-00098-9c196cf870"},
+    {"project_id": "gen14-comuibench-cui-g3-00091-4805650f77"},
+    {"project_id": "gen14-comuibench-cui-g4-00028-23417876b6"},
+    {"project_id": "gen14-comuibench-cui-g4-00016-1ca69c7b11"},
+    {"project_id": "gen14-comuibench-cui-g4-00014-e342151fc6"},
+    {"project_id": "gen14-comuibench-cui-g4-00139-c4529b3406"},
+    {"project_id": "gen14-comuibench-cui-g5-00153-fb5640d7cf"},
+    {"project_id": "gen14-comuibench-cui-g5-00052-1da7e1a9c5"},
+    {"project_id": "gen14-comuibench-cui-g5-00066-0f26c66424"},
+    {"project_id": "gen14-comuibench-cui-g5-00045-53189373c5"}
+  ]
+}

@@ -3,10 +3,10 @@ from types import SimpleNamespace
 
 import pytest
 
-from instruction_augmentation import deep_browser_exploration as deep
-from instruction_augmentation import production_browser as browser
-from instruction_augmentation.dynamic_capability_retrieval import validate_capability_extraction, validate_live_card_evidence
-from instruction_augmentation.linear_edit_queries import compact_browser_evidence_for_llm
+from inspiration_library import deep_browser_exploration as deep
+from inspiration_library import production_browser as browser
+from inspiration_library.dynamic_capability_retrieval import validate_capability_extraction, validate_live_card_evidence
+from inspiration_library.linear_edit_queries import compact_browser_evidence_for_llm
 from scripts.mine_live_url_capability_pool import compact_live_card
 
 
@@ -117,7 +117,7 @@ def test_navigation_failure_preserves_other_paths(tmp_path, monkeypatch):
 
 
 def test_screenshot_inputs_require_real_state_and_file(tmp_path):
-    from instruction_augmentation.dynamic_capability_retrieval import live_screenshot_inputs
+    from inspiration_library.dynamic_capability_retrieval import live_screenshot_inputs
     from PIL import Image
     file = tmp_path / "state.png"
     Image.new("RGB", (10, 10), "red").save(file)
@@ -136,7 +136,7 @@ def test_full_resume_preserves_failed_source_attempt(tmp_path, monkeypatch):
     import json
     import sys
     from scripts import mine_live_url_capability_pool as miner
-    from instruction_augmentation import live_component_sources as sources
+    from inspiration_library import live_component_sources as sources
     run = tmp_path/'run'
     manifest = tmp_path/'sources.jsonl'
     manifest.write_text(json.dumps({'seed_id':'demo','entry_url':'https://example.com/demo'}))

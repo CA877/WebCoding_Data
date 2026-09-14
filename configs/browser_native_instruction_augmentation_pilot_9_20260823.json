@@ -1,0 +1,179 @@
+{
+  "pilot_id": "browser_native_instruction_augmentation_pilot_9_20260823_v1",
+  "model": "qwen3.8-max",
+  "seeds": [
+    {
+      "seed_id": "boqs-seed-signal-desk",
+      "query": "Build a polished offline incident-triage web app called Signal Desk using index.html, styles.css, and script.js. Use a deep navy and warm amber operations-console aesthetic with a compact header, summary metrics, a filter toolbar, and a two-column work area. Include #queueFilter, #severityFilter, #queueList, #queueCount, #detailsPanel, and #queueStatus. Render at least six realistic tickets from local JavaScript data. Every ticket must have data-ticket-id, a title, severity, owner, time, a details action, and a star action. Filtering, selecting a ticket, showing its details, and toggling its starred state must work. The page must be responsive, keyboard usable, visually complete, and use no external resources."
+    },
+    {
+      "seed_id": "lcbm-seed-ledger-workbench",
+      "query": "Build a polished offline finance-operations page called Ledger Workbench using index.html, styles.css, and script.js. Use an ivory, graphite, and cobalt visual system. Put the app inside #embedHost and include a dense #workbench with #workspaceMain and #reviewRail, a filter toolbar, summary cards, and a realistic transaction table inside #ledgerScroll. The table must have a thead, tbody, at least twelve rows, and enough columns to scroll horizontally in a narrow area. Add #openCommandPalette, a hidden #commandPalette with #commandSearch and #closeCommandPalette, and working open, close, search, row-selection, and filter interactions. Make the ordinary desktop page polished and functional, keep all resources local, and do not use a framework."
+    },
+    {
+      "seed_id": "eocs-seed-transit-dispatch",
+      "query": "Build a polished offline transit dispatch console called Relay Board using index.html, styles.css, and script.js. Use a midnight, cyan, and signal-orange control-room aesthetic. Include #routeSearch, #routeResults, #searchStatus, tab buttons [data-dispatch-tab] for overview, metrics, and alerts, #panelContent, #pinRoute, and #pinStatus. Implement search suggestions, lazy tab content, and a pin/unpin action through a deterministic local asynchronous simulator. Expose window.__raceLab.pending() returning pending request objects with id, channel, and key, and window.__raceLab.resolve(id, payload) for resolving them from browser tests; do not auto-resolve requests. Search input creates channel 'search' requests and renders payload {items:[{name,code,status}]}; non-overview tabs create channel 'tab' requests keyed by their tab name and render payload {title,body}; each pin toggle creates channel 'pin' requests keyed by 'true' or 'false' and consumes payload {pinned,message}. Keep current visible content while a request is pending, show a local pending indicator, and use no external resources."
+    },
+    {
+      "seed_id": "eocs-seed-transit-dispatch-v2",
+      "query": "Build a polished offline transit dispatch console called Relay Board using index.html, styles.css, and script.js. Use a midnight, cyan, and signal-orange control-room aesthetic. Include #routeSearch, #routeResults, #searchStatus, tab buttons [data-dispatch-tab] for overview, metrics, and alerts, #panelContent, #pinRoute, and #pinStatus. Render a complete realistic overview panel synchronously on first load, with search status 'Ready' and pin status 'Route unpinned'; initial load must create no asynchronous requests. User-initiated search suggestions, non-overview tab loads, and pin/unpin actions use a deterministic local asynchronous simulator. Expose window.__raceLab.pending() returning pending request objects with id, channel, and key, and window.__raceLab.resolve(id, payload) for resolving them from browser tests; do not auto-resolve requests. Search input creates channel 'search' requests and renders payload {items:[{name,code,status}]}; non-overview tabs create channel 'tab' requests keyed by their tab name and render payload {title,body}; each pin toggle creates channel 'pin' requests keyed by 'true' or 'false' and consumes payload {pinned,message}. Keep current visible content while a user request is pending, show a compact pending indicator without replacing the whole panel, and use no external resources."
+    }
+  ],
+  "cases": [
+    {
+      "case_id": "boqs-01-named-grid-equivalent",
+      "strategy": "browser_observational_quotient_sampling",
+      "source_seed_id": "boqs-seed-signal-desk",
+      "operator_request": "Create an observationally equivalent implementation of Signal Desk whose main work area is implemented with CSS Grid named areas. Preserve the DOM content, IDs, default pixels, filtering, selection, starring, details, focus behavior, and responsive behavior. The target stylesheet must contain grid-template-areas and must not use absolute positioning for #workspaceMain or #detailsPanel. The training query should describe the same product while explicitly asking for a named-area Grid implementation.",
+      "operator_evidence_blueprint": {
+        "equivalence_class": ["initial pixels", "semantic DOM", "interaction observations"],
+        "implementation_delta": "flex or implicit layout to CSS Grid named areas",
+        "required_mechanism_proof": ["grid-template-areas", "grid-area assignments", "no absolute work-area positioning"]
+      },
+      "export_edit": true,
+      "verification_contract": {
+        "minimum_pixel_similarity": 0.985,
+        "required_patterns": ["grid-template-areas", "grid-area"],
+        "scenarios": ["filter_and_select", "star_toggle"]
+      }
+    },
+    {
+      "case_id": "boqs-02-delegated-event-equivalent",
+      "strategy": "browser_observational_quotient_sampling",
+      "source_seed_id": "boqs-seed-signal-desk",
+      "operator_request": "Create an observationally equivalent implementation of Signal Desk that routes all dynamic ticket-card actions through one delegated click listener on #queueList and data-action attributes. Preserve the HTML content, CSS pixels, filtering, selection, starring, details, status messages, and keyboard-visible behavior. Do not attach per-ticket click listeners. The training query should ask for event delegation because tickets may be re-rendered after filtering.",
+      "operator_evidence_blueprint": {
+        "equivalence_class": ["byte-identical stylesheet", "initial pixels", "ticket interaction trace"],
+        "implementation_delta": "per-node handlers to one delegated queue listener",
+        "required_mechanism_proof": ["data-action", "closest", "queueList.addEventListener"]
+      },
+      "export_edit": true,
+      "verification_contract": {
+        "minimum_pixel_similarity": 0.999,
+        "required_patterns": ["data-action", ".closest(", "queueList.addEventListener"],
+        "scenarios": ["filter_and_select", "star_toggle"]
+      }
+    },
+    {
+      "case_id": "boqs-03-template-clone-equivalent",
+      "strategy": "browser_observational_quotient_sampling",
+      "source_seed_id": "boqs-seed-signal-desk",
+      "operator_request": "Create an observationally equivalent implementation of Signal Desk that renders ticket cards by cloning a native HTML template #ticketTemplate with content.cloneNode(true), filling nodes with textContent, and appending a DocumentFragment. Preserve the visible design, IDs, ticket order, filtering, selection, starring, details, and status output. The ticket renderer must not use innerHTML. The training query should explicitly require safe template cloning for the dynamic queue.",
+      "operator_evidence_blueprint": {
+        "equivalence_class": ["initial pixels", "semantic ticket tree", "interaction observations"],
+        "implementation_delta": "string HTML rendering to template cloning and textContent",
+        "required_mechanism_proof": ["template#ticketTemplate", "cloneNode(true)", "DocumentFragment", "no innerHTML"]
+      },
+      "export_edit": true,
+      "verification_contract": {
+        "minimum_pixel_similarity": 0.985,
+        "required_patterns": ["ticketTemplate", "cloneNode(true)", "DocumentFragment", "textContent"],
+        "forbidden_patterns": ["els.queueList.innerHTML"],
+        "scenarios": ["filter_and_select", "star_toggle"]
+      }
+    },
+    {
+      "case_id": "lcbm-01-intrinsic-split-boundary",
+      "strategy": "layout_constraint_boundary_mining",
+      "source_seed_id": "lcbm-seed-ledger-workbench",
+      "operator_request": "Make Ledger Workbench embeddable in an arbitrary host rather than responsive only to the viewport. Browser probes found the nearest failing region by shrinking #embedHost: intrinsic min-content pressure makes the main pane or toolbar escape the host. Repair the causal CSS using intrinsic sizing techniques such as minmax(0, 1fr), min-width: 0, wrapping controls, and container-aware layout. It must remain usable with no descendant overflow for host widths 960, 760, 620, 520, and 420 CSS pixels. Do not solve this by scaling the whole UI or hiding controls. Write a Generate query that explicitly requires container embedding across that interval.",
+      "operator_evidence_blueprint": {
+        "environment_axis": "#embedHost inline size",
+        "boundary_search": "descending sweep plus nearest failing width",
+        "causal_family": "CSS intrinsic min-content sizing",
+        "target_invariant": "all semantic controls remain visible and contained"
+      },
+      "export_edit": false,
+      "verification_contract": {
+        "host_widths": [960, 760, 620, 520, 420],
+        "required_patterns": ["minmax(0, 1fr)", "min-width: 0"],
+        "probe": "intrinsic_split"
+      }
+    },
+    {
+      "case_id": "lcbm-02-scroll-constraint-surface",
+      "strategy": "layout_constraint_boundary_mining",
+      "source_seed_id": "lcbm-seed-ledger-workbench",
+      "operator_request": "Turn the dense transaction region into a geometrically stable two-axis scroll surface. The header row must stay pinned to the top of #ledgerScroll and the first column must stay pinned to its left edge while the rest of the table scrolls both horizontally and vertically. Their intersection cell must paint above both sticky bands, alignment may drift by at most 2 CSS pixels, and row selection must still work after scrolling. Use actual CSS sticky positioning and explicit stacking order, not a duplicated fake table. Write a Generate query around this scroll-geometry contract.",
+      "operator_evidence_blueprint": {
+        "environment_axis": "#ledgerScroll scrollLeft and scrollTop",
+        "boundary_search": "corner positions in the scroll domain",
+        "causal_family": "sticky containing block and stacking order",
+        "target_invariant": "header and first column preserve their anchor geometry"
+      },
+      "export_edit": false,
+      "verification_contract": {
+        "required_patterns": ["position: sticky", "thead", "z-index"],
+        "probe": "sticky_ledger"
+      }
+    },
+    {
+      "case_id": "lcbm-03-top-layer-escape",
+      "strategy": "layout_constraint_boundary_mining",
+      "source_seed_id": "lcbm-seed-ledger-workbench",
+      "operator_request": "Rebuild #commandPalette as a native modal dialog promoted to the browser top layer so it remains centered, fully visible, and clickable even when #embedHost is narrow and an ancestor has overflow clipping or a transform-created stacking context. Use showModal(), close(), a backdrop, Escape support, initial focus on #commandSearch, and focus restoration to #openCommandPalette. Preserve the rest of the page. Write a Generate query that calls out the top-layer and clipping-escape requirement without naming the hidden tests.",
+      "operator_evidence_blueprint": {
+        "environment_axis": "ancestor clipping and stacking context",
+        "boundary_search": "occlusion probes at palette center and corners",
+        "causal_family": "browser top layer versus author stacking contexts",
+        "target_invariant": "palette receives hit testing and remains inside viewport"
+      },
+      "export_edit": false,
+      "verification_contract": {
+        "required_patterns": ["<dialog", "showModal(", "::backdrop"],
+        "probe": "top_layer_palette"
+      }
+    },
+    {
+      "case_id": "eocs-01-latest-search-linearization",
+      "strategy": "event_order_counterfactual_synthesis",
+      "source_seed_id": "eocs-seed-transit-dispatch-v2",
+      "operator_request": "Make route suggestions linearizable to the latest user input. If the user types two queries and their legal asynchronous responses resolve in either order, an older response must never overwrite the newer query's results or status. Keep the previous content while pending, expose a busy state, and clear it only for the currently relevant request. Preserve window.__raceLab. Write a natural Generate query describing slow-network stale-result suppression.",
+      "operator_evidence_blueprint": {
+        "partial_order": ["input(q1) before input(q2)", "resolve(q1) and resolve(q2) unordered"],
+        "conflicting_write": "#routeResults and #searchStatus",
+        "linearization_point": "latest search generation",
+        "target_invariant": "visible suggestions correspond to current input under all response orders"
+      },
+      "export_edit": false,
+      "verification_contract": {
+        "required_patterns": ["__raceLab", "search"],
+        "probe": "latest_search"
+      }
+    },
+    {
+      "case_id": "eocs-02-latest-tab-linearization",
+      "strategy": "event_order_counterfactual_synthesis",
+      "source_seed_id": "eocs-seed-transit-dispatch-v2",
+      "operator_request": "Make lazy dispatch tabs linearizable to the latest selected tab. Rapidly selecting Metrics and then Alerts creates two legal pending responses; resolving them in either order must leave Alerts selected and #panelContent showing only Alerts data. A stale response may be cached but may not change visible selection, heading, status, or aria-busy for the current panel. Preserve window.__raceLab. Write a natural Generate query describing rapid tab switching on a slow connection.",
+      "operator_evidence_blueprint": {
+        "partial_order": ["select(metrics) before select(alerts)", "resolve(metrics) and resolve(alerts) unordered"],
+        "conflicting_write": "#panelContent and selected tab state",
+        "linearization_point": "current data-dispatch-tab key",
+        "target_invariant": "visible panel matches the last selected tab"
+      },
+      "export_edit": false,
+      "verification_contract": {
+        "required_patterns": ["__raceLab", "data-dispatch-tab"],
+        "probe": "latest_tab"
+      }
+    },
+    {
+      "case_id": "eocs-03-optimistic-pin-rebase",
+      "strategy": "event_order_counterfactual_synthesis",
+      "source_seed_id": "eocs-seed-transit-dispatch-v2",
+      "operator_request": "Make the optimistic route pin toggle converge to the latest user intent under out-of-order acknowledgements. A rapid pin then unpin produces two pending 'pin' operations. Resolve acknowledgements in either order; #pinRoute must end aria-pressed=false, the visible status must say the route is unpinned, and a stale acknowledgement must not roll the UI back. Failed or stale operations may be recorded internally but cannot replace the current intent. Preserve window.__raceLab. Write a natural Generate query describing this optimistic-update consistency contract.",
+      "operator_evidence_blueprint": {
+        "partial_order": ["intent(pin) before intent(unpin)", "ack(pin) and ack(unpin) unordered"],
+        "conflicting_write": "optimistic pressed state and #pinStatus",
+        "linearization_point": "latest local intent version",
+        "target_invariant": "final UI equals latest intent regardless of acknowledgement order"
+      },
+      "export_edit": false,
+      "verification_contract": {
+        "required_patterns": ["__raceLab", "aria-pressed"],
+        "probe": "optimistic_pin"
+      }
+    }
+  ]
+}

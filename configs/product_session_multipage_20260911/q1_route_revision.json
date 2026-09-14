@@ -1,0 +1,6 @@
+{
+  "edit_id": "q1",
+  "diagnostics": [
+    "A newly created local HTML page is a valid target route. Return every local target route with a leading slash, including /page_gallery_intake.html; keep external URLs out of target_routes."
+  ]
+}

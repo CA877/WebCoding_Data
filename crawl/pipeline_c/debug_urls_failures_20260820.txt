@@ -1,0 +1,3 @@
+https://www.python.org/
+https://git-scm.com/
+https://www.djangoproject.com/

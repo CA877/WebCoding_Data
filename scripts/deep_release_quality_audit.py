@@ -27,9 +27,9 @@ EXPECTED_TASK_BY_FILE = {
 }
 
 IMAGE_ROOT_BY_FILE = {
-    "image-generate.jsonl": Path("images/image-generate"),
-    "image-edit.jsonl": Path("images/image-edit"),
-    "image-repair.jsonl": Path("images/image-repair"),
+    "image-generate.jsonl": Path("assets"),
+    "image-edit.jsonl": Path("assets"),
+    "image-repair.jsonl": Path("assets"),
 }
 
 LANG_RE = re.compile(r"""<html[^>]+lang\s*=\s*['"]?([A-Za-z][A-Za-z0-9_-]*)""", re.I)
@@ -406,7 +406,10 @@ def main() -> None:
                             issues.append("duplicate_image_reference_in_sample")
                         seen_refs.add(ref_key)
                         image_ref_counts[f"{path.name}:{rel}"] += 1
-                        full = args.release_root / image_root / rel
+                        if record.get("metadata", {}).get("image_paths_relative_to") == "release_root":
+                            full = args.release_root / rel
+                        else:
+                            full = args.release_root / image_root / rel
                         if args.skip_image_open:
                             if not full.exists():
                                 issues.append(f"{key}_image_file_missing")

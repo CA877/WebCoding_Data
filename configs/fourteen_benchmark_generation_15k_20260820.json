@@ -1,0 +1,183 @@
+{
+  "run_name": "fourteen_benchmark_generation_15k_20260820",
+  "model": "qwen3.8-max",
+  "task": "text-generation",
+  "target_total": 15000,
+  "multipage_target": 9300,
+  "single_page_target": 5700,
+  "notes": {
+    "frontendbench": "Capability reference only because its public paper says data/code will be released later; do not label rows as FrontendBench seeds.",
+    "ground_truth": "Query-only run. Ground-truth website/code generation is deferred to the user's company computer.",
+    "backend_ceiling": "No benchmark profile may exceed WebCompass-level backend complexity."
+  },
+  "benchmarks": [
+    {
+      "benchmark": "WebCompass",
+      "seed_file": "webcompass.jsonl",
+      "target": 2200,
+      "profiles": {
+        "WC-1 commerce-social-transit": 850,
+        "WC-2 enterprise-systems": 170,
+        "WC-3 interactive-exploration": 165,
+        "WC-4 games-simulation": 165,
+        "WC-5 data-workflows": 850
+      }
+    },
+    {
+      "benchmark": "DesignBench",
+      "seed_file": "designbench.jsonl",
+      "target": 400,
+      "profiles": {
+        "DB-G1 vanilla-generation": 80,
+        "DB-G2 react-generation": 80,
+        "DB-G3 vue-generation": 80,
+        "DB-G4 angular-generation": 80,
+        "DB-G5 dense-framework-ui": 80
+      }
+    },
+    {
+      "benchmark": "Interaction2Code",
+      "seed_file": "interaction2code.jsonl",
+      "target": 1400,
+      "profiles": {
+        "I2C-G1 reveal-feedback": 280,
+        "I2C-G2 form-selection": 280,
+        "I2C-G3 position-motion": 280,
+        "I2C-G4 switch-color-media": 280,
+        "I2C-G5 navigation-new-page": 280
+      }
+    },
+    {
+      "benchmark": "Vision2Web",
+      "seed_file": "vision2web.jsonl",
+      "target": 1800,
+      "profiles": {
+        "V2W-1 L1 responsive-content": 150,
+        "V2W-2 L1 responsive-dashboard": 150,
+        "V2W-3 L2 content-navigation": 500,
+        "V2W-4 L2 transaction": 500,
+        "V2W-5 L2 saas-public-service": 500
+      }
+    },
+    {
+      "benchmark": "ArtifactsBench",
+      "seed_file": "artifacts_bench.jsonl",
+      "target": 1800,
+      "profiles": {
+        "AB-1 games": 125,
+        "AB-2 web-applications": 1300,
+        "AB-3 management-data": 125,
+        "AB-4 visual-simulation": 125,
+        "AB-5 multimedia-utility-other": 125
+      }
+    },
+    {
+      "benchmark": "Design2Code",
+      "seed_file": "design2code.jsonl",
+      "target": 300,
+      "profiles": {
+        "D2C-G1 editorial": 60,
+        "D2C-G2 commerce": 60,
+        "D2C-G3 dashboard": 60,
+        "D2C-G4 marketing": 60,
+        "D2C-G5 long-page": 60
+      }
+    },
+    {
+      "benchmark": "Flame-VLM-Code",
+      "seed_file": "flame_vlm_code.jsonl",
+      "target": 400,
+      "profiles": {
+        "FL-G1 dashboard": 80,
+        "FL-G2 form-workflow": 80,
+        "FL-G3 commerce-cards": 80,
+        "FL-G4 data-visualization": 80,
+        "FL-G5 interactive-component": 80
+      }
+    },
+    {
+      "benchmark": "WebGen-Bench",
+      "seed_file": "webgen_bench.jsonl",
+      "target": 1700,
+      "profiles": {
+        "WG-1 commerce-marketplace": 650,
+        "WG-2 internal-enterprise": 650,
+        "WG-3 analytics-productivity": 133,
+        "WG-4 content-community": 133,
+        "WG-5 learning-games-media": 134
+      }
+    },
+    {
+      "benchmark": "InteractWeb-Bench",
+      "seed_file": "interactweb_bench.jsonl",
+      "target": 1100,
+      "profiles": {
+        "IWB-G1 minimal-persona": 75,
+        "IWB-G2 rambling-context": 75,
+        "IWB-G3 ambiguous-intent": 75,
+        "IWB-G4 conflicting-priorities": 75,
+        "IWB-G5 noisy-multipage": 800
+      }
+    },
+    {
+      "benchmark": "FullFront",
+      "seed_file": "fullfront.jsonl",
+      "target": 300,
+      "profiles": {
+        "FF-G1 layout-heavy": 60,
+        "FF-G2 text-image-composition": 60,
+        "FF-G3 long-page": 60,
+        "FF-G4 dashboard": 60,
+        "FF-G5 interactive-page": 60
+      }
+    },
+    {
+      "benchmark": "FronTalk",
+      "seed_file": "frontalk.jsonl",
+      "target": 1300,
+      "profiles": {
+        "FT-G1 marketing-final-state": 100,
+        "FT-G2 commerce-final-state": 500,
+        "FT-G3 dashboard-final-state": 100,
+        "FT-G4 editorial-final-state": 100,
+        "FT-G5 long-horizon-final-state": 500
+      }
+    },
+    {
+      "benchmark": "ComUIBench",
+      "seed_file": "comuibench.jsonl",
+      "target": 1700,
+      "profiles": {
+        "CUI-G1 shared-navigation": 340,
+        "CUI-G2 repeated-cards": 340,
+        "CUI-G3 shared-forms": 340,
+        "CUI-G4 design-system": 340,
+        "CUI-G5 complex-site": 340
+      }
+    },
+    {
+      "benchmark": "WebUIBench",
+      "seed_file": "webuibench.jsonl",
+      "target": 300,
+      "profiles": {
+        "WUI-G1 content-page": 60,
+        "WUI-G2 form-page": 60,
+        "WUI-G3 commerce-page": 60,
+        "WUI-G4 dashboard-page": 60,
+        "WUI-G5 long-page": 60
+      }
+    },
+    {
+      "benchmark": "Web2Code",
+      "seed_file": "web2code.jsonl",
+      "target": 300,
+      "profiles": {
+        "W2C-G1 article": 60,
+        "W2C-G2 product": 60,
+        "W2C-G3 landing": 60,
+        "W2C-G4 dashboard": 60,
+        "W2C-G5 complex-page": 60
+      }
+    }
+  ]
+}
