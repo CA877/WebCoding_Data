@@ -9,7 +9,19 @@
 - **Reverse / controlled producer**：`reverse/` 从清洁网页项目受控构造数据，侧重覆盖和配额。
 - **Forward / agentic producer**：`harness/` 集成 Harness、灵感库和连续 Edit 指令规划；它通过 planner → generator → evaluator 产生实现轨迹，Edit 基于 accepted baseline，Repair 对应实际复现的缺陷。
 
-当前根目录是主仓；顶层 `harness/` 及第三方评测仓库是独立 Git 仓，分别修改、测试与推送。主仓不追踪它们的内容。
+## 五个工作板块
+
+项目按职责分为五个板块。处理某个板块的任务时，先阅读该板块目录内最近的
+`AGENTS.md`。
+
+| 板块 | 主要目录 | 职责边界 |
+| --- | --- | --- |
+| 逆向数据构造 | `reverse/`、`crawl/`、`validate/` | 从清洁网页、母本和 benchmark 约束出发，受控构造 Generate/Edit/Repair 数据，处理查询、网页快照、资源闭包、任务变换、验证和 release admission。这里的产物是否可训练必须遵循数据 schema、证据链和验收状态，不能把 candidate 或 pilot 自动称为 canonical。 |
+| 正向数据构造（灵感库） | `inspiration_library/` | 从真实网页和能力证据中挖掘可复用的交互、视觉和功能灵感，规划连续 Edit 能力与目标状态，形成供 Harness 或后续构造消费的结构化灵感资产。灵感、候选和已接收训练数据必须保持状态区分。 |
+| 训练 | `Webcoding-Model-Project/` 的训练配置、数据导出和 `LLaMA-Factory/` | 管理 ShareGPT/多模态训练协议、数据注册、token 长度和过滤、Qwen3-VL SFT 配置、训练启动、checkpoint、训练日志及训练侧 smoke 验证。训练参数和数据快照以该独立仓的 run 目录及其训练文档为准。 |
+| 评测 | `evaluate/` 以及 `Webcoding-Model-Project/benchmark/`、各 run 的 `eval/` | 管理 WebCompass、ArtifactsBench、WebGen-Bench、Vision2Web 等推理、渲染、判分和结果归档。评测采样参数、模型版本、基线对照、失败分类和分数口径必须与训练配置和正式评测文档分开记录，不能用局部 smoke 或历史分数代替正式结果。 |
+| Harness | `harness/` | 管理 planner → generator → evaluator 的 agentic 生产链、浏览器执行、连续 Edit 规划、accepted baseline、Repair 缺陷复现和运行轨迹。它是独立 Git 仓，任务状态和运行产物遵循 `harness/` 内部文档，不直接改写逆向路线或训练 release。 |
+
 
 ## 全局不变量
 
@@ -49,26 +61,25 @@
 
 术语、数据事实、运行命令、实验数量和历史结论均由上述唯一 owner 维护；其他文件只引用，不复制。
 
-## 已知悬空引用
-
-以下引用在本次目录重构前后都不指向仓库内文件，属历史遗留，保留原样待补。排查路径问题时不要把它们误判为重构遗漏，也不要在没有实现的情况下补空文件：
-
-- `crawl/pipeline_a/main.py` 的 `from reverse.add_js import ...`：`add_js.py` 在 HEAD 和物理机上均不存在。
-- `scripts/run_product_edit_session.py` 与 `scripts/run_product_edit_batch.py`：被 `configs/product_session_*` 和 `harness/docs/product_edit_session.md` 引用，从未入库，物理机上同样没有。
-- `validate/docs/data/construction_spec.md` 中 3 条 `WebCoding_Data/...` 链接：指向已删除或从未入库的历史产物（`docs/handoffs/`、`docs/synthesis/`、`logs/`）。
-
-## 已删除的过期测试
-
-`tests/` 恢复为重构前版本后，有 13 个用例失败。经基线对照确认**与目录重构无关**：同一份测试在重构前的目录名下跑重构前的源码可以通过，跑当前源码同样失败——本地 `crawl/`、`inspiration_library/` 的实现已领先那版测试数百行（`crawl/pipeline_c/main.py` +815 行、`inspiration_library/production_browser.py` +306 行等），测试断言的是被取代的旧行为。物理机上同名测试文件与仓库内版本逐字节相同，不存在"更新的测试"可补。
-
-这 13 个用例已于 2026-09-14 删除，其余全部保留并通过：
-
-- 整文件删除（该文件所有用例都已过期）：`test_pipeline_c_absolute_resources.py`、`test_pipeline_c_preflight.py`、`test_pipeline_c_remote_fonts.py`（`ResourceLocalizer` 的远程资源处理行为已改变）。
-- 单用例删除：`test_construct_text_editing.py`、`test_dynamic_capability_retrieval.py`(2)、`test_live_component_sources.py`、`test_live_mining_evidence_fixes.py`(3)。
-- `test_complex_query_routing.py::test_current_1k_routes_to_expected_stable_counts`：性质不同（非过期），它硬编码 `runs/` 下某次历史 run 的路径并断言精确条数，而 `runs/` 不入库，在任何 clone 里都无法通过，故一并删除。
-
-被删用例覆盖的行为（远程 CSS 是否下载、capability 抽取的字段裁剪、截图状态校验等）目前**没有测试覆盖**。要重建这些覆盖时，须按当前实现重新确立断言，不要从 git 历史里直接恢复旧断言。
-
 ## 知识维护
 
-新要求先判断归属：全项目行为约束 → 本文件；某类任务工作流 → 对应 skill；项目事实/设计 → 对应模块 `docs/`；运行细节 → `docs/operations/`；当前进度 → `PROJECT_STATUS.md`；保留的实验结论 → 对应模块 `docs/` 或运行目录。没有跨任务价值的临时要求不持久化。
+新要求先判断归属：全项目行为约束 → 本文件；某类任务工作流 → 对应 skill；项目事实/设计 → 对应模块 `docs/`；运行细节 → `docs/operations/`；当前进度 → `docs/current_state.md`；保留的实验结论 → 对应模块 `docs/` 或运行目录。没有跨任务价值的临时要求不持久化。
+
+全项目不变量在 `AGENTS.md`；任务工作流在 skill；项目事实/设计在 `docs/`；运行细节在 `docs/operations/`；状态在 `docs/current_state.md`；历史结论在报告或 archive。
+
+迁移或修改规则时，保留原信息、更新引用并删除完整重复副本；不要把临时参数、进度或单次例外升级为长期规则。规则改变数据语义、运行行为或接口时，同步更新实现和权威文档；用户仅要求文档时不扩大为实现任务。
+
+## 发布数据的要求
+
+先读取 [发布运行手册](../../../docs/operations/publishing.md)、[数据资产登记](../../../validation/docs/data/data_assets_registry.md)和目标 release 的 manifest。确认用户授权的源版本、目标仓库、目标路径和覆盖范围后，再执行任何上传。
+
+保留记录语义、schema、图片角色和现有数据；需要字段或 prompt 对齐时转用 `synthesize-data`。发布后核验文件清单、索引、哈希与远端结果，并报告版本、目标和兼容边界。
+
+
+## 远程机器
+### 代码同步原则
+代码修改必须要在本地完成，然后同步到远程机器上，两者代码需要保持一致，除了部分内容不需要同步到物理机上。
+
+
+### 物理机
+- SSH：`ssh -p 65022 adminweihunj@36.213.175.38`；凭据使用受保护来源。

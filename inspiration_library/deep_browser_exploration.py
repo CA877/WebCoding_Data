@@ -106,8 +106,12 @@ def observed_selectors(observation: dict[str, Any]) -> set[str]:
     return selectors
 
 
-def _spread_indices(size: int, count: int) -> list[int]:
-    if size <= 0 or count <= 0:
+def _spread_indices(size: int, count: int | None) -> list[int]:
+    if size <= 0:
+        return []
+    if count is None:            # 不抽样，全量返回
+        return list(range(size))
+    if count <= 0:
         return []
     if size <= count:
         return list(range(size))
@@ -488,7 +492,8 @@ def exploration_planning_context(observation: dict[str, Any]) -> str:
         'or deeper-state selectors, even after opening a dialog; omit unsupported actions.')
 
 
-def _coverage_rows(rows: list[Any], limit: int) -> list[Any]:
+def _coverage_rows(rows: list[Any], limit: int | None) -> list[Any]:
+    """按「尽量分散」的策略抽 limit 行；`limit=None` 表示全取。"""
     return [rows[index] for index in _spread_indices(len(rows), limit)]
 
 
@@ -505,7 +510,7 @@ def _online_control_rows(
     observation: dict[str, Any],
     *,
     include_selectors: bool,
-    limit: int,
+    limit: int | None,
 ) -> list[dict[str, Any]]:
     snapshots: list[dict[str, Any]] = []
     for key in ("baseline", "mobile_baseline"):
@@ -687,10 +692,13 @@ def compact_live_browser_evidence_for_llm(
     observation: dict[str, Any],
     *,
     include_selectors: bool,
-    control_limit: int = 64,
+    control_limit: int | None = 64,
     include_action_steps: bool = False,
 ) -> dict[str, Any]:
-    """Bound a live docs page while retaining spread component evidence."""
+    """Bound a live docs page while retaining spread component evidence.
+
+    `control_limit=None` 表示不抽样，把全部去重后的控件都交给模型（用于量化上限损失）。
+    """
 
     baseline = observation.get("baseline")
     mobile = observation.get("mobile_baseline")

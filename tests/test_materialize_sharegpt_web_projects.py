@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.materialize_sharegpt_web_projects import (
+from reverse.utils.materialize_sharegpt_web_projects import (
     assistant_answer,
     parse_project_files,
     safe_instance_id,

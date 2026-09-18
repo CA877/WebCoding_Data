@@ -305,22 +305,19 @@ def _process_one(project_dir: Path, args, synthesizer, all_task_types,
         changed_affected_pages = sorted({
             str(item["page"]).split("#", 1)[0]
             for item in visual["screens"]
-            if item["changed_ratio"] >= args.minimum_changed_ratio
+            if item["changed_ratio"] > 0
         })
-        image_repair_eligible = bool(changed_affected_pages)
-        # ``repair_visual_difference`` is also used to measure sub-threshold
-        # text-only repairs, so it is called with a zero raising threshold.
-        # The persisted metadata must nevertheless describe the real release
-        # gate used below, not that measurement implementation detail.
+        # WebCompass synthetic accepts the injected patch after code
+        # validation; screenshot difference is evidence, not an admission
+        # threshold. Keep the computed metrics for downstream analysis.
+        image_repair_eligible = True
         visual["minimum_changed_ratio"] = args.minimum_changed_ratio
-        if image_repair_eligible:
-            failure_evidence.append({
-                "kind": "screenshot_diff",
-                "status": "reproduced",
-                "max_changed_ratio": visual["max_changed_ratio"],
-                "minimum_changed_ratio": args.minimum_changed_ratio,
-                "changed_affected_pages": changed_affected_pages,
-            })
+        failure_evidence.append({
+            "kind": "screenshot_diff",
+            "status": "measured",
+            "max_changed_ratio": visual["max_changed_ratio"],
+            "changed_affected_pages": changed_affected_pages,
+        })
         return {
             "instance_id": instance_id,
             "source_project": str(project_dir.resolve()),
@@ -368,8 +365,8 @@ def main() -> None:
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--limit", type=int, default=0)
     parser.add_argument("--offset", type=int, default=0)
-    parser.add_argument("--min-tasks", type=int, default=1)
-    parser.add_argument("--max-tasks", type=int, default=3)
+    parser.add_argument("--min-tasks", type=int, default=4)
+    parser.add_argument("--max-tasks", type=int, default=12)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument(
         "--instance-id-prefix", default="",
@@ -391,7 +388,8 @@ def main() -> None:
         "--canonical-screenshot-dir", type=Path, required=True,
         help="Immutable mother screenshot cache shared with image-generate and image-edit.",
     )
-    parser.add_argument("--minimum-changed-ratio", type=float, default=0.01)
+    parser.add_argument("--minimum-changed-ratio", type=float, default=0.0,
+                        help="Compatibility option; WebCompass synthetic has no visual-difference gate.")
     parser.add_argument("--maximum-clean-rerender-ratio", type=float, default=0.002,
                         help="Deprecated compatibility option; paired rerenders now use identical viewports.")
     parser.add_argument("--image-repair-target", type=int, default=0,

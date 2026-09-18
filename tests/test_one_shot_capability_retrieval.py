@@ -15,7 +15,7 @@ from inspiration_library.one_shot_capability_retrieval import (
     retrieve_top_k_with_snippets,
     validate_generated_retrieval_plan,
 )
-from scripts.preflight_linear_edit_query_cache import load_completed_preflight
+from inspiration_library.utils.preflight_linear_edit_query_cache import load_completed_preflight
 
 
 def _card(

@@ -8,7 +8,7 @@ import sys
 
 code, run = map(Path, sys.argv[1:3])
 sys.path[:0] = [str(code), str(code / "harness")]
-from scripts.run_live_url_audit_case import supervise
+from inspiration_library.utils.run_live_url_audit_case import supervise
 
 mode = next((flag for flag in ("--compare", "--filter-retention", "--q3-risk") if flag in sys.argv), None)
 output = run / "session_v3" / {"--compare": "risk_fix_diagnostic", "--filter-retention": "q3_filter_retention", "--q3-risk": "q3_risk_diagnostic"}.get(mode, "seed_risk_diagnostic")

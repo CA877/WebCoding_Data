@@ -21,7 +21,7 @@ from inspiration_library.linear_edit_queries import (
     validate_quality_audit,
 )
 from inspiration_library.transfer_evidence import RankedEffect
-from scripts.run_linear_edit_query_augmentation import export_queries
+from inspiration_library.utils.run_linear_edit_query_augmentation import export_queries
 
 
 def _original_record(instance_id: str) -> dict:

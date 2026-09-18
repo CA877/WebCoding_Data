@@ -33,7 +33,7 @@ if [[ "$API_PROFILE" == "dashscope_doc_direct" ]]; then
   if command -v pdftotext >/dev/null 2>&1; then
     OPENAI_API_KEY="$(pdftotext -layout "$API_DOC" - | sed -nE 's/.*(sk-[A-Za-z0-9_-]{20,}).*/\1/p' | head -n 1)"
   else
-    OPENAI_API_KEY="$(uv run --with pypdf python scripts/extract_dashscope_key.py "$API_DOC")"
+    OPENAI_API_KEY="$(uv run --with pypdf python reverse/utils/extract_dashscope_key.py "$API_DOC")"
   fi
   [[ -n "$OPENAI_API_KEY" ]] || { echo "Could not locate a DashScope key in the API document" >&2; exit 2; }
   export OPENAI_API_KEY
@@ -70,20 +70,20 @@ OUTPUT_ROOT="${OUTPUT_ROOT:-runs/construct_edit_repair_$(date +%Y%m%d)}"
 EDIT_WORKERS="${EDIT_WORKERS:-24}"
 REPAIR_WORKERS="${REPAIR_WORKERS:-8}"
 MIN_TASKS="${MIN_TASKS:-1}"
-MAX_TASKS="${MAX_TASKS:-7}"
+MAX_TASKS="${MAX_TASKS:-12}"
 EDIT_MIN_TASKS="${EDIT_MIN_TASKS:-$MIN_TASKS}"
 EDIT_MAX_TASKS="${EDIT_MAX_TASKS:-$MAX_TASKS}"
 REPAIR_MIN_TASKS="${REPAIR_MIN_TASKS:-$MIN_TASKS}"
-REPAIR_MAX_TASKS="${REPAIR_MAX_TASKS:-3}"
+REPAIR_MAX_TASKS="${REPAIR_MAX_TASKS:-12}"
 SEED="${SEED:-20260805}"
 MAX_RETRIES="${MAX_RETRIES:-1}"
 MAX_OUTPUT_TOKENS="${MAX_OUTPUT_TOKENS:-8192}"
 IMAGE_REPAIR_TARGET="${IMAGE_REPAIR_TARGET:-3000}"
-EDIT_PROFILE="${EDIT_PROFILE:-balanced}"
+EDIT_PROFILE="${EDIT_PROFILE:-webcompass}"
 EDIT_PAGE_SCOPE="${EDIT_PAGE_SCOPE:-any}"
-REPAIR_PROFILE="${REPAIR_PROFILE:-taxonomy}"
+REPAIR_PROFILE="${REPAIR_PROFILE:-webcompass}"
 REPAIR_PAGE_SCOPE="${REPAIR_PAGE_SCOPE:-any}"
-IMAGE_INPUT_VARIANTS="${IMAGE_INPUT_VARIANTS:-source_image,target_image,source_target_images}"
+IMAGE_INPUT_VARIANTS="${IMAGE_INPUT_VARIANTS:-source_image}"
 DRY_RUN="${DRY_RUN:-0}"
 
 # The physical machine must use the project lora environment.  Keep an
@@ -101,8 +101,8 @@ export CONSTRUCT_STREAM="${CONSTRUCT_STREAM:-1}"
 export CONSTRUCT_TRANSPORT_ATTEMPTS="${CONSTRUCT_TRANSPORT_ATTEMPTS:-1}"
 BROWSER_PROXY="${BROWSER_PROXY:-}"
 
-if [[ "$EDIT_MIN_TASKS" -lt 1 || "$EDIT_MAX_TASKS" -lt "$EDIT_MIN_TASKS" || "$EDIT_MAX_TASKS" -gt 7 ]]; then
-  echo "EDIT_MIN_TASKS/EDIT_MAX_TASKS must satisfy 1 <= min <= max <= 7" >&2
+if [[ "$EDIT_MIN_TASKS" -lt 4 || "$EDIT_MAX_TASKS" -lt "$EDIT_MIN_TASKS" || "$EDIT_MAX_TASKS" -gt 12 ]]; then
+  echo "EDIT_MIN_TASKS/EDIT_MAX_TASKS must satisfy 4 <= min <= max <= 12" >&2
   exit 2
 fi
 if [[ "$REPAIR_MIN_TASKS" -lt 1 || "$REPAIR_MAX_TASKS" -lt "$REPAIR_MIN_TASKS" ]]; then
@@ -197,7 +197,7 @@ if [[ "$TASKS" == *"repair"* ]]; then
     --workers "$REPAIR_WORKERS" --min-tasks "$REPAIR_MIN_TASKS" --max-tasks "$REPAIR_MAX_TASKS" \
     --seed "$SEED" --max-retries "$MAX_RETRIES" --max-output-tokens "$MAX_OUTPUT_TOKENS" \
     --repair-profile "$REPAIR_PROFILE" --page-scope "$REPAIR_PAGE_SCOPE" \
-    --browser-proxy "$BROWSER_PROXY" --minimum-changed-ratio 0.01 \
+    --browser-proxy "$BROWSER_PROXY" --minimum-changed-ratio 0 \
     --image-repair-target "$IMAGE_REPAIR_TARGET"
 fi
 

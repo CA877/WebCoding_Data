@@ -28,7 +28,7 @@ test -f "$TOKENIZER"
 mkdir -p "$OUTPUT_ROOT"
 
 cd "$PROJECT_ROOT"
-"$UV_BIN" run python scripts/preflight_pipeline_c_rich_urls.py \
+"$UV_BIN" run python crawl/utils/preflight_pipeline_c_rich_urls.py \
   --candidate-manifest "$CANDIDATE_MANIFEST" \
   --output-dir "$PREFLIGHT_DIR" \
   --target "$PREFLIGHT_TARGET" \
@@ -36,7 +36,7 @@ cd "$PROJECT_ROOT"
   --timeout 10 \
   --proxy "$PROXY_URL"
 
-"$UV_BIN" run python scripts/probe_pipeline_c_url_complexity.py \
+"$UV_BIN" run python crawl/utils/probe_pipeline_c_url_complexity.py \
   --urls "$PREFLIGHT_DIR/selected_urls.txt" \
   --output "$PROBE_RESULTS" \
   --limit "$BROWSER_PROBE_LIMIT" \
@@ -49,7 +49,7 @@ if [[ -e "$SELECTED_DIR" ]]; then
   echo "Refusing to overwrite existing selection: $SELECTED_DIR" >&2
   exit 1
 fi
-"$UV_BIN" run python scripts/select_pipeline_c_probe_results.py \
+"$UV_BIN" run python crawl/utils/select_pipeline_c_probe_results.py \
   --probe-results "$PROBE_RESULTS" \
   --probe-manifest "$PREFLIGHT_DIR/selected_manifest.jsonl" \
   --output-dir "$SELECTED_DIR" \

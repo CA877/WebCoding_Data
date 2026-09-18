@@ -1,7 +1,7 @@
 from pathlib import Path
 import sys
 
-from scripts.run_live_url_audit_case import supervise
+from inspiration_library.utils.run_live_url_audit_case import supervise
 
 
 def test_success_is_logged(tmp_path):

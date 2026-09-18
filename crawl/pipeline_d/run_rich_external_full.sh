@@ -18,7 +18,7 @@ ADMISSION_PROFILE="${PIPELINE_D_ADMISSION_PROFILE:-inspiration}"
 
 mkdir -p "$RUN_ROOT"
 
-"$UV_BIN" run python scripts/probe_pipeline_c_url_complexity.py \
+"$UV_BIN" run python crawl/utils/probe_pipeline_c_url_complexity.py \
   --urls "$SOURCE_DIR/selected_urls.txt" \
   --output "$RUN_ROOT/probe_results.jsonl" \
   --limit "$INPUT_LIMIT" \
@@ -29,7 +29,7 @@ mkdir -p "$RUN_ROOT"
   --browser-proxy "$BROWSER_PROXY"
 
 if test ! -e "$RUN_ROOT/selection"; then
-  "$UV_BIN" run python scripts/select_pipeline_c_probe_results.py \
+  "$UV_BIN" run python crawl/utils/select_pipeline_c_probe_results.py \
     --probe-results "$RUN_ROOT/probe_results.jsonl" \
     --probe-manifest "$SOURCE_DIR/selected_manifest.jsonl" \
     --output-dir "$RUN_ROOT/selection" \

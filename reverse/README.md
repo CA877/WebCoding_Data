@@ -140,16 +140,16 @@ REPAIR_PROFILE=taxonomy REPAIR_PAGE_SCOPE=any TASKS=repair \
 先将每条 GPT 回复中的 `# 文件名` + Markdown code fence 无损恢复为项目目录：
 
 ```bash
-python scripts/materialize_sharegpt_web_projects.py \
+python reverse/utils/materialize_sharegpt_web_projects.py \
   --input-jsonl /data1/xieqianqian/webcoding/data/20260804/all_merged_instructions/sft_train/train_sharegpt_webcompass_only_6503.jsonl \
   --output-dir runs/webcompass_6503/source_projects \
   --audit-jsonl runs/webcompass_6503/materialize_audit.jsonl \
   --project-list runs/webcompass_6503/materialized_projects.txt
 ```
 
-使用 `scripts/filter_construct_projects_40k.py --allow-missing-screenshot` 对所有完整文件做
+使用 `reverse/utils/filter_construct_projects_40k.py --allow-missing-screenshot` 对所有完整文件做
 40K 硬门禁；超过上限直接淘汰，不截断、不丢文件。随后生成 image-generate 截图，
-并用 `scripts/select_construct_quotas.py` 固定 edit 3,000 清单与 repair 候选顺序。
+并用 `reverse/utils/select_construct_quotas.py` 固定 edit 3,000 清单与 repair 候选顺序。
 
 ## 一条命令批量运行
 
@@ -157,18 +157,18 @@ python scripts/materialize_sharegpt_web_projects.py \
 口径，不能用于本轮构造。对刚恢复的 6,503 项目用精确 Qwen tokenizer 预筛：
 
 ```bash
-python3 scripts/filter_construct_projects_40k.py \
+python3 reverse/utils/filter_construct_projects_40k.py \
   --project-list runs/webcompass_6503/materialized_projects.txt \
   --tokenizer .cache/qwen3-tokenizer.json \
   --output-list runs/webcompass_6503/eligible_40k_preclean.txt \
   --audit-jsonl runs/webcompass_6503/token_precheck.jsonl \
   --allow-missing-screenshot
 
-python3 scripts/prepare_clean_screenshots.py \
+python3 reverse/utils/prepare_clean_screenshots.py \
   --project-list runs/webcompass_6503/eligible_40k_preclean.txt \
   --browser-proxy http://127.0.0.1:7890 --width 1920 --height 1080
 
-python3 scripts/select_construct_quotas.py \
+python3 reverse/utils/select_construct_quotas.py \
   --eligible-list runs/webcompass_6503/eligible_40k_preclean.txt \
   --edit-list runs/webcompass_6503/edit_projects.txt \
   --repair-list runs/webcompass_6503/repair_projects.txt \
@@ -188,7 +188,7 @@ bash reverse/run_edit_repair_batch.sh
 
 脚本默认使用 `API_PROFILE=dashscope_doc_direct`，清除所有代理变量后直连；可用 `DASHSCOPE_API_DOC=/path/to/项目用api.pdf` 指定文档位置。key 不写入 Bash、README、JSONL 或交付包。`API_PROFILE=env` 仅作为显式兼容入口，不是默认生产路径。
 
-物理机环境若没有 PDF 解析依赖，可由本机从同一受保护 PDF 读取 key，通过 SSH 标准输入只注入远端进程环境，并使用 `API_PROFILE=inherited_doc`；不得为此生成远端 `.env`。正式批量前先运行 `reverse/run_edit_repair_quality_pilot.sh`，再用 `scripts/audit_edit_repair_taxonomy_quality.py` 独立复核。
+物理机环境若没有 PDF 解析依赖，可由本机从同一受保护 PDF 读取 key，通过 SSH 标准输入只注入远端进程环境，并使用 `API_PROFILE=inherited_doc`；不得为此生成远端 `.env`。正式批量前先运行 `reverse/run_edit_repair_quality_pilot.sh`，再用 `reverse/utils/audit_edit_repair_taxonomy_quality.py` 独立复核。
 
 默认输出到 `runs/construct_edit_repair_<运行日期>/`：
 

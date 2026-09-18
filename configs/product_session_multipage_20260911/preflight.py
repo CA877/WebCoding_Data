@@ -7,7 +7,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 from inspiration_library.production_browser import verify_project
-from scripts.run_live_url_audit_case import supervise
+from inspiration_library.utils.run_live_url_audit_case import supervise
 from scripts.run_product_edit_session import ResourceMonitor
 
 RUN = Path('/data2/adminweihunj/webcoding/inspiration_library/runs/product_session_multipage_20260911')

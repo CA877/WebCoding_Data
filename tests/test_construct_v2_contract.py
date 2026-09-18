@@ -16,11 +16,11 @@ from reverse.construct_common import (
     validate_patch_round_trip,
 )
 from reverse.v2_records import repair_records
-from scripts.pack_construct_v2_release import (
+from reverse.utils.pack_construct_v2_release import (
     select_balanced_text_repairs,
     write_provenance,
 )
-from scripts.audit_construct_v2_release import (
+from validate.utils.audit_construct_v2_release import (
     apply_exact as audit_apply_exact,
     changed_ratio,
     validate_instruction_contract,

@@ -355,7 +355,7 @@ def test_retrieval_excludes_current_host_and_used_capabilities() -> None:
 
 
 def test_live_source_rejects_targets_with_wrong_schema(tmp_path) -> None:
-    from scripts.mine_live_url_capability_pool import load_sources
+    from inspiration_library.utils.mine_live_url_capability_pool import load_sources
     path = tmp_path / "sources.jsonl"
     path.write_text(json.dumps({"seed_id":"x", "entry_url":"https://example.com", "target_edit_types":"Tabs"}))
     with pytest.raises(ValueError, match="array"):

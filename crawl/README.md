@@ -82,8 +82,8 @@ bash crawl/pipeline_c/run_strict_local_debug.sh \
 `pipeline_c` 的严格抓取前增加三层候选门禁，避免只按代码体积最小值选择旧式文本页：
 
 1. `scripts/build_pipeline_c_rich_url_queue.py` 从历史真实浏览器成功记录中提取不同主域名；历史成功只作为可访问性先验。
-2. `scripts/preflight_pipeline_c_rich_urls.py` 在当前网络环境中排除 HTTP 失败、challenge、停放页和低结构页面；这里的六类宽粒度页面结构只用于第一层召回。
-3. `scripts/probe_pipeline_c_url_complexity.py` 用独立 Chromium 测量真实请求体积，并按 WebCompass 的 16 类 Edit 能力记录候选证据：Data Table、Rich Text Editor、Drag & Drop、Tree View、Real-time Dashboard、Infinite Scroll、Async Form Validation、File Upload Progress、Parallax、Page Transitions、Particles、Skeleton Loading、Shopping Cart、Authentication、Multi-step Wizard、Notification Center。同时记录 tabs、dialog、search、pagination、toggle、loading/selected/disabled state 等原子特征。DOM 命中只是候选证据，动态能力仍需浏览器动作确认。
+2. `crawl/utils/preflight_pipeline_c_rich_urls.py` 在当前网络环境中排除 HTTP 失败、challenge、停放页和低结构页面；这里的六类宽粒度页面结构只用于第一层召回。
+3. `crawl/utils/probe_pipeline_c_url_complexity.py` 用独立 Chromium 测量真实请求体积，并按 WebCompass 的 16 类 Edit 能力记录候选证据：Data Table、Rich Text Editor、Drag & Drop、Tree View、Real-time Dashboard、Infinite Scroll、Async Form Validation、File Upload Progress、Parallax、Page Transitions、Particles、Skeleton Loading、Shopping Cart、Authentication、Multi-step Wizard、Notification Center。同时记录 tabs、dialog、search、pagination、toggle、loading/selected/disabled state 等原子特征。DOM 命中只是候选证据，动态能力仍需浏览器动作确认。
 4. 按任务资源口径二选一：需要离线闭包时进入 Pipeline C；只保留外链时进入 Pipeline D。两类输出不得混合统计。
 
 小规模端到端入口：

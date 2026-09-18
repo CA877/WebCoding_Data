@@ -9,7 +9,7 @@ import sys
 
 code, run = map(Path, sys.argv[1:3])
 sys.path.insert(0, str(code))
-from scripts.run_live_url_audit_case import supervise
+from inspiration_library.utils.run_live_url_audit_case import supervise
 
 credentials = json.load(sys.stdin)
 if set(credentials) != {"TOKENWAVE_OPENAI_API_KEY"} or not isinstance(credentials["TOKENWAVE_OPENAI_API_KEY"], str):

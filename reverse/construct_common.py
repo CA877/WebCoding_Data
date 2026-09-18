@@ -2498,7 +2498,7 @@ class LocalSearchReplaceSynthesizer:
                     item["task_type"] = html_unescape(item["task_type"].strip())
 
         sr_matches = re.findall(
-            r'<search_replace\s+path="([^"]+)"\s+task_type="([^"]+)">\s*<search>(.*?)</search>\s*<replace>(.*?)</replace>\s*</search_replace>',
+            r'<search_replace\s+path="([^"]+)"(?:\s+task_type="([^"]+)")?>\s*<search>(.*?)</search>\s*<replace>(.*?)</replace>\s*</search_replace>',
             response_text,
             re.DOTALL,
         )
@@ -2514,10 +2514,10 @@ class LocalSearchReplaceSynthesizer:
             replace_stripped = unwrap_cdata(replace)
             if search_stripped == replace_stripped:
                 continue
-            modified_files.append(
-                {"path": path.strip(), "task_type": html_unescape(task_type.strip()),
-                 "search": search_stripped, "replace": replace_stripped}
-            )
+            item = {"path": path.strip(), "search": search_stripped, "replace": replace_stripped}
+            if task_type:
+                item["task_type"] = html_unescape(task_type.strip())
+            modified_files.append(item)
         checks_match = re.search(r"<browser_checks>(.*?)</browser_checks>", response_text, re.DOTALL)
         browser_checks = json.loads(checks_match.group(1).strip()) if checks_match else []
         return {
@@ -2708,6 +2708,7 @@ existing stable IDs or data-testid values and valid rendered data items.
 
 def build_forward_edit_synthesizer(api_key: str, base_url: str | None, model: str, max_retries: int = 1,
                                    max_tokens: int = 8_192):
+    from reverse.web_coding_demo.synthetic.official_prompts import edit_prompt
     _, task_descriptions = load_edit_catalog()
 
     class ForwardEditPairSynthesizer(LocalSearchReplaceSynthesizer):
@@ -2725,32 +2726,7 @@ def build_forward_edit_synthesizer(api_key: str, base_url: str | None, model: st
             for idx, task_type in enumerate(task_types, 1):
                 task_descriptions_str += f"Task {idx}: {task_type}\n  Guideline: {task_descriptions[task_type]}\n\n"
             task_types_json = json.dumps(task_types, ensure_ascii=False)
-            scope_instruction = patch_scope_instruction(generation_data)
-            page_instruction = ""
-            if require_cross_page:
-                page_instruction = f"""
-MULTI-PAGE REQUIREMENT (MANDATORY): This task must change behavior across the
-connected pages {json.dumps(generation_data.get('project_pages', []), ensure_ascii=False)}.
-Modify at least two existing HTML pages, or modify shared CSS/JS/TS code used
-by multiple pages. Include working same-origin navigation/state continuity and
-do not collapse the project into a single page.
-"""
-            prompt = f"""Generate {len(task_types)} editing tasks for the webpage below. Output ONLY XML, no explanation.
-
-{scope_instruction}{page_instruction}Tasks:
-{task_descriptions_str}
-task_type values: {task_types_json}
-
-Output format (nothing else):
-<description>[{{"task_type": "...", "description": "..."}}]</description>
-Each selected task type must have one or more patches. Mark EVERY patch with
-the exact task_type it implements; do not share an unlabelled patch across tasks.
-Each task must use 1--10 patches. Every <search> must be a non-empty, verbatim,
-uniquely occurring substring of an existing file. Do not create new files and
-do not use fuzzy, abbreviated, or placeholder search text.
-<search_replace path="path/to/file" task_type="one selected task_type"><search>exact source text</search><replace>edited text</replace></search_replace>
-
-{src_code_context}"""
+            prompt = edit_prompt(task_descriptions_str, task_types_json, src_code_context, len(task_types))
 
             source_map = {item["path"]: item["code"] for item in src_code}
             validation_error = ""
@@ -2791,13 +2767,7 @@ by another patch as a later search target.
                         )
                         snapped_mods.append(snapped)
                     validate_patch_paths_for_context(generation_data, snapped_mods)
-                    self._validate_task_patch_mapping(result["description"], snapped_mods, task_types)
-                    validate_patch_round_trip(
-                        src_code, generation_data.get("full_code", src_code), snapped_mods
-                    )
-                    validate_multipage_patch_scope(
-                        generation_data, snapped_mods, required=require_cross_page
-                    )
+                    validate_patch_round_trip(src_code, generation_data.get("full_code", src_code), snapped_mods)
                     metadata = dict(result.get("llm_metadata") or {})
                     metadata["validation_attempt"] = validation_attempt
                     return {
@@ -2956,6 +2926,7 @@ or more patches. Mark EVERY patch with the exact task_type it removes.
 
 def build_repair_synthesizer(api_key: str, base_url: str | None, model: str, max_retries: int = 1,
                              max_tokens: int = 8_192):
+    from reverse.web_coding_demo.synthetic.official_prompts import repair_prompt
     _, defect_descriptions = load_repair_catalog()
 
     class RepairPairSynthesizer(LocalSearchReplaceSynthesizer):
@@ -2973,78 +2944,7 @@ def build_repair_synthesizer(api_key: str, base_url: str | None, model: str, max
             for idx, defect_type in enumerate(defect_types, 1):
                 defect_descriptions_str += f"Defect {idx}: {defect_type}\n  Guideline: {defect_descriptions[defect_type]}\n\n"
             defect_types_json = json.dumps(defect_types, ensure_ascii=False)
-            taxonomy_metadata = (
-                repair_defect_metadata(defect_types)
-                if set(defect_types) <= set(REPAIR_DEFECT_TAXONOMY) else None
-            )
-            repair_families = taxonomy_metadata["repair_family"] if taxonomy_metadata else []
-            defect_contract_instruction = ""
-            if repair_families == ["interaction_repair"]:
-                defect_contract_instruction = """
-INTERACTION DEFECT CONTRACT (MANDATORY): Inject the failure directly into the
-existing event, state, or navigation implementation. The repair patch must
-exactly restore the clean code. Do not output browser actions or assertions.
-"""
-            elif repair_families == ["runtime_repair"]:
-                defect_contract_instruction = """
-RUNTIME DEFECT CONTRACT (MANDATORY): Inject a concrete local code defect such
-as an invalid call, broken import/resource path, bootstrap failure, or event
-exception. Do not rely on external services or environmental failures.
-"""
-            elif repair_families == ["quality_refinement"]:
-                defect_contract_instruction = """
-QUALITY DEFECT CONTRACT (MANDATORY): Inject a concrete maintainability,
-semantic, accessibility, or structural quality regression in existing code.
-The repair patch must exactly restore the clean implementation.
-"""
-            scope_instruction = patch_scope_instruction(generation_data)
-            page_instruction = ""
-            if require_cross_page:
-                page_instruction = f"""MULTI-PAGE REQUIREMENT (MANDATORY): Make the defect affect a flow or shared component across
-{json.dumps(generation_data.get('project_pages', []), ensure_ascii=False)}. Patch at least two HTML pages or shared CSS/JS/TS used by multiple pages.\n\n"""
-            prompt = f"""{scope_instruction}{page_instruction}Inject {len(defect_types)} defects into the webpage below. Output ONLY XML, no explanation.
-
-Defects:
-{defect_descriptions_str}
-task_type values: {defect_types_json}
-
-=== Description rules (CRITICAL) ===
-Each description must be a repair instruction telling the developer WHAT IS BROKEN and HOW TO FIX IT, using STRUCTURAL / LAYOUT language only.
-
-DO write:
-- "Fix the overlapping elements: the fixed-position top bar covers the content section below it due to excessive z-index"
-- "Fix the broken column layout: the three-column grid collapses into overlapping blocks because the container width is too narrow"
-- "Fix the unclickable button: the call-to-action button in the centered section has pointer-events disabled"
-- "Fix the invisible text: the paragraph text in the two-column section has nearly the same color as the background"
-
-DO NOT write:
-- Specific text content: NOT "fix the 'Contact Us' heading" → instead "fix the heading in the bottom section"
-- Specific image subjects: NOT "the mountain hero image is distorted" → instead "the full-width background image is distorted"
-- Brand names, people names, product names
-- Semantic page purpose: NOT "the About Us section" → instead "the two-column text-and-image section"
-
-Describe the POSITION and STRUCTURE of affected elements, not their content.
-=== End description rules ===
-
-Output format (nothing else):
-<description>[{{"task_type": "...", "description": "structural repair instruction"}}]</description>
-{defect_contract_instruction}
-Each selected defect occurrence must describe a separate issue and have one or
-more patches. Repeated task_type values are allowed only when they identify
-different affected elements or regions. Mark EVERY patch with the exact
-task_type it implements; repeated types need at least one distinct patch per
-occurrence. Each defect must use 1--10 patches. Every <search> must be a non-empty,
-verbatim, uniquely occurring substring of an existing file.
-
-VISUAL SEVERITY REQUIREMENT: inject a conspicuous defect affecting a large
-visible element or region in the initial 1920x1080 viewport. Prefer large
-geometry, spacing, visibility, contrast, overlap, or sizing changes. The
-combined defects should change at least 1% of rendered pixels. Do not satisfy a
-visual defect with a tiny icon, off-screen element, metadata-only change, or a
-subtle one-property tweak when a stronger valid manifestation is possible.
-<search_replace path="path/to/file" task_type="one selected defect type"><search>exact clean text</search><replace>defective text</replace></search_replace>
-
-{dst_code_context}"""
+            prompt = repair_prompt(defect_descriptions_str, defect_types_json, dst_code_context, len(defect_types))
             # Repair search text denotes the clean source.  Preserve the exact
             # source spelling/whitespace before validating or flipping it,
             # just as reverse-edit does for feature-removal patches.
@@ -3085,20 +2985,6 @@ search string verbatim and uniquely present in the supplied source.
                         )
                         snapped_mods.append(snapped)
                     validate_patch_paths_for_context(generation_data, snapped_mods)
-                    self._validate_task_patch_mapping(
-                        result["description"], snapped_mods, defect_types,
-                        allow_repeated_task_types=(
-                            len(defect_types) != len(set(defect_types))
-                        ),
-                    )
-                    if repair_families == ["interaction_repair"]:
-                        result["browser_checks"] = normalize_browser_checks(
-                            result.get("browser_checks", []),
-                            generation_data.get("project_pages", ["index.html"]),
-                        )
-                    validate_multipage_patch_scope(
-                        generation_data, snapped_mods, required=require_cross_page
-                    )
                     defective_visible, defective_full = validate_patch_round_trip(
                         dst_code, generation_data.get("full_code", dst_code), snapped_mods
                     )
@@ -3128,7 +3014,7 @@ search string verbatim and uniquely present in the supplied source.
             # For repair: LLM's search = clean code, replace = defective code
             # label is the *fix* direction: search = defective, replace = clean
             label_modified_files = [
-                {"path": mod["path"], "task_type": mod["task_type"],
+                {"path": mod["path"],
                  "search": mod["replace"], "replace": mod["search"]}
                 for mod in reversed(snapped_mods)
             ]

@@ -1,5 +1,5 @@
 
-from scripts.route_complex_queries import classify_row, route_rows
+from evaluate.utils.route_complex_queries import classify_row, route_rows
 
 
 def row(track: str, query: str, job_id: str = "complex-test") -> dict:

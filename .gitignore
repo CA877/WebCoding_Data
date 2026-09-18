@@ -107,7 +107,7 @@ drafts/
 参考数据集/
 WebGen-Agent/
 # Research notes: downloaded paper PDFs/fulltext and reading notes are not repo content.
-/paper_review/
+/paper_reading/
 
 # Independently managed Git repositories: their commits and pushes stay separate.
 # These paths follow the current top-level layout; keep them in sync with it.
@@ -115,6 +115,7 @@ WebGen-Agent/
 /Webcoding-Model-Project/
 /evaluate/WebCompass_official/
 /evaluate/WebGen-Bench/
+/reverse/web_coding_demo/
 
 # Credentials and sources that must not be published.
 /docs/项目用api.pdf

@@ -7,7 +7,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import json
 
-from scripts.audit_purge_output_full import apply_audit, inspect_site
+from validate.utils.audit_purge_output_full import apply_audit, inspect_site
 
 
 def _page(site: Path, name: str, text: str, *, screenshot: bool = True) -> None:

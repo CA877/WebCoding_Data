@@ -61,7 +61,7 @@ run_logged "$python_bin" reverse/construct_text_editing.py \
   --image-input-variants source_image,target_image,source_target_images \
   --browser-proxy ""
 
-run_logged "$python_bin" scripts/audit_edit_repair_taxonomy_quality.py \
+run_logged "$python_bin" reverse/utils/audit_edit_repair_taxonomy_quality.py \
   --input "$output_root/text_edit/records.jsonl" \
   --report-jsonl "$output_root/quality_reports.jsonl" --minimum-pass-rate 1.0
 fi
@@ -76,7 +76,7 @@ run_logged "$python_bin" reverse/construct_text_repair.py \
   --max-retries 3 --max-output-tokens 8192 --repair-profile taxonomy \
   --page-scope any --browser-proxy "" --minimum-changed-ratio 0.01
 
-run_logged "$python_bin" scripts/audit_edit_repair_taxonomy_quality.py \
+run_logged "$python_bin" reverse/utils/audit_edit_repair_taxonomy_quality.py \
   --input "$output_root/text_repair/records.jsonl" \
   --report-jsonl "$output_root/quality_reports.jsonl" --minimum-pass-rate 1.0
 fi

@@ -66,7 +66,7 @@ Repair 的正常运行要求针对修复后的 target。source 保留任务故�
 
 - `construct/v2_records.py::edit_records`：同一记录同时导出图文 Edit，共享 source、description 和 patches；Image Edit 使用编辑前截图。
 - `construct/v2_records.py::repair_records`：图文 Repair 共享故障 source 和修复 patches；满足图片派生条件才输出 Image Repair，因此两类数量可以不同。
-- `construct/construct_image_generation.py`：从同一来源项目保存 GT 与参考截图；`scripts/repackage_reversed_webcompass_inputs.py` 将 Image Generate 改为通用截图指令，并统一 Repair 的 N 描述。
+- `construct/construct_image_generation.py`：从同一来源项目保存 GT 与参考截图；`reverse/utils/repackage_reversed_webcompass_inputs.py` 将 Image Generate 改为通用截图指令，并统一 Repair 的 N 描述。
 - 本地 v3 的 30 条已有 image case 均找到 text 对应项：Edit/Repair 各 10 对的 source、patch 后 target 和 query 一致；Generate 3 对同 ID，另 7 对通过 `metadata.source_instance_id` / `source_project` 找到。Generate 9 对 GT 文件一致，`gen14-interactweb-bench-iwb-g5-00218` 对应 image 版少一个含静态服务配置的 `package.json`。这是文件差异，运行影响待实测。
 
 | 字段 | Text → Image 更新规则 |

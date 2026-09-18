@@ -23,7 +23,7 @@ are treated as hard reject issues by `content_qc.py`.
 ## CLI
 
 ```bash
-python3 scripts/run_full_quality_pipeline.py \
+python3 validate/utils/run_full_quality_pipeline.py \
   --release-root /path/to/release_sft_6tasks_v1 \
   --out-dir /path/to/qc_out
 ```
@@ -43,7 +43,7 @@ The resource slimming policy separates three cases:
 Read-only audit:
 
 ```bash
-python3 scripts/slim_project_resources.py \
+python3 validate/utils/slim_project_resources.py \
   --project-root /path/to/project_or_parent \
   --out-dir /path/to/resource_audit
 ```
@@ -51,7 +51,7 @@ python3 scripts/slim_project_resources.py \
 Apply safe orphan/duplicate deletion:
 
 ```bash
-python3 scripts/slim_project_resources.py \
+python3 validate/utils/slim_project_resources.py \
   --project-root /path/to/project_or_parent \
   --out-dir /path/to/resource_audit \
   --apply
@@ -60,7 +60,7 @@ python3 scripts/slim_project_resources.py \
 Externalize referenced vendor blobs only with an explicit map:
 
 ```bash
-python3 scripts/slim_project_resources.py \
+python3 validate/utils/slim_project_resources.py \
   --project-root /path/to/project_or_parent \
   --out-dir /path/to/resource_audit \
   --apply \

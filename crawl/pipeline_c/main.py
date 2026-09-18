@@ -25,7 +25,7 @@ import threading
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, Sequence
 from urllib.parse import urljoin, urlparse
 
 from bs4 import BeautifulSoup
@@ -91,6 +91,39 @@ class ExcludedScript(RuntimeError):
 
 
 _PREFLIGHT_LOCAL = threading.local()
+DEFAULT_BROWSER_PROXY_BYPASS = ("127.0.0.1", "localhost")
+
+
+def _split_proxy_bypass(value: str) -> list[str]:
+    entries: list[str] = []
+    for item in re.split(r"[,;\s]+", value):
+        item = item.strip()
+        if item:
+            entries.append(item)
+    return entries
+
+
+def browser_proxy_bypass_list(explicit: str = "") -> list[str]:
+    seen: set[str] = set()
+    bypasses: list[str] = []
+    for item in (*DEFAULT_BROWSER_PROXY_BYPASS,
+                 *_split_proxy_bypass(os.environ.get("WEBCODING_BROWSER_PROXY_BYPASS", "")),
+                 *_split_proxy_bypass(explicit)):
+        if item not in seen:
+            seen.add(item)
+            bypasses.append(item)
+    return bypasses
+
+
+def browser_launch_options(browser_proxy: str, proxy_bypass: Sequence[str] = ()) -> dict[str, Any]:
+    if not browser_proxy:
+        return {}
+    bypass = ",".join(proxy_bypass)
+    launch_options: dict[str, Any] = {"proxy": {"server": browser_proxy}}
+    if bypass:
+        launch_options["proxy"]["bypass"] = bypass
+        launch_options["args"] = [f"--proxy-bypass-list={bypass}"]
+    return launch_options
 
 
 def _preflight_client(timeout: float) -> httpx.Client:
@@ -808,7 +841,8 @@ class ResourceLocalizer:
         return str(soup)
 
 
-def _validate_local(project_dir: Path, browser_proxy: str, wait_ms: int) -> dict[str, Any]:
+def _validate_local(project_dir: Path, browser_proxy: str, proxy_bypass: Sequence[str],
+                    wait_ms: int) -> dict[str, Any]:
     """Render every page offline; any public request or local asset failure rejects."""
     port = _free_port()
     handler = functools.partial(_QuietHandler, directory=str(project_dir))
@@ -819,12 +853,11 @@ def _validate_local(project_dir: Path, browser_proxy: str, wait_ms: int) -> dict
     external_requests: list[str] = []; page_results: list[dict[str, Any]] = []
     try:
         with sync_playwright() as p:
-            # Serve the project over HTTP but bypass SOCKS only for the local
-            # server; its remote images/fonts still use the browser proxy.
+            # Serve the project over HTTP but bypass SOCKS for configured
+            # direct hosts, including the local validation server.
             browser = p.chromium.launch(
                 headless=True,
-                proxy={"server": browser_proxy} if browser_proxy else None,
-                args=["--proxy-bypass-list=127.0.0.1,localhost"] if browser_proxy else None,
+                **browser_launch_options(browser_proxy, proxy_bypass),
             )
             for html_path in sorted(project_dir.glob("*.html")):
                 page = browser.new_page(viewport={"width": 1280, "height": 800})
@@ -884,7 +917,8 @@ def _validate_local(project_dir: Path, browser_proxy: str, wait_ms: int) -> dict
         server.shutdown(); server.server_close()
 
 
-def crawl_one(url: str, output_root: Path, browser_proxy: str, wait_ms: int,
+def crawl_one(url: str, output_root: Path, browser_proxy: str, proxy_bypass: Sequence[str],
+              wait_ms: int,
               qwen_tokenizer: Path, max_training_code_tokens: int, max_child_pages: int,
               visual_review: bool = True, exclude_render_bundles: bool = False) -> dict[str, Any]:
     project_id = _sha(url)
@@ -903,7 +937,10 @@ def crawl_one(url: str, output_root: Path, browser_proxy: str, wait_ms: int,
     resource_log = ResourceLog()
     try:
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True, proxy={"server": browser_proxy} if browser_proxy else None)
+            browser = p.chromium.launch(
+                headless=True,
+                **browser_launch_options(browser_proxy, proxy_bypass),
+            )
             context = browser.new_context(viewport={"width": 1280, "height": 800}, ignore_https_errors=True)
             page = context.new_page()
             # Reuse the exact bytes the real browser loaded.  This is important
@@ -1031,7 +1068,7 @@ def crawl_one(url: str, output_root: Path, browser_proxy: str, wait_ms: int,
         # Record the unslimmed replay first, then apply conservative slimming
         # and require the final replay to pass. Baseline tracker/API failures
         # are diagnostic: slimming may intentionally remove that page plumbing.
-        baseline_validation = _validate_local(project_dir, browser_proxy, wait_ms)
+        baseline_validation = _validate_local(project_dir, browser_proxy, proxy_bypass, wait_ms)
         slimming = slim_localized_project(project_dir)
         removed_paths = {row["path"] for row in slimming["removed_files"]}
         for resource in list(localizer.log.resource_manifest):
@@ -1045,7 +1082,7 @@ def crawl_one(url: str, output_root: Path, browser_proxy: str, wait_ms: int,
                     "sha256": resource.get("sha256", ""),
                     "status": "removed_orphan",
                 })
-        validation = _validate_local(project_dir, browser_proxy, wait_ms)
+        validation = _validate_local(project_dir, browser_proxy, proxy_bypass, wait_ms)
         render_rejection = local_render_rejection_reason(baseline_validation, validation)
         if render_rejection:
             raise CrawlRejected(render_rejection)
@@ -1116,19 +1153,21 @@ def crawl_one(url: str, output_root: Path, browser_proxy: str, wait_ms: int,
     return result
 
 
-def _crawl_entry(url: str, output_root: str, browser_proxy: str, wait_ms: int,
+def _crawl_entry(url: str, output_root: str, browser_proxy: str, proxy_bypass: list[str],
+                 wait_ms: int,
                  qwen_tokenizer: str, max_training_code_tokens: int, max_child_pages: int,
                  visual_review: bool, exclude_render_bundles: bool, queue: Any) -> None:
     """Process entrypoint so a stuck browser/resource request cannot block a run."""
     try:
-        queue.put(crawl_one(url, Path(output_root), browser_proxy, wait_ms,
+        queue.put(crawl_one(url, Path(output_root), browser_proxy, proxy_bypass, wait_ms,
                             Path(qwen_tokenizer), max_training_code_tokens, max_child_pages,
                             visual_review, exclude_render_bundles))
     except Exception as exc:
         queue.put({"source_url": url, "status": "rejected", "quality_status": "reject", "reason": f"worker_exited:{exc}"})
 
 
-def _run_url_with_timeout(url: str, output_root: Path, browser_proxy: str, wait_ms: int,
+def _run_url_with_timeout(url: str, output_root: Path, browser_proxy: str, proxy_bypass: list[str],
+                          wait_ms: int,
                           qwen_tokenizer: Path, max_training_code_tokens: int,
                           max_child_pages: int, site_timeout: int, visual_review: bool,
                           exclude_render_bundles: bool, run_sample_preflight: bool = True,
@@ -1148,7 +1187,7 @@ def _run_url_with_timeout(url: str, output_root: Path, browser_proxy: str, wait_
     queue: Any = context.Queue(maxsize=1)
     worker = context.Process(
         target=_crawl_entry,
-        args=(url, str(output_root), browser_proxy, wait_ms,
+        args=(url, str(output_root), browser_proxy, proxy_bypass, wait_ms,
               str(qwen_tokenizer), max_training_code_tokens, max_child_pages,
               visual_review, exclude_render_bundles, queue),
     )
@@ -1188,6 +1227,9 @@ def main() -> None:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--limit", type=int, default=0)
     parser.add_argument("--browser-proxy", default="")
+    parser.add_argument("--browser-proxy-bypass", default="",
+                        help="Comma/semicolon/space-separated hosts that Chromium should load directly "
+                             "when --browser-proxy is set. Also reads WEBCODING_BROWSER_PROXY_BYPASS.")
     parser.add_argument("--wait-ms", type=int, default=3000)
     parser.add_argument("--qwen-tokenizer", type=Path, default=os.environ.get("QWEN_TOKENIZER_JSON", ""),
                         help="Qwen3 tokenizer.json; can also set QWEN_TOKENIZER_JSON.")
@@ -1220,6 +1262,7 @@ def main() -> None:
         parser.error("--max-child-pages must be non-negative")
     if args.exclude_render_bundles:
         parser.error("--exclude-render-bundles is incompatible with the strict all-code 40K contract")
+    proxy_bypass = browser_proxy_bypass_list(args.browser_proxy_bypass)
     urls = [line.strip() for line in args.urls.read_text(encoding="utf-8").splitlines() if line.strip()]
     if args.limit: urls = urls[:args.limit]
     args.output.mkdir(parents=True, exist_ok=True)
@@ -1235,13 +1278,15 @@ def main() -> None:
               "max_child_pages": args.max_child_pages, "visual_review": args.visual_review,
               "sample_preflight": args.sample_preflight, "preflight_timeout": args.preflight_timeout,
               "resume": args.resume,
+              "browser_proxy_bypass": proxy_bypass,
               "exclude_render_bundles": False,
               "visual_model": os.environ.get("VISION_MODEL", "moonshot-v1-128k-vision-preview") if args.visual_review else None}
     (args.output / "run_config.json").write_text(json.dumps(config, indent=2), encoding="utf-8")
     with manifest.open("a", encoding="utf-8") as handle, ThreadPoolExecutor(max_workers=args.workers) as pool:
         futures = {
-            pool.submit(_run_url_with_timeout, url, args.output, args.browser_proxy, args.wait_ms,
-                        args.qwen_tokenizer, args.max_training_code_tokens, args.max_child_pages, args.site_timeout,
+            pool.submit(_run_url_with_timeout, url, args.output, args.browser_proxy, proxy_bypass,
+                        args.wait_ms, args.qwen_tokenizer, args.max_training_code_tokens,
+                        args.max_child_pages, args.site_timeout,
                         args.visual_review, args.exclude_render_bundles, args.sample_preflight,
                         args.preflight_timeout): (index, url)
             for index, url in enumerate(urls, 1)

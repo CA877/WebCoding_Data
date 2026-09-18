@@ -9,10 +9,10 @@
 ## Four module boards
 
 - [reverse/docs/](../reverse/docs/)：受控构造、reversed 数据、任务语义与母本准入。
-- [web-coding-agent/docs/](../../web-coding-agent/docs/)：Harness、灵感库、产品 Session 与连续 Edit。
-- [Benchmark_evaluation/docs/](../Benchmark_evaluation/docs/)：第三方 benchmark、query 研究与正式评测协议。
+- [harness/docs/](../harness/docs/)：Harness、灵感库、产品 Session 与连续 Edit。
+- [evaluate/docs/](../evaluate/docs/)：第三方 benchmark、query 研究与正式评测协议。
 - [crawl/docs/](../crawl/docs/)：网页来源、抓取、URL 候选池与资源闭包资产。
-- [validation/docs/](../validation/docs/)：数据资产台账、质量检查策略与 release 校验。
+- [validate/docs/](../validate/docs/)：数据资产台账、质量检查策略与 release 校验。
 
 ## Operations
 
@@ -24,8 +24,8 @@
 
 ## Current status and retained evidence
 
-- [current_state.md](current_state.md) 与根目录 `PROJECT_STATUS.md`：当前状态和下一步。
-- `../validation/docs/reports/0905_data_check_strategy_implementation_20260912.md`：当前 0905 包的检查证据与边界。
+- [current_state.md](current_state.md)：当前状态和下一步。
+- `../validate/docs/reports/0905_data_check_strategy_implementation_20260912.md`：当前 0905 包的检查证据与边界。
 - 模块目录中的交接文档：仅保留仍可继续执行的模块交接。
 
 已被现行规范覆盖的旧计划、状态快照、聊天汇总与中间试验说明不再保留在 `docs/`；需要复核时以 Git、运行目录、manifest 和正式数据索引为准。

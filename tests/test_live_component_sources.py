@@ -1,5 +1,5 @@
 from inspiration_library.live_component_sources import card_regions, _write_slice
-from scripts.mine_live_url_capability_pool import compact_live_card
+from inspiration_library.utils.mine_live_url_capability_pool import compact_live_card
 import os
 import pytest
 

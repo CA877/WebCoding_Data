@@ -588,7 +588,7 @@ def main():
     import argparse
     import signal
     import sys
-    from scripts.run_live_url_audit_case import supervise
+    from inspiration_library.utils.run_live_url_audit_case import supervise
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--extraction", type=Path, required=True)
@@ -610,7 +610,7 @@ def main():
             max_regions=args.max_regions, include_runtime_fragments=not args.examples_only)
         (args.output / "extraction_with_sources.json").write_text(
             json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
-        from scripts.mine_live_url_capability_pool import compact_live_card, write_jsonl
+        from inspiration_library.utils.mine_live_url_capability_pool import compact_live_card, write_jsonl
         write_jsonl(args.output / "capability_pool.jsonl", [compact_live_card(c) for c in result["capabilities"]])
         print(json.dumps({"cards": len(result["capabilities"]), "cards_with_sources":
             sum(bool(c["source_slices"]) for c in result["capabilities"])}), flush=True)

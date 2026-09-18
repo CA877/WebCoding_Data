@@ -59,7 +59,7 @@ description: 查找、解释或选择 WebCoding 的 URL 列表与候选池，尤
 - 从上述 12,000 候选中检查 8,000 条；HTTP/结构初始 pass 4,592，策略过滤 96 后为 4,496；robots 筛后合格 4,310，最终选出 4,000。
 - 最终 4,000 个 source domain、最终 URL 和最终 host 各自唯一；robots 状态为 allowed 或 missing。missing 仅是历史 robots 未取得/不存在状态，不等于显式许可。
 - 同目录证据：`selected_manifest.jsonl`、`preflight_results.jsonl`、`robots_results.jsonl`、`summary.json`。
-- 实现：`scripts/preflight_pipeline_c_rich_urls.py`；策略说明：`docs/pipeline_c_rich_url_strategy_20260903.md`。
+- 实现：`crawl/utils/preflight_pipeline_c_rich_urls.py`；策略说明：`docs/pipeline_c_rich_url_strategy_20260903.md`。
 - 这是 2026-09-03 的网络/结构预筛，不是完整浏览器验收，也没有“恰好四页”的保证。
 
 ## 多来源灵感池：15,609 条

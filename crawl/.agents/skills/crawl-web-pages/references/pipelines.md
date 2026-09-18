@@ -48,4 +48,4 @@
 - `scripts/build_pipeline_c_rich_url_queue.py` → `preflight_pipeline_c_rich_urls.py` → `probe_pipeline_c_url_complexity.py`：历史可访问性召回、HTTP/结构预检、真实 Chromium 请求与能力候选探测；随后进入 C 或 D。
 - `scripts/collect_pipeline_d_design_gallery_urls.py`：画廊 sitemap/详情页解析到原站并保留 provenance；来源站和目标站的许可分别检查。
 - `datasets/url_lists/balanced_inspiration_v2_20260905/` 是已有灵感 URL 清单定位线索，运行前查 registry/目录确定最新版本。URL 数量不是可访问网页或已验收能力数量。
-- 在线挖掘入口 `scripts/mine_live_url_capability_pool.py` 不要求先保存网页或下载资源；详见 `mine-webcoding-inspiration`。
+- 在线挖掘入口 `inspiration_library/utils/mine_live_url_capability_pool.py` 不要求先保存网页或下载资源；详见 `mine-webcoding-inspiration`。

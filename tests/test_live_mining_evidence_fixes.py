@@ -6,7 +6,7 @@ from inspiration_library import deep_browser_exploration as deep
 from inspiration_library import production_browser as browser
 from inspiration_library.dynamic_capability_retrieval import validate_capability_extraction, validate_live_card_evidence
 from inspiration_library.linear_edit_queries import compact_browser_evidence_for_llm
-from scripts.mine_live_url_capability_pool import compact_live_card
+from inspiration_library.utils.mine_live_url_capability_pool import compact_live_card
 
 
 def snapshot(text="Ready", checked=False):
@@ -84,7 +84,7 @@ def test_full_resume_preserves_failed_source_attempt(tmp_path, monkeypatch):
     """Storage/control-flow test with cached records; no LLM semantic evaluation."""
     import json
     import sys
-    from scripts import mine_live_url_capability_pool as miner
+    from inspiration_library.utils import mine_live_url_capability_pool as miner
     from inspiration_library import live_component_sources as sources
     run = tmp_path/'run'
     manifest = tmp_path/'sources.jsonl'

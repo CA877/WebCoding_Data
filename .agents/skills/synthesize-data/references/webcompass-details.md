@@ -47,7 +47,7 @@ Text/Image Edit共用editing记录，Repair同理，由mode选择是否加图。
 - 类型详细定义：根 `数据集构造目标细节.md`，仅读当前任务相关章节。
 - 数据版本/状态：`validation/docs/data/data_assets_registry.md`、`docs/current_state.md`；批跑与环境细则看项目实际 `docs/operations/batch_jobs.md`、`docs/operations/remote_environment.md`。
 - 本地官方代码：`Benchmark_evaluation/WebCompass_official/`，先确认目录存在与版本，不混用不同副本的差异。
-- 构造：`reverse/README.md`、`reverse/v2_records.py`；图像派生：`scripts/apply_image_generate_overlays_in_place.py`；最终输入打包：`scripts/repackage_reversed_webcompass_inputs.py`、`scripts/build_0805_aligned_enhanced.py`。
+- 构造：`reverse/README.md`、`reverse/v2_records.py`；图像派生：`reverse/utils/apply_image_generate_overlays_in_place.py`；最终输入打包：`reverse/utils/repackage_reversed_webcompass_inputs.py`、`reverse/utils/build_0805_aligned_enhanced.py`。
 - 已有证据：`docs/reversed_vs_webcompass_six_task_input_gap_audit_20260904.md`、`docs/webcompass_official_repair_screenshot_difference_audit_20260824.md`、`docs/reversed_edit_repair_training_regression_20260906.md`；旧报告的“当前”须与实际版本核对。
 
 本skill创建时直接读取了本地官方SP/MP四份Edit/Repair JSONL、Text/Image Generate记录和主页标注图，并核对上述runner。缓存位于 `/tmp/webcompass_compare/`，可随时失效，不作为skill运行依赖；`WebCompass`代码副本当时HEAD为 `4a0fda3`。无新增API数据生产。

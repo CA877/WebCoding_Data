@@ -18,6 +18,7 @@ RUN_ID=$(date +%Y%m%d_%H%M%S)_limit${LIMIT}_workers${WORKERS}
 LOG_DIR="$PROJECT_ROOT/logs/pipeline_c_strict/$RUN_ID"
 TOKENIZER="$PROJECT_ROOT/.cache/qwen3-tokenizer.json"
 PROXY_URL=${PIPELINE_C_PROXY_URL:-socks5://127.0.0.1:7897}
+BROWSER_PROXY_BYPASS=${PIPELINE_C_BROWSER_PROXY_BYPASS:-ai.bayesdl.com,.bayesdl.com}
 UV_BIN=${UV_BIN:-uv}
 VISUAL_REVIEW=${PIPELINE_C_VISUAL_REVIEW:-0}
 VISUAL_REVIEW_FLAG=--no-visual-review
@@ -32,7 +33,8 @@ test -f "$TOKENIZER"
 export ALL_PROXY="$PROXY_URL"
 export HTTPS_PROXY="$PROXY_URL"
 export HTTP_PROXY="$PROXY_URL"
-export NO_PROXY="idealab.alibaba-inc.com,alibaba-inc.com,api.deepseek.com,localhost,127.0.0.1"
+export NO_PROXY="idealab.alibaba-inc.com,alibaba-inc.com,api.deepseek.com,ai.bayesdl.com,.bayesdl.com,localhost,127.0.0.1"
+export WEBCODING_BROWSER_PROXY_BYPASS="$BROWSER_PROXY_BYPASS"
 export SSL_NO_VERIFY=1
 export PIPELINE_C_KEEP_REJECTED_DEBUG=1
 
@@ -46,6 +48,7 @@ COMMAND=(
   --site-timeout "$SITE_TIMEOUT_SECONDS"
   --wait-ms 2500
   --browser-proxy "$PROXY_URL"
+  --browser-proxy-bypass "$BROWSER_PROXY_BYPASS"
   --qwen-tokenizer "$TOKENIZER"
   --max-training-code-tokens 40000
   "$VISUAL_REVIEW_FLAG"
@@ -61,7 +64,7 @@ COMMAND=(
     "$LIMIT" "$WORKERS" "$MAX_CHILD_PAGES" "$SITE_TIMEOUT_SECONDS"
   printf 'keep_rejected_debug=1\n'
   printf 'visual_review=%s\n' "$VISUAL_REVIEW"
-  printf 'proxy_url=%s\nuv_bin=%s\n' "$PROXY_URL" "$UV_BIN"
+  printf 'proxy_url=%s\nbrowser_proxy_bypass=%s\nuv_bin=%s\n' "$PROXY_URL" "$BROWSER_PROXY_BYPASS" "$UV_BIN"
   printf 'command='
   printf '%q ' "${COMMAND[@]}"
   printf '\n'

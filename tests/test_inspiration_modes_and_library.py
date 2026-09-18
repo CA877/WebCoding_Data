@@ -4,9 +4,9 @@ import sys
 
 import pytest
 
-from scripts.inventory_inspiration_library import inventory
-from scripts.consolidate_inspiration_library import consolidate, verify_snapshot
-from scripts import mine_live_url_capability_pool as miner
+from inspiration_library.utils.inventory_inspiration_library import inventory
+from inspiration_library.utils.consolidate_inspiration_library import consolidate, verify_snapshot
+from inspiration_library.utils import mine_live_url_capability_pool as miner
 
 
 def test_mode_rejects_mixed_or_wrong_source_type(tmp_path):

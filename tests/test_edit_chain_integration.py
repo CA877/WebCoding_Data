@@ -5,8 +5,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from scripts import run_linear_edit_query_augmentation as runner
-from scripts.embed_capability_pool import embed_pool
+from inspiration_library.utils import run_linear_edit_query_augmentation as runner
+from inspiration_library.utils.embed_capability_pool import embed_pool
 from inspiration_library.one_shot_capability_retrieval import generate_seed_retrieval_plan
 from test_one_shot_capability_retrieval import _retrieval_plan_payload
 from test_linear_edit_query_augmentation import _accepted_quality_audit
@@ -14,7 +14,7 @@ from inspiration_library.linear_edit_queries import validate_quality_audit
 
 
 def test_case_wrapper_passes_protected_settings_without_logging_secrets(tmp_path, monkeypatch, capsys):
-    from scripts import run_edit_instruction_case as case
+    from inspiration_library.utils import run_edit_instruction_case as case
     settings = dict(TOKENWAVE_API_KEY='test-chat-secret',
                     DOC_EMBEDDING_API_KEY='test-vector-secret',
                     DOC_EMBEDDING_BASE_URL='https://example.invalid/v1')
