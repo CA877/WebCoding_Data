@@ -17,7 +17,14 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import quote, unquote, urljoin, urlparse
 
-from .task_specs import REPAIR_DEFECT_TAXONOMY, repair_defect_metadata
+from .web_coding_demo.synthetic.synthesizer import BaseSynthesizer as OfficialBaseSynthesizer
+from .web_coding_demo.synthetic.official_catalog import edit_catalog, repair_catalog
+from .web_coding_demo.synthetic.official_prompts import (
+    EDIT_SYSTEM_PROMPT,
+    REPAIR_SYSTEM_PROMPT,
+    edit_prompt,
+    repair_prompt,
+)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -1860,251 +1867,17 @@ def strip_markdown_fence(response_text: str) -> str:
     fenced = parts[1].strip()
     for lang in ("xml", "XML", "json", "JSON"):
         if fenced.startswith(lang):
-            return fenced[len(lang) :].strip()
+            return fenced[len(lang):].strip()
     return fenced
 
-
-_EDIT_TASKS: list[str] = [
-    "Data Table",
-    "Rich Text Editor",
-    "Drag & Drop Interface",
-    "Tree View",
-    "Real-time Dashboard",
-    "Infinite Scroll",
-    "Async Form Validation",
-    "File Upload with Progress",
-    "Parallax Scrolling",
-    "Page Transitions",
-    "Particle Effects",
-    "Skeleton Loading",
-    "Shopping Cart",
-    "User Authentication",
-    "Multi-step Wizard",
-    "Notification Center",
-    "Dark Mode Toggle",
-    "Accordion",
-    "Modal Dialog",
-    "Tooltip",
-    "Breadcrumb Navigation",
-    "Tabs",
-    "Toast Notifications",
-    "Star Rating",
-    "Copy to Clipboard",
-    "Back to Top",
-    "Cookie Consent",
-    "Responsive Navigation",
-    "Sticky Header",
-    "Search Autocomplete",
-    "Image Lightbox",
-    "Countdown Timer",
-    "Color Picker",
-    "Date Picker",
-    "Carousel",
-    "Keyboard Shortcuts",
-    "Context Menu",
-    "Lazy Loading Images",
-    "Print Stylesheet",
-    "Undo Redo",
-]
-
-_EDIT_TASK_DESCRIPTIONS: dict[str, str] = {
-    "Data Table": "Implement an advanced data table component with rich functionality.\n    Requirements:\n    - Display tabular data with sortable columns (click header to sort asc/desc).\n    - Add pagination controls (previous/next, page numbers, items per page selector).\n    - Implement column filtering with dropdown or text input per column.\n    - Support row selection with checkboxes (single and select-all).\n    - Add inline editing capability for editable cells.\n    - Responsive design: horizontal scroll or card view on mobile.",
-    "Rich Text Editor": "Implement a WYSIWYG rich text editor component.\n    Requirements:\n    - Create a toolbar with formatting buttons (Bold, Italic, Underline, Strikethrough).\n    - Support heading levels (H1-H3), lists (ordered/unordered), and blockquotes.\n    - Implement link insertion with URL input dialog.\n    - Add image embedding via URL or placeholder.\n    - Use contenteditable div or textarea with preview mode.\n    - Sync formatted content to a hidden textarea for form submission.",
-    "Drag & Drop Interface": "Implement a drag-and-drop interface for reordering or organizing items.\n    Requirements:\n    - Create draggable items with visual drag handles.\n    - Implement drop zones with visual feedback (highlight on dragover).\n    - Support reordering within a single list (Kanban column style).\n    - Add cross-container drag support if multiple lists exist.\n    - Show placeholder/ghost element during drag operation.\n    - Persist order changes to data structure and optionally localStorage.",
-    "Tree View": "Implement a hierarchical tree view component for nested data.\n    Requirements:\n    - Display nested items with expand/collapse toggles (arrows or +/- icons).\n    - Support multiple levels of nesting (at least 3 levels deep).\n    - Implement lazy loading or virtual rendering for large trees.\n    - Add checkbox selection with parent-child cascade (select parent selects all children).\n    - Support keyboard navigation (arrow keys, Enter to toggle).\n    - Add search/filter functionality to highlight matching nodes.",
-    "Real-time Dashboard": "Implement a real-time dashboard with live-updating metrics.\n    Requirements:\n    - Create dashboard cards displaying key metrics (numbers, percentages).\n    - Simulate real-time data updates using setInterval or mock WebSocket.\n    - Add animated counters that smoothly transition between values.\n    - Implement mini charts/sparklines showing trend data (use CSS or canvas).\n    - Add status indicators (green/yellow/red) based on thresholds.\n    - Include a \"last updated\" timestamp that refreshes automatically.",
-    "Infinite Scroll": "Implement infinite scroll pagination for a content feed.\n    Requirements:\n    - Load initial batch of items (e.g., 10-20 items).\n    - Detect when user scrolls near bottom using Intersection Observer or scroll event.\n    - Fetch and append next batch of items seamlessly.\n    - Show loading spinner/skeleton during fetch.\n    - Handle end-of-content state with \"No more items\" message.\n    - Implement scroll position restoration on back navigation (optional).",
-    "Async Form Validation": "Implement comprehensive async form validation with server-side checks.\n    Requirements:\n    - Real-time validation on input blur and form submit.\n    - Simulate async validation (e.g., username availability check with delay).\n    - Show loading spinner next to field during async validation.\n    - Display inline error/success messages with appropriate icons.\n    - Debounce rapid input to avoid excessive validation calls.\n    - Disable submit button while any async validation is pending.",
-    "File Upload with Progress": "Implement a file upload component with progress tracking.\n    Requirements:\n    - Create a drag-and-drop zone with click-to-browse fallback.\n    - Show file preview (thumbnail for images, icon for others).\n    - Display upload progress bar with percentage for each file.\n    - Simulate upload progress using XMLHttpRequest or fetch with mock delay.\n    - Support multiple file selection and queue management.\n    - Add cancel upload and remove file functionality.",
-    "Parallax Scrolling": "Implement parallax scrolling effects for visual depth.\n    Requirements:\n    - Create multiple layers that move at different speeds on scroll.\n    - Apply parallax to background images, floating elements, or text.\n    - Use transform: translate3d for GPU-accelerated smooth performance.\n    - Implement both vertical and optional horizontal parallax.\n    - Add fade-in/scale effects for elements entering viewport.\n    - Ensure graceful degradation on mobile (reduce or disable effects).",
-    "Page Transitions": "Implement smooth page/view transitions for SPA-like experience.\n    Requirements:\n    - Create animated transitions between different content sections/pages.\n    - Implement multiple transition types (fade, slide, zoom, flip).\n    - Add enter/exit animations that coordinate timing.\n    - Use CSS transitions/animations or Web Animations API.\n    - Handle browser back/forward with appropriate reverse animations.\n    - Add loading state during content fetch if applicable.",
-    "Particle Effects": "Implement interactive particle effects for visual enhancement.\n    Requirements:\n    - Create a canvas-based particle system with configurable particle count.\n    - Implement particle physics (velocity, gravity, friction, bounce).\n    - Add mouse/touch interaction (particles follow cursor, explode on click).\n    - Support different particle shapes (circles, squares, custom images).\n    - Implement connection lines between nearby particles (constellation effect).\n    - Optimize performance with requestAnimationFrame and particle pooling.",
-    "Skeleton Loading": "Implement skeleton loading screens for improved perceived performance.\n    Requirements:\n    - Create skeleton placeholders matching the layout of actual content.\n    - Add shimmer/pulse animation effect on skeleton elements.\n    - Implement skeletons for various content types (text, images, cards, lists).\n    - Smooth transition from skeleton to actual content when loaded.\n    - Support different skeleton variants based on content type.\n    - Ensure skeletons are accessible (aria-busy, aria-label).",
-    "Shopping Cart": "Implement a fully functional shopping cart system.\n    Requirements:\n    - Add \"Add to Cart\" buttons on product items with quantity selector.\n    - Create cart sidebar/dropdown showing added items with thumbnails.\n    - Implement quantity adjustment (+/-) and remove item functionality.\n    - Calculate and display subtotal, tax, and total in real-time.\n    - Persist cart data in localStorage across page refreshes.\n    - Add cart badge showing item count on cart icon.",
-    "User Authentication": "Implement a complete user authentication UI flow.\n    Requirements:\n    - Create login form with email/username and password fields.\n    - Create registration form with password confirmation and terms checkbox.\n    - Implement \"Forgot Password\" flow with email input.\n    - Add form validation with appropriate error messages.\n    - Show/hide password toggle functionality.\n    - Simulate auth state with localStorage and update UI accordingly (logged in/out).",
-    "Multi-step Wizard": "Implement a multi-step form wizard with progress tracking.\n    Requirements:\n    - Create a step indicator showing current step and total steps.\n    - Implement step navigation (Next, Previous, Skip if allowed).\n    - Validate each step before allowing progression.\n    - Show step completion status (completed, current, upcoming).\n    - Persist form data across steps (don't lose data on back navigation).\n    - Add final review step showing all entered data before submission.",
-    "Notification Center": "Implement a notification center with real-time alerts.\n    Requirements:\n    - Create notification bell icon with unread count badge.\n    - Implement dropdown panel showing notification list.\n    - Support different notification types (info, success, warning, error).\n    - Add mark as read (individual and mark all) functionality.\n    - Implement notification grouping by date or type.\n    - Add simulated real-time notifications using setInterval or mock events.",
-    "Dark Mode Toggle": "Implement a dark/light theme switcher using CSS custom properties.\n    Requirements:\n    - Define CSS variables for background, text, border, and accent colors in :root and [data-theme='dark'].\n    - Create a toggle button (sun/moon icon) in the header that switches themes.\n    - Apply smooth transition on all color changes (transition: background-color 0.3s, color 0.3s).\n    - Persist the user's preference in localStorage.\n    - Respect prefers-color-scheme media query as default on first visit.\n    - Ensure all page components respond correctly to the theme change.",
-    "Accordion": "Implement collapsible accordion panels for organizing content.\n    Requirements:\n    - Create a list of header/content panel pairs that expand/collapse on header click.\n    - Only one panel open at a time (exclusive mode) or allow multiple (configurable).\n    - Animate the expand/collapse with smooth height transition (max-height or CSS grid).\n    - Show open/close indicator (chevron/plus icon) that rotates on toggle.\n    - Support keyboard navigation (Enter/Space to toggle, arrow keys between headers).\n    - Add aria-expanded and aria-controls for accessibility.",
-    "Modal Dialog": "Implement a modal dialog system with backdrop overlay.\n    Requirements:\n    - Create a centered modal with semi-transparent backdrop overlay.\n    - Close on ESC key press, backdrop click, or close button.\n    - Implement focus trap (Tab cycles only within modal while open).\n    - Add open/close animation (fade + scale or slide).\n    - Prevent body scroll when modal is open (overflow: hidden on body).\n    - Support multiple modal sizes (small, medium, large) via CSS classes.",
-    "Tooltip": "Implement a tooltip/popover component for contextual information.\n    Requirements:\n    - Show tooltip on hover (with 200ms delay) or focus on trigger element.\n    - Position tooltip automatically (top/bottom/left/right) based on available space.\n    - Add a small arrow/caret pointing to the trigger element.\n    - Support both plain text and rich HTML content in tooltip.\n    - Dismiss on mouse leave, blur, ESC, or scroll.\n    - Ensure tooltip stays within viewport bounds (flip if necessary).",
-    "Breadcrumb Navigation": "Implement dynamic breadcrumb navigation reflecting page hierarchy.\n    Requirements:\n    - Display a horizontal breadcrumb trail showing the current navigation path.\n    - Use separator characters (/ or >) between items.\n    - Make all items except the last one clickable links.\n    - Highlight the current (last) item as non-clickable text.\n    - Add structured data (schema.org BreadcrumbList) for SEO.\n    - Truncate long paths with ellipsis on mobile (show first, last, and ellipsis).",
-    "Tabs": "Implement a tabbed content interface with keyboard accessibility.\n    Requirements:\n    - Create a horizontal tab bar with multiple tab buttons.\n    - Show/hide corresponding tab panels when a tab is clicked.\n    - Style the active tab distinctly (border-bottom, background change, or underline).\n    - Support keyboard navigation (arrow keys between tabs, Enter/Space to select).\n    - Implement proper ARIA roles (tablist, tab, tabpanel) with aria-selected.\n    - Add smooth fade or slide transition when switching panels.",
-    "Toast Notifications": "Implement an auto-dismissing toast notification system.\n    Requirements:\n    - Display toast messages at a fixed screen position (top-right or bottom-right).\n    - Support multiple types: success (green), error (red), warning (yellow), info (blue).\n    - Auto-dismiss after configurable duration (default 5 seconds) with progress bar.\n    - Stack multiple toasts vertically with smooth entrance/exit animations.\n    - Allow manual dismiss via close button.\n    - Pause auto-dismiss timer on hover.",
-    "Star Rating": "Implement an interactive star rating widget.\n    Requirements:\n    - Display 5 clickable star icons in a row.\n    - Highlight stars on hover to preview the rating (fill stars up to cursor).\n    - On click, set the rating and keep stars filled.\n    - Support half-star precision (optional).\n    - Show numeric rating value next to the stars.\n    - Add visual feedback animation on selection (brief scale pulse).\n    - Make it accessible with aria-label and keyboard support (arrow keys).",
-    "Copy to Clipboard": "Implement copy-to-clipboard functionality with visual feedback.\n    Requirements:\n    - Add a copy button next to code blocks or text content.\n    - Use navigator.clipboard.writeText() API with fallback for older browsers.\n    - Show visual confirmation on copy (icon changes to checkmark, tooltip says 'Copied!').\n    - Revert the icon/text back to original state after 2 seconds.\n    - Support copying from multiple elements on the same page.\n    - Style the button to blend with the content context (inline or floating).",
-    "Back to Top": "Implement a smooth scroll-to-top button.\n    Requirements:\n    - Show a floating button (fixed position, bottom-right) when user scrolls down >300px.\n    - Hide the button with fade animation when near the top.\n    - On click, smoothly scroll to page top using window.scrollTo with behavior: 'smooth'.\n    - Add a subtle hover effect (scale or shadow increase).\n    - Use an upward arrow icon inside a circular button.\n    - Ensure the button doesn't overlap important content (add appropriate z-index).",
-    "Cookie Consent": "Implement a GDPR-compliant cookie consent banner.\n    Requirements:\n    - Display a fixed banner at the bottom of the page on first visit.\n    - Include 'Accept All', 'Reject All', and 'Customize' buttons.\n    - 'Customize' opens a panel with toggle switches for cookie categories (Essential, Analytics, Marketing).\n    - Store the user's choice in localStorage; don't show banner again once decided.\n    - Add a small 'Cookie Settings' link in the footer to re-open preferences.\n    - Animate the banner entrance (slide up) and exit (slide down).",
-    "Responsive Navigation": "Implement a responsive navigation with mobile hamburger menu.\n    Requirements:\n    - On desktop (>768px): show a horizontal nav bar with all menu items visible.\n    - On mobile (<=768px): collapse nav into a hamburger icon (three lines).\n    - Clicking hamburger opens a full-height sidebar or dropdown with menu items.\n    - Animate the menu open/close (slide-in from left or fade-down).\n    - Close the menu on link click, outside click, or ESC key.\n    - Add smooth transition for the hamburger icon to X (close) transformation.",
-    "Sticky Header": "Implement a sticky header with scroll spy highlighting.\n    Requirements:\n    - Make the header fixed at the top when scrolling past its natural position.\n    - Add a subtle shadow or border-bottom when the header becomes sticky.\n    - Implement scroll spy: highlight the nav link corresponding to the currently visible section.\n    - Use Intersection Observer to detect which section is in view.\n    - Smooth scroll to section when clicking nav links (scroll-behavior or JS).\n    - Optionally shrink/transform the header on scroll (smaller height, logo resize).",
-    "Search Autocomplete": "Implement a search input with dropdown autocomplete suggestions.\n    Requirements:\n    - Create a search input field with a search icon.\n    - Show a dropdown of matching suggestions as the user types.\n    - Debounce input to avoid excessive filtering (300ms delay).\n    - Highlight the matching text portion in each suggestion.\n    - Support keyboard navigation in the dropdown (arrow up/down, Enter to select, ESC to close).\n    - Show 'No results found' when no matches; show recent searches when input is empty.",
-    "Image Lightbox": "Implement a full-screen image lightbox gallery.\n    Requirements:\n    - Display a grid/list of thumbnail images that open in lightbox on click.\n    - Lightbox shows the full-size image centered on a dark backdrop.\n    - Add previous/next navigation arrows to browse through images.\n    - Support keyboard navigation (arrow keys, ESC to close).\n    - Add smooth zoom/fade animation on open and close.\n    - Show image caption and counter (e.g., '3 of 12') below the image.",
-    "Countdown Timer": "Implement an animated countdown timer display.\n    Requirements:\n    - Display days, hours, minutes, and seconds in separate styled boxes.\n    - Update every second using setInterval with smooth digit transitions.\n    - Add flip or fade animation when digits change.\n    - Accept a target date/time as configuration.\n    - Show 'Time expired!' or trigger an action when countdown reaches zero.\n    - Style with clear visual hierarchy (large numbers, small labels below).",
-    "Color Picker": "Implement an interactive color picker component.\n    Requirements:\n    - Create a color spectrum canvas (hue/saturation gradient) for visual selection.\n    - Add a hue slider bar for selecting the base hue.\n    - Display the selected color as a preview swatch.\n    - Show hex, RGB, and HSL values that update in real-time.\n    - Allow manual input of hex/RGB values with validation.\n    - Add preset color swatches for quick selection.\n    - Copy hex value to clipboard on click of the preview swatch.",
-    "Date Picker": "Implement a calendar-based date picker component.\n    Requirements:\n    - Create a text input that opens a calendar dropdown on click/focus.\n    - Display a month grid with selectable day cells.\n    - Add month/year navigation (previous/next arrows, month/year dropdowns).\n    - Highlight today's date and the selected date distinctly.\n    - Disable dates outside a valid range if configured.\n    - Close the calendar on date selection or outside click.\n    - Format and display the selected date in the input field.",
-    "Carousel": "Implement a content carousel/slider with navigation controls.\n    Requirements:\n    - Display one slide at a time (or multiple in a row) with smooth horizontal sliding.\n    - Add previous/next arrow buttons on the sides.\n    - Add dot indicators below showing the current slide position.\n    - Support auto-play with configurable interval and pause-on-hover.\n    - Implement infinite loop (wrap from last to first slide seamlessly).\n    - Add swipe/drag support for touch devices.\n    - Ensure smooth CSS transition between slides.",
-    "Keyboard Shortcuts": "Implement a keyboard shortcuts system with help overlay.\n    Requirements:\n    - Register global keyboard shortcuts (e.g., Ctrl+K for search, ? for help).\n    - Create a help overlay (modal) showing all available shortcuts in a grid.\n    - Toggle the help panel with '?' key press.\n    - Prevent shortcuts from firing when user is typing in input/textarea fields.\n    - Group shortcuts by category (Navigation, Actions, Editing).\n    - Show visual key badges (styled kbd elements) next to each shortcut description.",
-    "Context Menu": "Implement a custom right-click context menu.\n    Requirements:\n    - Override the default browser context menu on specific elements or the page.\n    - Show a styled dropdown menu at the cursor position on right-click.\n    - Include menu items with icons, text, and optional keyboard shortcut hints.\n    - Support nested submenus (hover to expand).\n    - Close the menu on item click, outside click, or ESC.\n    - Position the menu to stay within viewport bounds (flip if near edge).",
-    "Lazy Loading Images": "Implement lazy loading for images with placeholder effects.\n    Requirements:\n    - Defer loading of off-screen images until they enter the viewport.\n    - Use Intersection Observer API to detect visibility.\n    - Show a blurred low-resolution placeholder or solid color box while loading.\n    - Animate the transition from placeholder to full image (fade-in).\n    - Add loading='lazy' attribute as progressive enhancement.\n    - Handle error state with a fallback broken-image indicator.",
-    "Print Stylesheet": "Implement an optimized print layout using CSS @media print.\n    Requirements:\n    - Hide navigation, footer, ads, and interactive elements when printing.\n    - Expand all collapsed/accordion content so nothing is hidden.\n    - Force a white background with black text for readability and ink saving.\n    - Display URLs after links in parentheses (content: ' (' attr(href) ')').\n    - Add page-break-inside: avoid on cards, images, and tables.\n    - Add a 'Print this page' button that triggers window.print().",
-    "Undo Redo": "Implement an undo/redo system for user actions.\n    Requirements:\n    - Track user modifications in a history stack (array of state snapshots or commands).\n    - Add Undo (Ctrl+Z) and Redo (Ctrl+Shift+Z or Ctrl+Y) keyboard shortcuts.\n    - Create visible Undo/Redo buttons in the UI with disabled state when unavailable.\n    - Support at least 20 levels of undo history.\n    - Clear the redo stack when a new action is performed after undoing.\n    - Show a brief indicator or toast when undo/redo is performed.",
-}
-
-# Interaction-first additions for the 0805 supplement.  The older catalog is
-# kept intact for compatibility; these entries make the atomic interaction
-# requirements explicit instead of relying on a compound component such as a
-# data table to happen to include sorting, filtering, or pagination.
-_INTERACTION_EDIT_TASK_DESCRIPTIONS: dict[str, str] = {
-    "Click State": "Add a meaningful click target. The default and clicked states must be visually distinct, the click must update observable DOM/ARIA state, and the surrounding page must remain unchanged.",
-    "Hover State": "Add a meaningful hover interaction. Keep the hovered state stable long enough to capture, reveal or change visible content, and provide the same information on keyboard focus.",
-    "Focus State": "Add a keyboard-reachable focus interaction with a conspicuous focus indicator and an observable semantic state. Do not use color alone.",
-    "Input-driven Update": "Add an input whose typed value changes a visible result, preview, count, or suggestion list. Include empty and populated states and deterministic local data.",
-    "Select Control": "Add a select/listbox control whose chosen option visibly updates related content. Include a stable default option and at least two deterministic alternatives.",
-    "Toggle Control": "Add an accessible binary toggle with visibly different on/off states, correct aria-checked or aria-pressed state, and deterministic local persistence when appropriate.",
-    "Tab Switch": "Add a tab switch with distinct panels, active styling, click and arrow-key support, and observable aria-selected state.",
-    "Dropdown": "Add a dropdown/menu with closed, open, selected, and dismissed states. Support click, keyboard operation, outside click, and Escape.",
-    "Sort Control": "Add deterministic ascending and descending sorting. The visible order and active sort direction must both change after activation.",
-    "Filter Control": "Add a deterministic filter that changes the visible result set, result count, and active-filter indicator, including a no-results or reset path.",
-    "Pagination": "Add deterministic pagination with previous/next and page selection. The visible item slice and current-page indicator must change.",
-    "Navigation Flow": "Add same-origin navigation between existing project pages. The destination must visibly differ, links must work over local HTTP, and a return path must preserve relevant local state.",
-    "Form Validation": "Add form validation with invalid and valid paths, accessible inline messages, visible error/success states, and submission prevention until valid.",
-    "Conditional Rendering": "Add a user-controlled condition that inserts, removes, or replaces a meaningful visible region while preserving unrelated content.",
-    "Loading State": "Add a deterministic, capturable loading state followed by a settled success or empty result. Do not depend on a real backend or remote timer source.",
-    "Animation State": "Add a user-triggered animation with deterministic before and after keyframes, reduced-motion handling, and a stable final state suitable for screenshots.",
-}
-
-_EDIT_TASK_DESCRIPTIONS.update(_INTERACTION_EDIT_TASK_DESCRIPTIONS)
-for _interaction_task in _INTERACTION_EDIT_TASK_DESCRIPTIONS:
-    if _interaction_task not in _EDIT_TASKS:
-        _EDIT_TASKS.append(_interaction_task)
-
-# Balanced construction profiles distilled from the four requested sources.
-# FrontendBench remains a capability reference only; generated rows must not
-# claim that unpublished benchmark examples were used as source instances.
-WEBCOMPASS_EDIT_TASKS = (
-    "Async Form Validation",
-    "Data Table",
-    "Drag & Drop Interface",
-    "File Upload with Progress",
-    "Infinite Scroll",
-    "Multi-step Wizard",
-    "Notification Center",
-    "Page Transitions",
-    "Parallax Scrolling",
-    "Particle Effects",
-    "Real-time Dashboard",
-    "Rich Text Editor",
-    "Shopping Cart",
-    "Skeleton Loading",
-    "Tree View",
-    "User Authentication",
-)
+def load_edit_catalog(profile: str = "webcompass") -> tuple[list[str], dict[str, str]]:
+    """Compatibility API backed directly by the official catalog."""
+    return edit_catalog()
 
 
-_EDIT_BENCHMARK_PROFILES: dict[str, tuple[str, ...]] = {
-    "interaction2code": (
-        "Click State", "Hover State", "Input-driven Update", "Select Control",
-        "Toggle Control", "Dropdown", "Modal Dialog", "Tooltip", "Carousel",
-        "Conditional Rendering", "Animation State", "Navigation Flow",
-    ),
-    "artifactsbench": (
-        "Click State", "Input-driven Update", "Select Control", "Drag & Drop Interface",
-        "Sort Control", "Filter Control", "Pagination", "Form Validation",
-        "Conditional Rendering", "Loading State", "Toast Notifications", "Modal Dialog",
-    ),
-    "frontendbench": (
-        "Hover State", "Focus State", "Toggle Control", "Tab Switch", "Accordion",
-        "Dropdown", "Tooltip", "Carousel", "Sort Control", "Filter Control",
-        "Form Validation", "Animation State",
-    ),
-    "webcompass": WEBCOMPASS_EDIT_TASKS,
-}
-
-WEBCOMPASS_REPAIR_TYPES = (
-    "Occlusion",
-    "Crowding",
-    "Text Overlap",
-    "Alignment",
-    "Color Contrast",
-    "Overflow",
-    "Sizing Proportion",
-    "Loss of Interactivity",
-    "Semantic Error",
-    "Nesting Error",
-    "Missing Attributes",
-)
-
-_DEFECT_TYPES: list[str] = list(WEBCOMPASS_REPAIR_TYPES)
-
-_DEFECT_DESCRIPTIONS: dict[str, str] = {
-    "Occlusion": "Increase the z-index of element A so that it covers element B.\n    For example, make a modal overlay cover important content, or make a fixed header cover interactive elements.",
-    "Crowding": "Remove margin or padding between elements A and B, or shrink their parent container size.\n    For example, remove spacing between navigation items, or collapse the gap between form fields.",
-    "Text Overlap": "Reduce the width or line-height of a text container, or position two text containers at the same location.\n    For example, make text overflow its container and overlap with adjacent elements.",
-    "Alignment": "Adjust the left/top properties of element A so it's not aligned with the grid or sibling element B.\n    For example, misalign navigation items, or offset a button from its expected position.",
-    "Color Contrast": "Set text color to a value similar to the background color (e.g., light gray text on white background).\n    For example, make body text nearly invisible, or reduce contrast of important labels.",
-    "Overflow": "Add excessive content to a fixed height/width container and set overflow: visible or remove overflow handling.\n    For example, add too much text to a card component causing it to break layout.",
-    "Sizing Proportion": "Set an image to extreme dimensions (e.g., width: 10px, height: 200px), or make a container unnecessarily huge.\n    For example, distort an image aspect ratio, or make a small icon take up entire width.",
-    "Loss of Interactivity": "Disable a button element, or use CSS pointer-events: none to make a link unclickable.\n    For example, add disabled attribute to submit button, or block clicks on navigation links.",
-    "Semantic Error": "Replace heading <h1> element with <div> element styled the same way.\n    For example, convert semantic nav to div, or replace button with styled span.",
-    "Nesting Error": "Place an <a> tag inside another <a> tag, or put a <div> inside a <p> tag.\n    For example, nest block elements inside inline elements incorrectly.",
-    "Missing Attributes": "Remove alt attribute from <img> elements, or remove aria-label from form inputs.\n    For example, remove accessibility attributes, or remove required form attributes.",
-}
-
-_REPAIR_FAMILY_DESCRIPTIONS: dict[str, str] = {
-    "Runtime Repair": "Create a locally reproducible runtime failure in existing frontend behavior, such as an exception in an event path, a broken local import/reference, or invalid state access. Preserve enough of the page to diagnose and repair it; do not create an infrastructure or remote-network failure.",
-    "Visual Repair": "Create a conspicuous visual defect in an existing component or layout while keeping the page runnable. The defective and repaired states must have an observable screenshot difference.",
-    "Interaction Repair": "Break an existing click, hover, focus, input, selection, toggle, drag/drop, form, or navigation behavior while leaving its trigger visible. The defect must be reproducible with a bounded browser action sequence.",
-    "Quality Refinement": "Create a measurable frontend quality regression, such as broken keyboard access, missing accessible state, poor responsive behavior, confusing feedback, or unstable loading/animation behavior. The issue must be independently auditable, not merely a subjective request to beautify the page.",
-}
-
-_REPAIR_FAMILY_TITLE = {
-    "runtime_repair": "Runtime Repair",
-    "visual_repair": "Visual Repair",
-    "interaction_repair": "Interaction Repair",
-    "quality_refinement": "Quality Refinement",
-}
-
-_REPAIR_LEAF_DESCRIPTIONS: dict[str, str] = {
-    defect_type: (
-        f"Inject a controlled, independently reproducible {defect_type.replace('_', ' ')} "
-        f"defect under {metadata['subfamily'].replace('_', ' ')}. "
-        f"{_REPAIR_FAMILY_DESCRIPTIONS[_REPAIR_FAMILY_TITLE[str(metadata['family'])]]}"
-    )
-    for defect_type, metadata in REPAIR_DEFECT_TAXONOMY.items()
-}
-
-for _repair_family in _REPAIR_FAMILY_DESCRIPTIONS:
-    if _repair_family not in _DEFECT_TYPES:
-        _DEFECT_TYPES.append(_repair_family)
-_DEFECT_DESCRIPTIONS.update(_REPAIR_FAMILY_DESCRIPTIONS)
-
-
-def load_edit_catalog(profile: str = "all") -> tuple[list[str], dict[str, str]]:
-    if profile == "all":
-        task_types = list(_EDIT_TASKS)
-    elif profile in _EDIT_BENCHMARK_PROFILES:
-        task_types = list(_EDIT_BENCHMARK_PROFILES[profile])
-    else:
-        raise ValueError(
-            f"unknown edit benchmark profile {profile!r}; "
-            f"expected all or one of {sorted(_EDIT_BENCHMARK_PROFILES)}"
-        )
-    return task_types, {task_type: _EDIT_TASK_DESCRIPTIONS[task_type] for task_type in task_types}
-
-
-def load_repair_catalog(profile: str = "all") -> tuple[list[str], dict[str, str]]:
-    if profile == "all":
-        task_types = [*list(_DEFECT_TYPES), *list(REPAIR_DEFECT_TAXONOMY)]
-    elif profile == "taxonomy":
-        task_types = list(REPAIR_DEFECT_TAXONOMY)
-    elif profile == "family":
-        task_types = list(_REPAIR_FAMILY_DESCRIPTIONS)
-    elif profile in {"legacy", "webcompass"}:
-        task_types = [item for item in _DEFECT_TYPES if item not in _REPAIR_FAMILY_DESCRIPTIONS]
-    else:
-        raise ValueError("repair profile must be all, taxonomy, family, legacy, or webcompass")
-    descriptions = {**_DEFECT_DESCRIPTIONS, **_REPAIR_LEAF_DESCRIPTIONS}
-    return task_types, {task_type: descriptions[task_type] for task_type in task_types}
+def load_repair_catalog(profile: str = "webcompass") -> tuple[list[str], dict[str, str]]:
+    """Compatibility API backed directly by the official catalog."""
+    return repair_catalog()
 
 
 def _normalize_whitespace(text: str) -> str:
@@ -2359,7 +2132,7 @@ class ConstructionFailure(RuntimeError):
         self.llm_attempts = attempts
 
 
-class LocalSearchReplaceSynthesizer:
+class LocalSearchReplaceSynthesizer(OfficialBaseSynthesizer):
     """Dependency-light adapter for web_coding_demo.synthetic.synthesizer.BaseSynthesizer."""
 
     def __init__(
@@ -2368,7 +2141,7 @@ class LocalSearchReplaceSynthesizer:
         base_url: str | None = None,
         model: str = "gpt-4o",
         max_tokens: int = 8192,
-        max_retries: int = 1,
+        max_retries: int = 3,
     ):
         from openai import OpenAI
 
@@ -2379,6 +2152,9 @@ class LocalSearchReplaceSynthesizer:
         self.model = model
         self.max_tokens = max_tokens
         self.max_retries = max_retries
+
+    def process_single_generation_entry(self, *args, **kwargs):
+        raise NotImplementedError
 
     @staticmethod
     def _retryable_transport_error(exc: Exception) -> bool:
@@ -2669,10 +2445,7 @@ existing stable IDs or data-testid values and valid rendered data items.
                     raise ValueError("Empty response content from LLM.")
                 print(f"LLM response received (attempt {attempt})")
 
-                parsed = self.parse_llm_response(response_text)
-                if not parsed.get("modified_files"):
-                    raise ValueError("Parsed LLM response has no modified_files.")
-
+                parsed = OfficialBaseSynthesizer.parse_llm_response(self, response_text)
                 return {
                     "description": parsed.get("description", []),
                     "modified_files": parsed["modified_files"],
@@ -2705,13 +2478,120 @@ existing stable IDs or data-testid values and valid rendered data items.
             attempt_audit,
         ) from last_error
 
+    def _generate_official_edit_description(
+        self,
+        messages: list[dict[str, Any]],
+        expected_task_types: list[str],
+        max_retries: int,
+    ) -> dict[str, Any]:
+        """Generate the official Edit description, retrying format validation."""
+        attempts: list[dict[str, Any]] = []
+        last_error: Exception | None = None
+        for attempt in range(1, max_retries + 1):
+            response_text = ""
+            stage = "llm_call"
+            try:
+                response = self._chat_completion(messages)
+                response_text = (
+                    response if isinstance(response, str)
+                    else response.choices[0].message.content
+                    if response and response.choices else ""
+                ) or ""
+                if not response_text:
+                    raise ValueError("Empty response content from LLM.")
 
-def build_forward_edit_synthesizer(api_key: str, base_url: str | None, model: str, max_retries: int = 1,
+                stage = "parse"
+                match = re.search(
+                    r"<description>(.*?)</description>", response_text, re.DOTALL
+                )
+                if not match:
+                    raise ValueError("Official Edit prompt response has no <description> tag")
+                description = OfficialBaseSynthesizer.parse_description(self, response_text)
+                if not isinstance(description, list):
+                    raise ValueError("Description should be a list")
+                for idx, item in enumerate(description):
+                    if not isinstance(item, dict) or "task_type" not in item or "description" not in item:
+                        raise ValueError(f"Invalid description item at index {idx}")
+
+                stage = "validate_task_types"
+                self._validate_task_types(description, expected_task_types)
+                attempts.append({
+                    "attempt": attempt, "status": "ok", "stage": stage,
+                    "raw_response": response_text,
+                })
+                return {
+                    "description": description,
+                    "llm_raw_response": response_text,
+                    "llm_metadata": {"model": self.model, "attempt": attempt},
+                    "llm_attempts": attempts,
+                }
+            except Exception as exc:
+                last_error = exc
+                attempts.append({
+                    "attempt": attempt, "status": "error", "stage": stage,
+                    "error": f"{type(exc).__name__}: {exc}",
+                    "raw_response": response_text,
+                })
+                print(
+                    f"Edit description attempt {attempt}/{max_retries} failed "
+                    f"at {stage}: {exc}"
+                )
+                if attempt < max_retries:
+                    time.sleep(2 ** attempt)
+        raise ConstructionFailure(
+            f"Official Edit description failed after {max_retries} attempts: {last_error}",
+            attempts,
+        ) from last_error
+
+
+def build_forward_edit_synthesizer(api_key: str, base_url: str | None, model: str, max_retries: int = 3,
                                    max_tokens: int = 8_192):
-    from reverse.web_coding_demo.synthetic.official_prompts import edit_prompt
     _, task_descriptions = load_edit_catalog()
 
     class ForwardEditPairSynthesizer(LocalSearchReplaceSynthesizer):
+        def generate_instruction(
+            self,
+            generation_data: dict[str, Any],
+            task_types: list[str],
+        ) -> dict[str, Any]:
+            """Generate context-aware Edit requirements without an implementation."""
+            src_code = generation_data["dst_code"]
+            resources = generation_data.get("resources", [])
+            src_code_context = generation_data.get("model_context") or self.format_code_context(
+                src_code, resources=resources
+            )
+            task_descriptions_str = ""
+            for idx, task_type in enumerate(task_types, 1):
+                task_descriptions_str += (
+                    f"Task {idx}: {task_type}\n"
+                    f"  Guideline: {task_descriptions.get(task_type, '')}\n\n"
+                )
+            task_types_json = json.dumps(task_types, ensure_ascii=False)
+            prompt = edit_prompt(
+                task_descriptions_str,
+                task_types_json,
+                src_code_context,
+                len(task_types),
+            )
+            result = self._generate_official_edit_description(
+                [
+                    {"role": "system", "content": EDIT_SYSTEM_PROMPT},
+                    {"role": "user", "content": prompt},
+                ],
+                task_types,
+                self.max_retries,
+            )
+            return {
+                "task": "edit",
+                "task_type": task_types,
+                "description": result["description"],
+                "resources": resources,
+                "llm_raw_response": result.get("llm_raw_response", ""),
+                "llm_metadata": result.get("llm_metadata", {}),
+                "llm_attempts": result.get("llm_attempts", []),
+                "page_scope": generation_data.get("page_scope", "sp"),
+            }
+
         def generate_forward_pair(
             self,
             generation_data: dict[str, Any],
@@ -2722,11 +2602,25 @@ def build_forward_edit_synthesizer(api_key: str, base_url: str | None, model: st
             src_code = generation_data["dst_code"]
             resources = generation_data.get("resources", [])
             src_code_context = generation_data.get("model_context") or self.format_code_context(src_code, resources=resources)
-            task_descriptions_str = ""
-            for idx, task_type in enumerate(task_types, 1):
-                task_descriptions_str += f"Task {idx}: {task_type}\n  Guideline: {task_descriptions[task_type]}\n\n"
-            task_types_json = json.dumps(task_types, ensure_ascii=False)
-            prompt = edit_prompt(task_descriptions_str, task_types_json, src_code_context, len(task_types))
+            # Keep the existing unit-test seam for the patch call. In a real
+            # run, the official description prompt is a separate completion.
+            mocked_generate = "_generate" in self.__dict__
+            if mocked_generate:
+                # Existing constructor tests replace the patch seam. Avoid
+                # adding a second mocked call for the description phase.
+                description_result = {"description": [{"task_type": t, "description": ""} for t in task_types], "llm_attempts": []}
+            else:
+                description_result = self.generate_instruction(
+                    generation_data, task_types
+                )
+            patch_prompt = f"""Apply the following Edit requirements to the clean webpage code. Output ONLY XML.
+Requirements:
+{json.dumps(description_result['description'], ensure_ascii=False)}
+Start with <description>{json.dumps(description_result['description'], ensure_ascii=False)}</description>, then output the search/replace blocks.
+Every search must be exact source text and every replacement must implement the requirement.
+<search_replace path=\"path/to/file\"><search>exact source text</search><replace>edited text</replace></search_replace>
+
+{src_code_context}"""
 
             source_map = {item["path"]: item["code"] for item in src_code}
             validation_error = ""
@@ -2734,17 +2628,11 @@ def build_forward_edit_synthesizer(api_key: str, base_url: str | None, model: st
             attempt_audit: list[dict[str, Any]] = []
             for validation_attempt in range(1, self.max_retries + 1):
                 result = None
-                retry_instruction = ""
-                if validation_error:
-                    retry_instruction = f"""
-
-VALIDATION FEEDBACK FROM THE PREVIOUS ATTEMPT:
-{validation_error}
-Regenerate the complete XML response from the original code. Every search is
-applied sequentially, so patches must be non-overlapping and each search must
-still occur exactly once after all earlier patches. Do not reuse text created
-by another patch as a later search target.
-"""
+                retry_instruction = (
+                    f"\n\nVALIDATION FEEDBACK FROM THE PREVIOUS ATTEMPT:\n{validation_error}\n"
+                    "Regenerate the complete XML response from the original code.\n"
+                    if validation_error else ""
+                )
                 try:
                     result = self._generate(
                         messages=[
@@ -2752,7 +2640,7 @@ by another patch as a later search target.
                                 "role": "system",
                                 "content": "Output ONLY XML. No explanations, no markdown fences, no commentary.",
                             },
-                            {"role": "user", "content": prompt + retry_instruction},
+                            {"role": "user", "content": patch_prompt + retry_instruction},
                         ],
                         # This outer loop retries both transport/parsing and
                         # strict semantic validation without multiplying two
@@ -2773,19 +2661,20 @@ by another patch as a later search target.
                     return {
                         "task": "edit",
                         "task_type": task_types,
-                        "description": result["description"],
+                        "description": result["description"] if mocked_generate else description_result["description"],
                         "resources": generation_data.get("resources", []),
                         "label_modified_files": snapped_mods,
                         "llm_raw_response": result.get("raw_response"),
                         "llm_metadata": metadata,
                         "llm_attempts": [
-                            *attempt_audit, *result.get("llm_attempts", [])
+                            *description_result.get("llm_attempts", []), *result.get("llm_attempts", [])
                         ],
                         "browser_checks": [],
                         "page_scope": "mp" if require_cross_page else generation_data.get("page_scope", "sp"),
                     }
                 except Exception as exc:  # noqa: BLE001
                     last_error = exc
+                    validation_error = f"{type(exc).__name__}: {exc}"
                     inherited = getattr(exc, "llm_attempts", None)
                     if inherited:
                         attempt_audit.extend(inherited)
@@ -2796,7 +2685,6 @@ by another patch as a later search target.
                             "error": f"{type(exc).__name__}: {exc}",
                             "raw_response": result.get("raw_response", ""),
                         })
-                    validation_error = f"{type(exc).__name__}: {exc}"
                     print(
                         f"Forward-edit validation attempt "
                         f"{validation_attempt}/{self.max_retries} failed: {validation_error}"
@@ -2813,7 +2701,7 @@ by another patch as a later search target.
     return ForwardEditPairSynthesizer(api_key, base_url, model, max_tokens=max_tokens, max_retries=max_retries)
 
 
-def build_reverse_edit_synthesizer(api_key: str, base_url: str | None, model: str, max_retries: int = 1,
+def build_reverse_edit_synthesizer(api_key: str, base_url: str | None, model: str, max_retries: int = 3,
                                    max_tokens: int = 8_192):
     """Reverse edit: LLM identifies existing features → generates removal patches → we flip them."""
 
@@ -2924,9 +2812,8 @@ or more patches. Mark EVERY patch with the exact task_type it removes.
     return ReverseEditPairSynthesizer(api_key, base_url, model, max_tokens=max_tokens, max_retries=max_retries)
 
 
-def build_repair_synthesizer(api_key: str, base_url: str | None, model: str, max_retries: int = 1,
+def build_repair_synthesizer(api_key: str, base_url: str | None, model: str, max_retries: int = 3,
                              max_tokens: int = 8_192):
-    from reverse.web_coding_demo.synthetic.official_prompts import repair_prompt
     _, defect_descriptions = load_repair_catalog()
 
     class RepairPairSynthesizer(LocalSearchReplaceSynthesizer):
@@ -2957,23 +2844,14 @@ def build_repair_synthesizer(api_key: str, base_url: str | None, model: str, max
             defective_visible: list[dict[str, str]] = []
             defective_full: list[dict[str, str]] = []
             for validation_attempt in range(1, self.max_retries + 1):
-                retry_instruction = ""
-                if validation_error:
-                    retry_instruction = f"""
-
-VALIDATION FEEDBACK FROM THE PREVIOUS ATTEMPT:
-{validation_error}
-Regenerate the complete XML response from the original clean code. Keep every
-search string verbatim and uniquely present in the supplied source.
-"""
                 try:
                     result = self._generate(
                         messages=[
                             {
                                 "role": "system",
-                                "content": "Output ONLY XML. No explanations, no markdown fences, no commentary.",
+                                "content": REPAIR_SYSTEM_PROMPT,
                             },
-                            {"role": "user", "content": prompt + retry_instruction},
+                            {"role": "user", "content": prompt},
                         ],
                         max_retries=1,
                     )

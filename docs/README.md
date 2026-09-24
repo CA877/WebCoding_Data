@@ -4,7 +4,7 @@
 
 ## Architecture
 
-- [project_architecture.md](architecture/project_architecture.md)：仓库关系、producer 分工和主数据流。
+- 仓库关系、producer 分工和主数据流：见根目录 `AGENTS.md`。
 
 ## Four module boards
 
@@ -16,16 +16,15 @@
 
 ## Operations
 
-- [batch_jobs.md](operations/batch_jobs.md)：批处理生命周期、失败处理和共享机器保护。
-- [remote_environment.md](operations/remote_environment.md)：远程入口、环境、代理和凭据边界。
-- [api_usage.md](operations/api_usage.md)：模型、API 调用与验证规则。
-- [publishing.md](operations/publishing.md)：打包、0805 兼容布局和 ModelScope 发布。
+- `docs/batch-running.md`：批处理生命周期、失败处理和共享机器保护（如存在对应模块文档）。
+- `docs/environment.md`：环境、代理和凭据边界（如存在对应模块文档）。
+- API 调用与验证规则以当前模块运行文档和项目规则为准。
+- `publish-dataset` skill：打包、兼容布局、ModelScope 上传和发布后核验。
 - [crawl/assets.md](crawl/assets.md)：URL 候选池与爬取资产口径；具体爬取过程见 `crawl-web-pages` skill 的 `references/pipelines.md`。
 
 ## Current status and retained evidence
 
-- [current_state.md](current_state.md)：当前状态和下一步。
-- `../validate/docs/reports/0905_data_check_strategy_implementation_20260912.md`：当前 0905 包的检查证据与边界。
+- [docs/数据发布版本.md](数据发布版本.md)：当前数据版本与发布路径。
 - 模块目录中的交接文档：仅保留仍可继续执行的模块交接。
 
 已被现行规范覆盖的旧计划、状态快照、聊天汇总与中间试验说明不再保留在 `docs/`；需要复核时以 Git、运行目录、manifest 和正式数据索引为准。

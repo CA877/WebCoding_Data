@@ -5,7 +5,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from reverse.construct_common import append_jsonl, iter_jsonl_records
-from reverse.construct_image_editing import _to_image_edit_record
+from reverse.edit.image.construct import _to_image_edit_record
 
 
 def test_jsonl_reader_does_not_split_unicode_line_separator(tmp_path: Path) -> None:

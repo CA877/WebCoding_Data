@@ -16,6 +16,7 @@
 #   EDIT_WORKERS=24 REPAIR_WORKERS=8 MIN_TASKS=1 MAX_TASKS=7
 #   EDIT_PROFILE=balanced EDIT_PAGE_SCOPE=any REPAIR_PROFILE=taxonomy REPAIR_PAGE_SCOPE=any
 #   IMAGE_INPUT_VARIANTS=source_image,target_image,source_target_images
+#   CANONICAL_SCREENSHOT_DIR=/path/to/immutable/clean/screenshot/cache
 #   DRY_RUN=1                  print resolved commands, make no API calls
 set -euo pipefail
 
@@ -76,7 +77,7 @@ EDIT_MAX_TASKS="${EDIT_MAX_TASKS:-$MAX_TASKS}"
 REPAIR_MIN_TASKS="${REPAIR_MIN_TASKS:-$MIN_TASKS}"
 REPAIR_MAX_TASKS="${REPAIR_MAX_TASKS:-12}"
 SEED="${SEED:-20260805}"
-MAX_RETRIES="${MAX_RETRIES:-1}"
+MAX_RETRIES="${MAX_RETRIES:-3}"
 MAX_OUTPUT_TOKENS="${MAX_OUTPUT_TOKENS:-8192}"
 IMAGE_REPAIR_TARGET="${IMAGE_REPAIR_TARGET:-3000}"
 EDIT_PROFILE="${EDIT_PROFILE:-webcompass}"
@@ -100,13 +101,14 @@ export CONSTRUCT_API_TIMEOUT="${CONSTRUCT_API_TIMEOUT:-600}"
 export CONSTRUCT_STREAM="${CONSTRUCT_STREAM:-1}"
 export CONSTRUCT_TRANSPORT_ATTEMPTS="${CONSTRUCT_TRANSPORT_ATTEMPTS:-1}"
 BROWSER_PROXY="${BROWSER_PROXY:-}"
+CANONICAL_SCREENSHOT_DIR="${CANONICAL_SCREENSHOT_DIR:-}"
 
 if [[ "$EDIT_MIN_TASKS" -lt 4 || "$EDIT_MAX_TASKS" -lt "$EDIT_MIN_TASKS" || "$EDIT_MAX_TASKS" -gt 12 ]]; then
   echo "EDIT_MIN_TASKS/EDIT_MAX_TASKS must satisfy 4 <= min <= max <= 12" >&2
   exit 2
 fi
-if [[ "$REPAIR_MIN_TASKS" -lt 1 || "$REPAIR_MAX_TASKS" -lt "$REPAIR_MIN_TASKS" ]]; then
-  echo "REPAIR_MIN_TASKS/REPAIR_MAX_TASKS must satisfy 1 <= min <= max" >&2
+if [[ "$REPAIR_MIN_TASKS" -lt 4 || "$REPAIR_MAX_TASKS" -lt "$REPAIR_MIN_TASKS" || "$REPAIR_MAX_TASKS" -gt 12 ]]; then
+  echo "REPAIR_MIN_TASKS/REPAIR_MAX_TASKS must satisfy 4 <= min <= max <= 12" >&2
   exit 2
 fi
 if [[ "$REPAIR_PROFILE" == "family" && "$REPAIR_MAX_TASKS" -gt 4 ]]; then
@@ -127,6 +129,10 @@ if [[ "$TASKS" == *"edit"* && -z "$EDIT_PROJECT_LIST" ]]; then
 fi
 if [[ "$TASKS" == *"repair"* && -z "$REPAIR_PROJECT_LIST" ]]; then
   echo "Set REPAIR_PROJECT_LIST to a 40K-eligible materialized WebCompass project list." >&2
+  exit 2
+fi
+if [[ "$TASKS" == *"repair"* && -z "$CANONICAL_SCREENSHOT_DIR" ]]; then
+  echo "Set CANONICAL_SCREENSHOT_DIR for the shared clean screenshot cache." >&2
   exit 2
 fi
 if [[ "$DRY_RUN" != "1" && -z "${OPENAI_API_KEY:-${KIMI_API_KEY:-}}" ]]; then
@@ -178,7 +184,7 @@ LOG_FILE="$LOG_DIR/batch_$(date +%Y%m%d_%H%M%S).log"
 
 if [[ "$TASKS" == *"edit"* ]]; then
   [[ -f "$EDIT_PROJECT_LIST" ]] || { echo "missing: $EDIT_PROJECT_LIST" >&2; exit 2; }
-  run "$PYTHON_BIN" reverse/construct_text_editing.py \
+  run "$PYTHON_BIN" reverse/edit/query/construct.py \
     --project-list "$EDIT_PROJECT_LIST" --output-dir "$OUTPUT_ROOT/text_edit" \
     --screenshot-dir "$OUTPUT_ROOT/images/image-edit" \
     --workers "$EDIT_WORKERS" --min-tasks "$EDIT_MIN_TASKS" --max-tasks "$EDIT_MAX_TASKS" \
@@ -190,13 +196,13 @@ fi
 
 if [[ "$TASKS" == *"repair"* ]]; then
   [[ -f "$REPAIR_PROJECT_LIST" ]] || { echo "missing: $REPAIR_PROJECT_LIST" >&2; exit 2; }
-  run "$PYTHON_BIN" reverse/construct_text_repair.py \
+  run "$PYTHON_BIN" reverse/repair/gt/construct.py \
     --project-list "$REPAIR_PROJECT_LIST" --output-dir "$OUTPUT_ROOT/text_repair" \
     --defect-screenshot-dir "$OUTPUT_ROOT/images/image-repair/defective" \
-    --clean-screenshot-dir "$OUTPUT_ROOT/images/image-repair/clean" \
+    --canonical-screenshot-dir "$CANONICAL_SCREENSHOT_DIR" \
     --workers "$REPAIR_WORKERS" --min-tasks "$REPAIR_MIN_TASKS" --max-tasks "$REPAIR_MAX_TASKS" \
     --seed "$SEED" --max-retries "$MAX_RETRIES" --max-output-tokens "$MAX_OUTPUT_TOKENS" \
-    --repair-profile "$REPAIR_PROFILE" --page-scope "$REPAIR_PAGE_SCOPE" \
+    --page-scope "$REPAIR_PAGE_SCOPE" \
     --browser-proxy "$BROWSER_PROXY" --minimum-changed-ratio 0 \
     --image-repair-target "$IMAGE_REPAIR_TARGET"
 fi

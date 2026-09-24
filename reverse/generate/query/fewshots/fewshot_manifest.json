@@ -1,0 +1,1398 @@
+{
+  "schema_version": 1,
+  "note": "102 selectors = 34 non-empty Benchmark×Category cells × 3 shots. Run extract_benchmark_fewshots.py to retrieve exact original query text from the official/public dataset sources.",
+  "entries": [
+    {
+      "benchmark": "ArtifactsBench",
+      "category": "Tool",
+      "shot": 1,
+      "loader": "hf",
+      "repo": "tencent/ArtifactsBenchmark",
+      "config": null,
+      "split": "train",
+      "query_field": "question",
+      "selector": {
+        "field": "index",
+        "value": 1548
+      }
+    },
+    {
+      "benchmark": "ArtifactsBench",
+      "category": "Tool",
+      "shot": 2,
+      "loader": "hf",
+      "repo": "tencent/ArtifactsBenchmark",
+      "config": null,
+      "split": "train",
+      "query_field": "question",
+      "selector": {
+        "field": "index",
+        "value": 1566
+      }
+    },
+    {
+      "benchmark": "ArtifactsBench",
+      "category": "Tool",
+      "shot": 3,
+      "loader": "hf",
+      "repo": "tencent/ArtifactsBenchmark",
+      "config": null,
+      "split": "train",
+      "query_field": "question",
+      "selector": {
+        "field": "index",
+        "value": 1816
+      }
+    },
+    {
+      "benchmark": "ArtifactsBench",
+      "category": "Editor",
+      "shot": 1,
+      "loader": "hf",
+      "repo": "tencent/ArtifactsBenchmark",
+      "config": null,
+      "split": "train",
+      "query_field": "question",
+      "selector": {
+        "field": "index",
+        "value": 1527
+      }
+    },
+    {
+      "benchmark": "ArtifactsBench",
+      "category": "Editor",
+      "shot": 2,
+      "loader": "hf",
+      "repo": "tencent/ArtifactsBenchmark",
+      "config": null,
+      "split": "train",
+      "query_field": "question",
+      "selector": {
+        "field": "index",
+        "value": 1535
+      }
+    },
+    {
+      "benchmark": "ArtifactsBench",
+      "category": "Editor",
+      "shot": 3,
+      "loader": "hf",
+      "repo": "tencent/ArtifactsBenchmark",
+      "config": null,
+      "split": "train",
+      "query_field": "question",
+      "selector": {
+        "field": "index",
+        "value": 1597
+      }
+    },
+    {
+      "benchmark": "ArtifactsBench",
+      "category": "Game",
+      "shot": 1,
+      "loader": "hf",
+      "repo": "tencent/ArtifactsBenchmark",
+      "config": null,
+      "split": "train",
+      "query_field": "question",
+      "selector": {
+        "field": "index",
+        "value": 4
+      }
+    },
+    {
+      "benchmark": "ArtifactsBench",
+      "category": "Game",
+      "shot": 2,
+      "loader": "hf",
+      "repo": "tencent/ArtifactsBenchmark",
+      "config": null,
+      "split": "train",
+      "query_field": "question",
+      "selector": {
+        "field": "index",
+        "value": 6
+      }
+    },
+    {
+      "benchmark": "ArtifactsBench",
+      "category": "Game",
+      "shot": 3,
+      "loader": "hf",
+      "repo": "tencent/ArtifactsBenchmark",
+      "config": null,
+      "split": "train",
+      "query_field": "question",
+      "selector": {
+        "field": "index",
+        "value": 1595
+      }
+    },
+    {
+      "benchmark": "ArtifactsBench",
+      "category": "Simulation",
+      "shot": 1,
+      "loader": "hf",
+      "repo": "tencent/ArtifactsBenchmark",
+      "config": null,
+      "split": "train",
+      "query_field": "question",
+      "selector": {
+        "field": "index",
+        "value": 10
+      }
+    },
+    {
+      "benchmark": "ArtifactsBench",
+      "category": "Simulation",
+      "shot": 2,
+      "loader": "hf",
+      "repo": "tencent/ArtifactsBenchmark",
+      "config": null,
+      "split": "train",
+      "query_field": "question",
+      "selector": {
+        "field": "index",
+        "value": 1559
+      }
+    },
+    {
+      "benchmark": "ArtifactsBench",
+      "category": "Simulation",
+      "shot": 3,
+      "loader": "hf",
+      "repo": "tencent/ArtifactsBenchmark",
+      "config": null,
+      "split": "train",
+      "query_field": "question",
+      "selector": {
+        "field": "index",
+        "value": 1592
+      }
+    },
+    {
+      "benchmark": "ArtifactsBench",
+      "category": "SVG / Diagram",
+      "shot": 1,
+      "loader": "hf",
+      "repo": "tencent/ArtifactsBenchmark",
+      "config": null,
+      "split": "train",
+      "query_field": "question",
+      "selector": {
+        "field": "index",
+        "value": 14
+      }
+    },
+    {
+      "benchmark": "ArtifactsBench",
+      "category": "SVG / Diagram",
+      "shot": 2,
+      "loader": "hf",
+      "repo": "tencent/ArtifactsBenchmark",
+      "config": null,
+      "split": "train",
+      "query_field": "question",
+      "selector": {
+        "field": "index",
+        "value": 80
+      }
+    },
+    {
+      "benchmark": "ArtifactsBench",
+      "category": "SVG / Diagram",
+      "shot": 3,
+      "loader": "hf",
+      "repo": "tencent/ArtifactsBenchmark",
+      "config": null,
+      "split": "train",
+      "query_field": "question",
+      "selector": {
+        "field": "index",
+        "value": 90
+      }
+    },
+    {
+      "benchmark": "ArtifactsBench",
+      "category": "Data Visualization",
+      "shot": 1,
+      "loader": "hf",
+      "repo": "tencent/ArtifactsBenchmark",
+      "config": null,
+      "split": "train",
+      "query_field": "question",
+      "selector": {
+        "field": "index",
+        "value": 1530
+      }
+    },
+    {
+      "benchmark": "ArtifactsBench",
+      "category": "Data Visualization",
+      "shot": 2,
+      "loader": "hf",
+      "repo": "tencent/ArtifactsBenchmark",
+      "config": null,
+      "split": "train",
+      "query_field": "question",
+      "selector": {
+        "field": "index",
+        "value": 1585
+      }
+    },
+    {
+      "benchmark": "ArtifactsBench",
+      "category": "Data Visualization",
+      "shot": 3,
+      "loader": "hf",
+      "repo": "tencent/ArtifactsBenchmark",
+      "config": null,
+      "split": "train",
+      "query_field": "question",
+      "selector": {
+        "field": "index",
+        "value": 1587
+      }
+    },
+    {
+      "benchmark": "ArtifactsBench",
+      "category": "Multimedia",
+      "shot": 1,
+      "loader": "hf",
+      "repo": "tencent/ArtifactsBenchmark",
+      "config": null,
+      "split": "train",
+      "query_field": "question",
+      "selector": {
+        "field": "index",
+        "value": 1535
+      }
+    },
+    {
+      "benchmark": "ArtifactsBench",
+      "category": "Multimedia",
+      "shot": 2,
+      "loader": "hf",
+      "repo": "tencent/ArtifactsBenchmark",
+      "config": null,
+      "split": "train",
+      "query_field": "question",
+      "selector": {
+        "field": "index",
+        "value": 1540
+      }
+    },
+    {
+      "benchmark": "ArtifactsBench",
+      "category": "Multimedia",
+      "shot": 3,
+      "loader": "hf",
+      "repo": "tencent/ArtifactsBenchmark",
+      "config": null,
+      "split": "train",
+      "query_field": "question",
+      "selector": {
+        "field": "index",
+        "value": 1600
+      }
+    },
+    {
+      "benchmark": "MiniAppBench",
+      "category": "Tool",
+      "shot": 1,
+      "loader": "json_url",
+      "url": "https://raw.githubusercontent.com/MiniAppBench/miniappbench/main/data/query_validation_100.json",
+      "query_field": "query",
+      "selector": {
+        "field": "index",
+        "value": 14
+      }
+    },
+    {
+      "benchmark": "MiniAppBench",
+      "category": "Tool",
+      "shot": 2,
+      "loader": "json_url",
+      "url": "https://raw.githubusercontent.com/MiniAppBench/miniappbench/main/data/query_validation_100.json",
+      "query_field": "query",
+      "selector": {
+        "field": "index",
+        "value": 15
+      }
+    },
+    {
+      "benchmark": "MiniAppBench",
+      "category": "Tool",
+      "shot": 3,
+      "loader": "json_url",
+      "url": "https://raw.githubusercontent.com/MiniAppBench/miniappbench/main/data/query_validation_100.json",
+      "query_field": "query",
+      "selector": {
+        "field": "index",
+        "value": 25
+      }
+    },
+    {
+      "benchmark": "MiniAppBench",
+      "category": "Editor",
+      "shot": 1,
+      "loader": "json_url",
+      "url": "https://raw.githubusercontent.com/MiniAppBench/miniappbench/main/data/query_validation_100.json",
+      "query_field": "query",
+      "selector": {
+        "field": "index",
+        "value": 1
+      }
+    },
+    {
+      "benchmark": "MiniAppBench",
+      "category": "Editor",
+      "shot": 2,
+      "loader": "json_url",
+      "url": "https://raw.githubusercontent.com/MiniAppBench/miniappbench/main/data/query_validation_100.json",
+      "query_field": "query",
+      "selector": {
+        "field": "index",
+        "value": 2
+      }
+    },
+    {
+      "benchmark": "MiniAppBench",
+      "category": "Editor",
+      "shot": 3,
+      "loader": "json_url",
+      "url": "https://raw.githubusercontent.com/MiniAppBench/miniappbench/main/data/query_validation_100.json",
+      "query_field": "query",
+      "selector": {
+        "field": "index",
+        "value": 4
+      }
+    },
+    {
+      "benchmark": "MiniAppBench",
+      "category": "Game",
+      "shot": 1,
+      "loader": "json_url",
+      "url": "https://raw.githubusercontent.com/MiniAppBench/miniappbench/main/data/query_validation_100.json",
+      "query_field": "query",
+      "selector": {
+        "field": "index",
+        "value": 76
+      }
+    },
+    {
+      "benchmark": "MiniAppBench",
+      "category": "Game",
+      "shot": 2,
+      "loader": "json_url",
+      "url": "https://raw.githubusercontent.com/MiniAppBench/miniappbench/main/data/query_validation_100.json",
+      "query_field": "query",
+      "selector": {
+        "field": "index",
+        "value": 82
+      }
+    },
+    {
+      "benchmark": "MiniAppBench",
+      "category": "Game",
+      "shot": 3,
+      "loader": "json_url",
+      "url": "https://raw.githubusercontent.com/MiniAppBench/miniappbench/main/data/query_validation_100.json",
+      "query_field": "query",
+      "selector": {
+        "field": "index",
+        "value": 94
+      }
+    },
+    {
+      "benchmark": "MiniAppBench",
+      "category": "Simulation",
+      "shot": 1,
+      "loader": "json_url",
+      "url": "https://raw.githubusercontent.com/MiniAppBench/miniappbench/main/data/query_validation_100.json",
+      "query_field": "query",
+      "selector": {
+        "field": "index",
+        "value": 47
+      }
+    },
+    {
+      "benchmark": "MiniAppBench",
+      "category": "Simulation",
+      "shot": 2,
+      "loader": "json_url",
+      "url": "https://raw.githubusercontent.com/MiniAppBench/miniappbench/main/data/query_validation_100.json",
+      "query_field": "query",
+      "selector": {
+        "field": "index",
+        "value": 50
+      }
+    },
+    {
+      "benchmark": "MiniAppBench",
+      "category": "Simulation",
+      "shot": 3,
+      "loader": "json_url",
+      "url": "https://raw.githubusercontent.com/MiniAppBench/miniappbench/main/data/query_validation_100.json",
+      "query_field": "query",
+      "selector": {
+        "field": "index",
+        "value": 63
+      }
+    },
+    {
+      "benchmark": "MiniAppBench",
+      "category": "SVG / Diagram",
+      "shot": 1,
+      "loader": "json_url",
+      "url": "https://raw.githubusercontent.com/MiniAppBench/miniappbench/main/data/query_validation_100.json",
+      "query_field": "query",
+      "selector": {
+        "field": "index",
+        "value": 39
+      }
+    },
+    {
+      "benchmark": "MiniAppBench",
+      "category": "SVG / Diagram",
+      "shot": 2,
+      "loader": "json_url",
+      "url": "https://raw.githubusercontent.com/MiniAppBench/miniappbench/main/data/query_validation_100.json",
+      "query_field": "query",
+      "selector": {
+        "field": "index",
+        "value": 61
+      }
+    },
+    {
+      "benchmark": "MiniAppBench",
+      "category": "SVG / Diagram",
+      "shot": 3,
+      "loader": "json_url",
+      "url": "https://raw.githubusercontent.com/MiniAppBench/miniappbench/main/data/query_validation_100.json",
+      "query_field": "query",
+      "selector": {
+        "field": "index",
+        "value": 66
+      }
+    },
+    {
+      "benchmark": "MiniAppBench",
+      "category": "Canvas",
+      "shot": 1,
+      "loader": "json_url",
+      "url": "https://raw.githubusercontent.com/MiniAppBench/miniappbench/main/data/query_validation_100.json",
+      "query_field": "query",
+      "selector": {
+        "field": "index",
+        "value": 1
+      }
+    },
+    {
+      "benchmark": "MiniAppBench",
+      "category": "Canvas",
+      "shot": 2,
+      "loader": "json_url",
+      "url": "https://raw.githubusercontent.com/MiniAppBench/miniappbench/main/data/query_validation_100.json",
+      "query_field": "query",
+      "selector": {
+        "field": "index",
+        "value": 3
+      }
+    },
+    {
+      "benchmark": "MiniAppBench",
+      "category": "Canvas",
+      "shot": 3,
+      "loader": "json_url",
+      "url": "https://raw.githubusercontent.com/MiniAppBench/miniappbench/main/data/query_validation_100.json",
+      "query_field": "query",
+      "selector": {
+        "field": "index",
+        "value": 7
+      }
+    },
+    {
+      "benchmark": "MiniAppBench",
+      "category": "Data Visualization",
+      "shot": 1,
+      "loader": "json_url",
+      "url": "https://raw.githubusercontent.com/MiniAppBench/miniappbench/main/data/query_validation_100.json",
+      "query_field": "query",
+      "selector": {
+        "field": "index",
+        "value": 45
+      }
+    },
+    {
+      "benchmark": "MiniAppBench",
+      "category": "Data Visualization",
+      "shot": 2,
+      "loader": "json_url",
+      "url": "https://raw.githubusercontent.com/MiniAppBench/miniappbench/main/data/query_validation_100.json",
+      "query_field": "query",
+      "selector": {
+        "field": "index",
+        "value": 53
+      }
+    },
+    {
+      "benchmark": "MiniAppBench",
+      "category": "Data Visualization",
+      "shot": 3,
+      "loader": "json_url",
+      "url": "https://raw.githubusercontent.com/MiniAppBench/miniappbench/main/data/query_validation_100.json",
+      "query_field": "query",
+      "selector": {
+        "field": "index",
+        "value": 55
+      }
+    },
+    {
+      "benchmark": "MiniAppBench",
+      "category": "Multimedia",
+      "shot": 1,
+      "loader": "json_url",
+      "url": "https://raw.githubusercontent.com/MiniAppBench/miniappbench/main/data/query_validation_100.json",
+      "query_field": "query",
+      "selector": {
+        "field": "index",
+        "value": 5
+      }
+    },
+    {
+      "benchmark": "MiniAppBench",
+      "category": "Multimedia",
+      "shot": 2,
+      "loader": "json_url",
+      "url": "https://raw.githubusercontent.com/MiniAppBench/miniappbench/main/data/query_validation_100.json",
+      "query_field": "query",
+      "selector": {
+        "field": "index",
+        "value": 25
+      }
+    },
+    {
+      "benchmark": "MiniAppBench",
+      "category": "Multimedia",
+      "shot": 3,
+      "loader": "json_url",
+      "url": "https://raw.githubusercontent.com/MiniAppBench/miniappbench/main/data/query_validation_100.json",
+      "query_field": "query",
+      "selector": {
+        "field": "index",
+        "value": 99
+      }
+    },
+    {
+      "benchmark": "Cookie-Bench",
+      "category": "Tool",
+      "shot": 1,
+      "loader": "hf",
+      "repo": "Y36521478Y/Cookie-Bench",
+      "config": null,
+      "split": "test",
+      "query_field": "query",
+      "selector": {
+        "field": "data_id",
+        "value": "webdev_43"
+      }
+    },
+    {
+      "benchmark": "Cookie-Bench",
+      "category": "Tool",
+      "shot": 2,
+      "loader": "hf",
+      "repo": "Y36521478Y/Cookie-Bench",
+      "config": null,
+      "split": "test",
+      "query_field": "query",
+      "selector": {
+        "field": "data_id",
+        "value": "webdev_57"
+      }
+    },
+    {
+      "benchmark": "Cookie-Bench",
+      "category": "Tool",
+      "shot": 3,
+      "loader": "hf",
+      "repo": "Y36521478Y/Cookie-Bench",
+      "config": null,
+      "split": "test",
+      "query_field": "query",
+      "selector": {
+        "field": "data_id",
+        "value": "webdev_59"
+      }
+    },
+    {
+      "benchmark": "Cookie-Bench",
+      "category": "Editor",
+      "shot": 1,
+      "loader": "hf",
+      "repo": "Y36521478Y/Cookie-Bench",
+      "config": null,
+      "split": "test",
+      "query_field": "query",
+      "selector": {
+        "field": "data_id",
+        "value": "webdev_21"
+      }
+    },
+    {
+      "benchmark": "Cookie-Bench",
+      "category": "Editor",
+      "shot": 2,
+      "loader": "hf",
+      "repo": "Y36521478Y/Cookie-Bench",
+      "config": null,
+      "split": "test",
+      "query_field": "query",
+      "selector": {
+        "field": "data_id",
+        "value": "webdev_23"
+      }
+    },
+    {
+      "benchmark": "Cookie-Bench",
+      "category": "Editor",
+      "shot": 3,
+      "loader": "hf",
+      "repo": "Y36521478Y/Cookie-Bench",
+      "config": null,
+      "split": "test",
+      "query_field": "query",
+      "selector": {
+        "field": "data_id",
+        "value": "webdev_24"
+      }
+    },
+    {
+      "benchmark": "Cookie-Bench",
+      "category": "Game",
+      "shot": 1,
+      "loader": "hf",
+      "repo": "Y36521478Y/Cookie-Bench",
+      "config": null,
+      "split": "test",
+      "query_field": "query",
+      "selector": {
+        "field": "data_id",
+        "value": "webdev_12"
+      }
+    },
+    {
+      "benchmark": "Cookie-Bench",
+      "category": "Game",
+      "shot": 2,
+      "loader": "hf",
+      "repo": "Y36521478Y/Cookie-Bench",
+      "config": null,
+      "split": "test",
+      "query_field": "query",
+      "selector": {
+        "field": "data_id",
+        "value": "webdev_38"
+      }
+    },
+    {
+      "benchmark": "Cookie-Bench",
+      "category": "Game",
+      "shot": 3,
+      "loader": "hf",
+      "repo": "Y36521478Y/Cookie-Bench",
+      "config": null,
+      "split": "test",
+      "query_field": "query",
+      "selector": {
+        "field": "data_id",
+        "value": "webdev_88"
+      }
+    },
+    {
+      "benchmark": "Cookie-Bench",
+      "category": "Simulation",
+      "shot": 1,
+      "loader": "hf",
+      "repo": "Y36521478Y/Cookie-Bench",
+      "config": null,
+      "split": "test",
+      "query_field": "query",
+      "selector": {
+        "field": "data_id",
+        "value": "webdev_8"
+      }
+    },
+    {
+      "benchmark": "Cookie-Bench",
+      "category": "Simulation",
+      "shot": 2,
+      "loader": "hf",
+      "repo": "Y36521478Y/Cookie-Bench",
+      "config": null,
+      "split": "test",
+      "query_field": "query",
+      "selector": {
+        "field": "data_id",
+        "value": "webdev_64"
+      }
+    },
+    {
+      "benchmark": "Cookie-Bench",
+      "category": "Simulation",
+      "shot": 3,
+      "loader": "hf",
+      "repo": "Y36521478Y/Cookie-Bench",
+      "config": null,
+      "split": "test",
+      "query_field": "query",
+      "selector": {
+        "field": "data_id",
+        "value": "webdev_74"
+      }
+    },
+    {
+      "benchmark": "Cookie-Bench",
+      "category": "SVG / Diagram",
+      "shot": 1,
+      "loader": "hf",
+      "repo": "Y36521478Y/Cookie-Bench",
+      "config": null,
+      "split": "test",
+      "query_field": "query",
+      "selector": {
+        "field": "data_id",
+        "value": "webdev_19"
+      }
+    },
+    {
+      "benchmark": "Cookie-Bench",
+      "category": "SVG / Diagram",
+      "shot": 2,
+      "loader": "hf",
+      "repo": "Y36521478Y/Cookie-Bench",
+      "config": null,
+      "split": "test",
+      "query_field": "query",
+      "selector": {
+        "field": "data_id",
+        "value": "webdev_20"
+      }
+    },
+    {
+      "benchmark": "Cookie-Bench",
+      "category": "SVG / Diagram",
+      "shot": 3,
+      "loader": "hf",
+      "repo": "Y36521478Y/Cookie-Bench",
+      "config": null,
+      "split": "test",
+      "query_field": "query",
+      "selector": {
+        "field": "data_id",
+        "value": "webdev_9"
+      }
+    },
+    {
+      "benchmark": "Cookie-Bench",
+      "category": "Data Visualization",
+      "shot": 1,
+      "loader": "hf",
+      "repo": "Y36521478Y/Cookie-Bench",
+      "config": null,
+      "split": "test",
+      "query_field": "query",
+      "selector": {
+        "field": "data_id",
+        "value": "webdev_5"
+      }
+    },
+    {
+      "benchmark": "Cookie-Bench",
+      "category": "Data Visualization",
+      "shot": 2,
+      "loader": "hf",
+      "repo": "Y36521478Y/Cookie-Bench",
+      "config": null,
+      "split": "test",
+      "query_field": "query",
+      "selector": {
+        "field": "data_id",
+        "value": "webdev_41"
+      }
+    },
+    {
+      "benchmark": "Cookie-Bench",
+      "category": "Data Visualization",
+      "shot": 3,
+      "loader": "hf",
+      "repo": "Y36521478Y/Cookie-Bench",
+      "config": null,
+      "split": "test",
+      "query_field": "query",
+      "selector": {
+        "field": "data_id",
+        "value": "webdev_52"
+      }
+    },
+    {
+      "benchmark": "Cookie-Bench",
+      "category": "Multimedia",
+      "shot": 1,
+      "loader": "hf",
+      "repo": "Y36521478Y/Cookie-Bench",
+      "config": null,
+      "split": "test",
+      "query_field": "query",
+      "selector": {
+        "field": "data_id",
+        "value": "webdev_21"
+      }
+    },
+    {
+      "benchmark": "Cookie-Bench",
+      "category": "Multimedia",
+      "shot": 2,
+      "loader": "hf",
+      "repo": "Y36521478Y/Cookie-Bench",
+      "config": null,
+      "split": "test",
+      "query_field": "query",
+      "selector": {
+        "field": "data_id",
+        "value": "webdev_42"
+      }
+    },
+    {
+      "benchmark": "Cookie-Bench",
+      "category": "Multimedia",
+      "shot": 3,
+      "loader": "hf",
+      "repo": "Y36521478Y/Cookie-Bench",
+      "config": null,
+      "split": "test",
+      "query_field": "query",
+      "selector": {
+        "field": "data_id",
+        "value": "webdev_73"
+      }
+    },
+    {
+      "benchmark": "WebGen",
+      "category": "Tool",
+      "shot": 1,
+      "loader": "hf",
+      "repo": "luzimu/WebGen-Bench",
+      "config": null,
+      "split": "train",
+      "query_field": "instruction",
+      "mapping_note": "Uses WebGen-Instruct train cases rather than WebGen-Bench evaluation instructions.",
+      "selector": {
+        "field": "id",
+        "value": "train_000038"
+      }
+    },
+    {
+      "benchmark": "WebGen",
+      "category": "Tool",
+      "shot": 2,
+      "loader": "hf",
+      "repo": "luzimu/WebGen-Bench",
+      "config": null,
+      "split": "train",
+      "query_field": "instruction",
+      "mapping_note": "Uses WebGen-Instruct train cases rather than WebGen-Bench evaluation instructions.",
+      "selector": {
+        "field": "id",
+        "value": "train_005064"
+      }
+    },
+    {
+      "benchmark": "WebGen",
+      "category": "Tool",
+      "shot": 3,
+      "loader": "hf",
+      "repo": "luzimu/WebGen-Bench",
+      "config": null,
+      "split": "train",
+      "query_field": "instruction",
+      "mapping_note": "Uses WebGen-Instruct train cases rather than WebGen-Bench evaluation instructions.",
+      "selector": {
+        "field": "id",
+        "value": "train_005383"
+      }
+    },
+    {
+      "benchmark": "WebGen",
+      "category": "Editor",
+      "shot": 1,
+      "loader": "hf",
+      "repo": "luzimu/WebGen-Bench",
+      "config": null,
+      "split": "train",
+      "query_field": "instruction",
+      "mapping_note": "Uses WebGen-Instruct train cases rather than WebGen-Bench evaluation instructions.",
+      "selector": {
+        "field": "id",
+        "value": "train_000418"
+      }
+    },
+    {
+      "benchmark": "WebGen",
+      "category": "Editor",
+      "shot": 2,
+      "loader": "hf",
+      "repo": "luzimu/WebGen-Bench",
+      "config": null,
+      "split": "train",
+      "query_field": "instruction",
+      "mapping_note": "Uses WebGen-Instruct train cases rather than WebGen-Bench evaluation instructions.",
+      "selector": {
+        "field": "id",
+        "value": "train_006040"
+      }
+    },
+    {
+      "benchmark": "WebGen",
+      "category": "Editor",
+      "shot": 3,
+      "loader": "hf",
+      "repo": "luzimu/WebGen-Bench",
+      "config": null,
+      "split": "train",
+      "query_field": "instruction",
+      "mapping_note": "Uses WebGen-Instruct train cases rather than WebGen-Bench evaluation instructions.",
+      "selector": {
+        "field": "id",
+        "value": "train_006077"
+      }
+    },
+    {
+      "benchmark": "WebGen",
+      "category": "Data Visualization",
+      "shot": 1,
+      "loader": "hf",
+      "repo": "luzimu/WebGen-Bench",
+      "config": null,
+      "split": "train",
+      "query_field": "instruction",
+      "mapping_note": "Uses WebGen-Instruct train cases rather than WebGen-Bench evaluation instructions.",
+      "selector": {
+        "field": "id",
+        "value": "train_005619"
+      }
+    },
+    {
+      "benchmark": "WebGen",
+      "category": "Data Visualization",
+      "shot": 2,
+      "loader": "hf",
+      "repo": "luzimu/WebGen-Bench",
+      "config": null,
+      "split": "train",
+      "query_field": "instruction",
+      "mapping_note": "Uses WebGen-Instruct train cases rather than WebGen-Bench evaluation instructions.",
+      "selector": {
+        "field": "id",
+        "value": "train_005656"
+      }
+    },
+    {
+      "benchmark": "WebGen",
+      "category": "Data Visualization",
+      "shot": 3,
+      "loader": "hf",
+      "repo": "luzimu/WebGen-Bench",
+      "config": null,
+      "split": "train",
+      "query_field": "instruction",
+      "mapping_note": "Uses WebGen-Instruct train cases rather than WebGen-Bench evaluation instructions.",
+      "selector": {
+        "field": "id",
+        "value": "train_005687"
+      }
+    },
+    {
+      "benchmark": "WebGen",
+      "category": "Multi-page",
+      "shot": 1,
+      "loader": "hf",
+      "repo": "luzimu/WebGen-Bench",
+      "config": null,
+      "split": "train",
+      "query_field": "instruction",
+      "mapping_note": "Uses WebGen-Instruct train cases rather than WebGen-Bench evaluation instructions.",
+      "selector": {
+        "field": "id",
+        "value": "train_000007"
+      }
+    },
+    {
+      "benchmark": "WebGen",
+      "category": "Multi-page",
+      "shot": 2,
+      "loader": "hf",
+      "repo": "luzimu/WebGen-Bench",
+      "config": null,
+      "split": "train",
+      "query_field": "instruction",
+      "mapping_note": "Uses WebGen-Instruct train cases rather than WebGen-Bench evaluation instructions.",
+      "selector": {
+        "field": "id",
+        "value": "train_000420"
+      }
+    },
+    {
+      "benchmark": "WebGen",
+      "category": "Multi-page",
+      "shot": 3,
+      "loader": "hf",
+      "repo": "luzimu/WebGen-Bench",
+      "config": null,
+      "split": "train",
+      "query_field": "instruction",
+      "mapping_note": "Uses WebGen-Instruct train cases rather than WebGen-Bench evaluation instructions.",
+      "selector": {
+        "field": "id",
+        "value": "train_000436"
+      }
+    },
+    {
+      "benchmark": "WebGen",
+      "category": "Full-stack",
+      "shot": 1,
+      "loader": "hf",
+      "repo": "luzimu/WebGen-Bench",
+      "config": null,
+      "split": "train",
+      "query_field": "instruction",
+      "mapping_note": "Uses WebGen-Instruct train cases rather than WebGen-Bench evaluation instructions.",
+      "selector": {
+        "field": "id",
+        "value": "train_000437"
+      }
+    },
+    {
+      "benchmark": "WebGen",
+      "category": "Full-stack",
+      "shot": 2,
+      "loader": "hf",
+      "repo": "luzimu/WebGen-Bench",
+      "config": null,
+      "split": "train",
+      "query_field": "instruction",
+      "mapping_note": "Uses WebGen-Instruct train cases rather than WebGen-Bench evaluation instructions.",
+      "selector": {
+        "field": "id",
+        "value": "train_006464"
+      }
+    },
+    {
+      "benchmark": "WebGen",
+      "category": "Full-stack",
+      "shot": 3,
+      "loader": "hf",
+      "repo": "luzimu/WebGen-Bench",
+      "config": null,
+      "split": "train",
+      "query_field": "instruction",
+      "mapping_note": "Uses WebGen-Instruct train cases rather than WebGen-Bench evaluation instructions.",
+      "selector": {
+        "field": "id",
+        "value": "train_006562"
+      }
+    },
+    {
+      "benchmark": "WebCompass",
+      "category": "Tool",
+      "shot": 1,
+      "loader": "webcompass",
+      "repo": "NJU-LINK/WebCompass",
+      "config": "editing",
+      "split": "sp",
+      "query_field": "description",
+      "selector": {
+        "field": "instance_id",
+        "value": "2871694_www.chemvantage.org_L4_1"
+      }
+    },
+    {
+      "benchmark": "WebCompass",
+      "category": "Tool",
+      "shot": 2,
+      "loader": "webcompass",
+      "repo": "NJU-LINK/WebCompass",
+      "config": "editing",
+      "split": "sp",
+      "query_field": "description",
+      "selector": {
+        "field": "instance_id",
+        "value": "2890049_icax.se_L10_0"
+      }
+    },
+    {
+      "benchmark": "WebCompass",
+      "category": "Tool",
+      "shot": 3,
+      "loader": "webcompass",
+      "repo": "NJU-LINK/WebCompass",
+      "config": "editing",
+      "split": "sp",
+      "query_field": "description",
+      "selector": {
+        "field": "instance_id",
+        "value": "2808476_PlayfulPlatypus.com_L6_2"
+      }
+    },
+    {
+      "benchmark": "WebCompass",
+      "category": "Editor",
+      "shot": 1,
+      "loader": "webcompass",
+      "repo": "NJU-LINK/WebCompass",
+      "config": "editing",
+      "split": "sp",
+      "query_field": "description",
+      "selector": {
+        "field": "instance_id",
+        "value": "1047829_www.evolvemediallc.com_L4_1"
+      }
+    },
+    {
+      "benchmark": "WebCompass",
+      "category": "Editor",
+      "shot": 2,
+      "loader": "webcompass",
+      "repo": "NJU-LINK/WebCompass",
+      "config": "editing",
+      "split": "sp",
+      "query_field": "description",
+      "selector": {
+        "field": "instance_id",
+        "value": "1061447_www.sicapital.net_L11_1"
+      }
+    },
+    {
+      "benchmark": "WebCompass",
+      "category": "Editor",
+      "shot": 3,
+      "loader": "webcompass",
+      "repo": "NJU-LINK/WebCompass",
+      "config": "editing",
+      "split": "sp",
+      "query_field": "description",
+      "selector": {
+        "field": "instance_id",
+        "value": "985175_www.fbimmigration.com_L10_0"
+      }
+    },
+    {
+      "benchmark": "WebCompass",
+      "category": "Data Visualization",
+      "shot": 1,
+      "loader": "webcompass",
+      "repo": "NJU-LINK/WebCompass",
+      "config": "editing",
+      "split": "sp",
+      "query_field": "description",
+      "selector": {
+        "field": "instance_id",
+        "value": "5089922_www.datacenternoordholland.nl_L10_2"
+      }
+    },
+    {
+      "benchmark": "WebCompass",
+      "category": "Data Visualization",
+      "shot": 2,
+      "loader": "webcompass",
+      "repo": "NJU-LINK/WebCompass",
+      "config": "editing",
+      "split": "sp",
+      "query_field": "description",
+      "selector": {
+        "field": "instance_id",
+        "value": "2722361_www.talktel.ca_L11_2"
+      }
+    },
+    {
+      "benchmark": "WebCompass",
+      "category": "Data Visualization",
+      "shot": 3,
+      "loader": "webcompass",
+      "repo": "NJU-LINK/WebCompass",
+      "config": "editing",
+      "split": "sp",
+      "query_field": "description",
+      "selector": {
+        "field": "instance_id",
+        "value": "2847133_www.dalsetti.com.br_L10_2"
+      }
+    },
+    {
+      "benchmark": "WebCompass",
+      "category": "Multi-page",
+      "shot": 1,
+      "loader": "webcompass",
+      "repo": "NJU-LINK/WebCompass",
+      "config": "editing",
+      "split": "mp",
+      "query_field": "description",
+      "mapping_note": "Official WebCompass editing/mp split; complete case is the full description list.",
+      "selector": {
+        "row_index": 0
+      }
+    },
+    {
+      "benchmark": "WebCompass",
+      "category": "Multi-page",
+      "shot": 2,
+      "loader": "webcompass",
+      "repo": "NJU-LINK/WebCompass",
+      "config": "editing",
+      "split": "mp",
+      "query_field": "description",
+      "mapping_note": "Official WebCompass editing/mp split; complete case is the full description list.",
+      "selector": {
+        "row_index": 1
+      }
+    },
+    {
+      "benchmark": "WebCompass",
+      "category": "Multi-page",
+      "shot": 3,
+      "loader": "webcompass",
+      "repo": "NJU-LINK/WebCompass",
+      "config": "editing",
+      "split": "mp",
+      "query_field": "description",
+      "mapping_note": "Official WebCompass editing/mp split; complete case is the full description list.",
+      "selector": {
+        "row_index": 2
+      }
+    },
+    {
+      "benchmark": "WebCompass",
+      "category": "Full-stack",
+      "shot": 1,
+      "loader": "webcompass",
+      "repo": "NJU-LINK/WebCompass",
+      "config": "editing",
+      "split": "sp",
+      "query_field": "description",
+      "mapping_note": "Complex stateful-web-app proxy only; WebCompass does not natively evaluate backend correctness.",
+      "selector": {
+        "field": "instance_id",
+        "value": "2878293_thesubversiveagency.com_L11_2"
+      }
+    },
+    {
+      "benchmark": "WebCompass",
+      "category": "Full-stack",
+      "shot": 2,
+      "loader": "webcompass",
+      "repo": "NJU-LINK/WebCompass",
+      "config": "editing",
+      "split": "sp",
+      "query_field": "description",
+      "mapping_note": "Complex stateful-web-app proxy only; WebCompass does not natively evaluate backend correctness.",
+      "selector": {
+        "field": "instance_id",
+        "value": "2821048_radiator.dev_L11_2"
+      }
+    },
+    {
+      "benchmark": "WebCompass",
+      "category": "Full-stack",
+      "shot": 3,
+      "loader": "webcompass",
+      "repo": "NJU-LINK/WebCompass",
+      "config": "editing",
+      "split": "sp",
+      "query_field": "description",
+      "mapping_note": "Complex stateful-web-app proxy only; WebCompass does not natively evaluate backend correctness.",
+      "selector": {
+        "field": "instance_id",
+        "value": "2663214_lpdengineering.com_L11_2"
+      }
+    },
+    {
+      "benchmark": "Vision2Web",
+      "category": "Multi-page",
+      "shot": 1,
+      "loader": "vision2web",
+      "repo": "zai-org/Vision2Web",
+      "subset": "frontend",
+      "text_file": "prompt.txt",
+      "mapping_note": "Vision2Web Level-2 multi-page interactive frontend.",
+      "selector": {
+        "task_name": "1daycloud"
+      }
+    },
+    {
+      "benchmark": "Vision2Web",
+      "category": "Multi-page",
+      "shot": 2,
+      "loader": "vision2web",
+      "repo": "zai-org/Vision2Web",
+      "subset": "frontend",
+      "text_file": "prompt.txt",
+      "mapping_note": "Vision2Web Level-2 multi-page interactive frontend.",
+      "selector": {
+        "task_name": "401trucksource"
+      }
+    },
+    {
+      "benchmark": "Vision2Web",
+      "category": "Multi-page",
+      "shot": 3,
+      "loader": "vision2web",
+      "repo": "zai-org/Vision2Web",
+      "subset": "frontend",
+      "text_file": "prompt.txt",
+      "mapping_note": "Vision2Web Level-2 multi-page interactive frontend.",
+      "selector": {
+        "task_name": "6abc"
+      }
+    },
+    {
+      "benchmark": "Vision2Web",
+      "category": "Full-stack",
+      "shot": 1,
+      "loader": "vision2web",
+      "repo": "zai-org/Vision2Web",
+      "subset": "website",
+      "text_file": "prd.md",
+      "mapping_note": "Vision2Web Level-3 full-stack website. Row index is resolved to task_name from official metadata.",
+      "selector": {
+        "row_index": 0
+      }
+    },
+    {
+      "benchmark": "Vision2Web",
+      "category": "Full-stack",
+      "shot": 2,
+      "loader": "vision2web",
+      "repo": "zai-org/Vision2Web",
+      "subset": "website",
+      "text_file": "prd.md",
+      "mapping_note": "Vision2Web Level-3 full-stack website. Row index is resolved to task_name from official metadata.",
+      "selector": {
+        "row_index": 1
+      }
+    },
+    {
+      "benchmark": "Vision2Web",
+      "category": "Full-stack",
+      "shot": 3,
+      "loader": "vision2web",
+      "repo": "zai-org/Vision2Web",
+      "subset": "website",
+      "text_file": "prd.md",
+      "mapping_note": "Vision2Web Level-3 full-stack website. Row index is resolved to task_name from official metadata.",
+      "selector": {
+        "row_index": 2
+      }
+    }
+  ]
+}

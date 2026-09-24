@@ -52,7 +52,7 @@ run_logged() {
 }
 
 if [[ "$tasks" == *"edit"* ]]; then
-run_logged "$python_bin" reverse/construct_text_editing.py \
+run_logged "$python_bin" reverse/edit/query/construct.py \
   --project-list "$edit_list" --output-dir "$output_root/text_edit" \
   --screenshot-dir "$output_root/images/image-edit" --limit "$limit" --offset "$offset" \
   --workers "$edit_workers" --min-tasks "$min_tasks" --max-tasks "$max_tasks" \
@@ -67,7 +67,7 @@ run_logged "$python_bin" reverse/utils/audit_edit_repair_taxonomy_quality.py \
 fi
 
 if [[ "$tasks" == *"repair"* ]]; then
-run_logged "$python_bin" reverse/construct_text_repair.py \
+run_logged "$python_bin" reverse/repair/gt/construct.py \
   --project-list "$repair_list" --output-dir "$output_root/text_repair" \
   --defect-screenshot-dir "$output_root/images/image-repair/defective" \
   --clean-screenshot-dir "$output_root/images/image-repair/clean" \

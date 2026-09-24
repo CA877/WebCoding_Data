@@ -1,0 +1,154 @@
+{
+  "ArtifactsBench": {
+    "Tool": [
+      1548,
+      1566,
+      1816
+    ],
+    "Editor": [
+      1527,
+      1535,
+      1597
+    ],
+    "Game": [
+      4,
+      6,
+      1595
+    ],
+    "Simulation": [
+      10,
+      1559,
+      1592
+    ],
+    "SVG / Diagram": [
+      14,
+      80,
+      90
+    ],
+    "Data Visualization": [
+      1530,
+      1585,
+      1587
+    ],
+    "Multimedia": [
+      1535,
+      1540,
+      1600
+    ]
+  },
+  "Cookie-Bench": {
+    "Tool": [
+      "webdev_43",
+      "webdev_57",
+      "webdev_59"
+    ],
+    "Editor": [
+      "webdev_21",
+      "webdev_23",
+      "webdev_24"
+    ],
+    "Game": [
+      "webdev_12",
+      "webdev_38",
+      "webdev_88"
+    ],
+    "Simulation": [
+      "webdev_8",
+      "webdev_64",
+      "webdev_74"
+    ],
+    "SVG / Diagram": [
+      "webdev_19",
+      "webdev_20",
+      "webdev_9"
+    ],
+    "Data Visualization": [
+      "webdev_5",
+      "webdev_41",
+      "webdev_52"
+    ],
+    "Multimedia": [
+      "webdev_21",
+      "webdev_42",
+      "webdev_73"
+    ]
+  },
+  "WebGen": {
+    "Tool": [
+      "train_000038",
+      "train_005064",
+      "train_005383"
+    ],
+    "Editor": [
+      "train_000418",
+      "train_006040",
+      "train_006077"
+    ],
+    "Data Visualization": [
+      "train_005619",
+      "train_005656",
+      "train_005687"
+    ],
+    "Multi-page": [
+      "train_000007",
+      "train_000420",
+      "train_000436"
+    ],
+    "Full-stack": [
+      "train_000437",
+      "train_006464",
+      "train_006562"
+    ]
+  },
+  "WebCompass": {
+    "Tool": [
+      "2871694_www.chemvantage.org_L4_1",
+      "2890049_icax.se_L10_0",
+      "2808476_PlayfulPlatypus.com_L6_2"
+    ],
+    "Editor": [
+      "1047829_www.evolvemediallc.com_L4_1",
+      "1061447_www.sicapital.net_L11_1",
+      "985175_www.fbimmigration.com_L10_0"
+    ],
+    "Data Visualization": [
+      "5089922_www.datacenternoordholland.nl_L10_2",
+      "2722361_www.talktel.ca__L11_2",
+      "2847133_www.dalsetti.com.br_L10_2"
+    ],
+    "Multi-page": [
+      {
+        "row_index": 0
+      },
+      {
+        "row_index": 1
+      },
+      {
+        "row_index": 2
+      }
+    ],
+    "Full-stack": [
+      "2878293_thesubversiveagency.com_L11_2",
+      "2821048_radiator.dev_L11_2",
+      "2663214_lpdengineering.com_L11_2"
+    ]
+  },
+  "Vision2Web": {
+    "Multi-page": [
+      "1daycloud",
+      "401trucksource",
+      "6abc"
+    ],
+    "Full-stack": [
+      {
+        "row_index": 0
+      },
+      {
+        "row_index": 1
+      },
+      {
+        "row_index": 2
+      }
+    ]
+  }
+}

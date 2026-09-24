@@ -1,4 +1,114 @@
-# edit / repair 构造交付说明
+# Reverse 数据构造
+
+三类任务按同一结构组织：
+
+| 任务 | Query | Ground Truth | Image 数据 |
+| --- | --- | --- | --- |
+| Generate | `generate/query/` | `generate/gt/` | `generate/image/` |
+| Edit | `edit/query/` | `edit/gt/` | `edit/image/` |
+| Repair | `repair/query/` | `repair/gt/` | `repair/image/` |
+
+公共 schema、浏览器、patch、截图和模型调用逻辑保留在 `construct_common.py`、
+`task_specs.py`、`v2_records.py` 与 `utils/`。Repair 的模型输入不暴露缺陷标签或答案；
+`repair/query/` 只准备 defective source，修复 patch 由 `repair/gt/` 构造。
+
+Generate 当前主入口：
+
+- `generate/query/generate.py`：按 benchmark few-shot 生成 query；few-shot 固定资产在同目录的 `fewshots/`。
+- `generate/gt/generate.py`：把 query 生成完整项目，支持当前 `allocation_id`/`benchmark` 输入。
+- `generate/gt/validate.js`：按 G7 宽松口径检查主体渲染、运行错误和关键资源。
+- `generate/image/construct.py`：从已生成项目构造 Image Generate 记录。
+
+Edit 当前主入口：
+
+- `edit/query/construct.py`：从完整母本生成通用 Edit query。
+- `edit/query/regenerate.py`：按正式 release 重建 0921 Edit query；补量和格式恢复工具同目录维护。
+- `edit/gt/regenerate_0905.py`：依据冻结 query 生成或修复 Edit GT；准备、pilot 与恢复工具同目录维护。
+- `edit/image/construct.py`：从已完成的 Text Edit 记录派生 Image Edit 输入。
+
+Repair 当前主入口：
+
+- `repair/query/prepare_defects.py`：准备确定性 defective source；缺陷标签只保留在审计信息中。
+- `repair/gt/construct.py`：生成 defective→clean 的精确修复 patch。
+- `repair/image/construct.py`：渲染 defective/clean 配对并构造 Image Repair 数据。
+
+# Edit / Repair 构造交付说明
+
+## 0905 Text Edit 指令重构
+
+`edit/query/regenerate.py` 只读取指定 release 的 `text-edit`，校验分片哈希，
+在新版输出中剔除 1–3 个 subtask 的记录；原始 release 保留。
+全部类型属于 demo 的 16 类时保留原列表，否则整组重新抽样，数量不变且不重复。
+生成只使用原网页、类型列表及 demo 原始定义/prompt；不传旧指令，不生成 GT。
+image-edit 后续依托新版 text-edit，不单独调用模型；源码、query、GT 必须同步，
+再附对应 canonical source 截图。0921 当前已移出旧 image-edit，待新版 text-edit 完成后派生。
+
+分两阶段运行（在仓库根目录，Python 环境需安装 httpx）：
+
+```bash
+python -m reverse.edit.query.regenerate prepare \
+  --source-release /absolute/path/to/verified/release \
+  --output-dir /absolute/path/to/new/run --limit 5000
+
+# 新 key 仅放入 EDIT_INSTRUCTION_API_KEY 环境变量；无其他 key 的回退。
+python -m reverse.edit.query.regenerate run \
+  --output-dir /absolute/path/to/new/run --workers 1 --limit 1
+
+# 同一 plan 的真实小样本成功后，才允许扩大至 10 并发。
+python -m reverse.edit.query.regenerate run \
+  --output-dir /absolute/path/to/new/run --workers 10 --limit 5000
+```
+
+`--limit` 是明确的最大处理量；示例数值不代表当前数据量或批量授权。
+默认 Nju-Link `gpt-5.6-luna`、流式调用；模型和地址在 prepare 时固定。
+本次物理机批量指定 `--model gpt-5.6-luna --wire-api responses --actor-authorization local-image-extension`，
+地址为 `https://api.nju-link.com/v1`，请求显式设置 `store: false`。
+`run --api-key-file` 可读取权限为 600 的专用凭据文件，凭据不进入 plan 或请求日志。
+每 case 独立进程硬超时 600 秒，最多 3 次累计请求（含中断），临时网络错误退避
+5/10 秒；格式失败单独记录并继续其他样本，鉴权或额度阻塞停止派发并清理在途进程。
+SIGINT/SIGTERM 清理子进程；无整批累计时限。内存/负载保护暂停新派发，内部进度每 15 秒更新。
+成功结果续跑跳过；`--retry-failed` 只在原累计请求上限内重试。
+完整但格式无效的旧响应保留为证据，续跑不反复复用同一无效响应；可恢复格式优先离线修复。
+`--job-id` 可限定真实补跑样本。`edit/query/retry_0921.sh PY CODE DATA KEY` 按两批
+依次以 10 并发补跑失败项（最多 62/22 条），每批结束写回 0921；成功项跳过，总尝试上限不变。
+脚本可追加 `WORKERS FIRST_LIMIT SECOND_LIMIT`，例如 `1 1 2` 表示单并发补跑两批中剩余的 1/2 条。
+解析器兼容字符串外的 JSON 尾逗号和类型名 HTML 转义，保留指令正文。
+`edit/query/recover_formats.py --output-dir RUN` 从完整响应离线恢复格式失败，
+保留原失败记录，不新增 API 请求；运行期间使用 `--wait-for-pid SUPERVISOR_PID`，
+先恢复已结束的 case，待主进程退出后重新汇总导出，期间主进程的进度计数可能滞后。
+`plan.json` 保存来源、排除清单和类型策略；`jobs/` 保存逐请求响应、用量及结果；
+`instructions.jsonl` 是无 GT 的新版指令输出，`progress.json`/`summary.json` 保存进度和计量。
+缺失用量标记为 unknown，不计作零消耗。此输出需后续配套 GT，不能复用旧答案直接训练。
+
+本轮唯一正式目标为 `releases/0921/`。`write_0921_release.py watch --control RUN`
+将两条指令队列的成功结果持续写入正式 Text Edit 分片，并更新索引与 manifest；
+每轮间隔 15 秒，单次物化上限 180 秒，无累计运行时限。待生成/失败记录的 description 为空，
+状态位于 `metadata.instruction_status`；所有 Text Edit 记录均不携带旧 GT。
+`runs/` 中的生成结果用于断点与追溯，不作为另一个数据版本。
+
+`rebalance_edit_sources.py` 从正式 Generate 与物理机已有完整项目选择母本，按源码去重，
+仅替换无 worker 产物的 case；保留类型、任务数与已付费结果。先 `collect`、离线预览
+`rebalance`，安全排空在途调用并停下后续 queue/writer 后才用 `--apply`。
+备份原 plan，保留旧 case，更新新母本 lineage、文件清单、case/plan 校验及队列前序指纹。
+`verify` 核对冻结样本不变；React/Vue 各一个真实计划内样本通过后恢复运行及正式写入。
+母本不足时优先最少使用次数，禁止重复相同源码与类型集合；只生成 query，仍不携带 GT。
+追加 `--release RELEASE --source-shard ORIGINAL_EDIT_SHARD` 时，在同一技术栈内将未开始
+单页换成已有多页母本，使整体多页占一半；冻结样本、任务数、类型与技术栈总量不变。
+页面类型沿用母本记录，React/Vue 多页包含独立页面路由，不以普通 Tab 数代替页面数。
+
+### 8–12 subtask 后续补量
+
+`edit/query/supplement.py prepare --predecessor RUN --output-dir NEW_RUN --per-level 260`
+从前序 text-edit 计划的原网页准备 1,300 个新 case（8–12 项各 260），独立抽取类型，
+生成新 ID 并保留母本映射；来源充足时整批不重复使用相同源码，否则只允许跨档复用。
+`queue --output-dir NEW_RUN --api-key-file KEY_FILE --workers 10` 在前序运行锁释放且全部
+case 已处理后启动。前序被取消、崩溃或额度阻塞时不自动继续；单 case 失败不阻塞后序。
+补量首个计划内样本成功后扩大并发，验证样本计入总数；等待期间无 API 调用，
+不设整批累计时限。`queue_state.json` 记录等待、验证、运行和完成状态。
+
+准备时加 `--existing-release RELEASE`，先纳入其中已有的 8–12 项 Text Edit：
+全部类型属于 16 类则保留，否则整组重新抽样；仅读取原网页和类型，不带旧 query/GT。
+已有记录保留 ID，新增记录补齐每档配额。当前队列为历史 580 条加新增 720 条，合计 1,300 条。
 
 ## 0905多页4～7项补量（2026-09-12）
 

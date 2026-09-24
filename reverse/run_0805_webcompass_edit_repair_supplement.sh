@@ -100,7 +100,7 @@ run_constructor() {
     "$python_bin"
   )
   if [[ "$family" == "edit" ]]; then
-    command+=(reverse/construct_text_editing.py
+    command+=(reverse/edit/query/construct.py
       --project-list "$effective_list" --output-dir "$output_dir"
       --screenshot-dir "$image_dir" --canonical-screenshot-dir "$canonical_root"
       --workers 1 --min-tasks "$task_count" --max-tasks "$task_count"
@@ -109,7 +109,7 @@ run_constructor() {
       --instance-id-prefix "$prefix" --skip-attempted
       --image-input-variants source_image --browser-proxy "")
   else
-    command+=(reverse/construct_text_repair.py
+    command+=(reverse/repair/gt/construct.py
       --project-list "$effective_list" --output-dir "$output_dir"
       --defect-screenshot-dir "$image_dir" --canonical-screenshot-dir "$canonical_root"
       --workers 1 --min-tasks "$task_count" --max-tasks "$task_count"

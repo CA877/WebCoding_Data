@@ -1,0 +1,4 @@
+interface:
+  display_name: Codex CLI Edit Generation
+  short_description: Minimal-path Codex CLI Edit generation
+  default_prompt: Use this skill for minimal-path WebCoding Edit generation with browser validation.
