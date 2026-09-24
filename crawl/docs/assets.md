@@ -19,7 +19,7 @@ description: 查找、解释或选择 WebCoding 的 URL 列表与候选池，尤
 - 物理机仓库：`/data1/xieqianqian/webcoding/WebCoding_Data`
 - SSH：`ssh -p 65022 adminweihunj@36.213.175.38`
 - 下文相对路径均相对于仓库根；向用户给本地文件链接时展开成绝对路径。
-- 资产登记入口：`validation/docs/data/data_assets_registry.md`。旧共享存储路径和临时目录仅作 provenance，不能假定仍然存在。
+- 资产登记入口：`validate/docs/` 与当前 release manifest。旧共享存储路径和临时目录仅作 provenance，不能假定仍然存在。
 
 ## 池选择
 
